@@ -1,499 +1,501 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" class="dark">
 <head>
   <meta charset="UTF-8">
-  <title>Mô Phỏng Tay Điều Khiển RC Toàn Diện V3 PRO - Động Lực Học Thời Gian Thực</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RC PRO STUDIO • Mô Phỏng Tay Điều Khiển STM32 & 3D Physics</title>
   <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
-  <style>
-    .lcd-screen {
-      background-color: #2b4518;
-      color: #9aff42;
-      text-shadow: 0 0 4px #76e01a;
-      font-family: 'Courier New', Courier, monospace;
-      letter-spacing: 1.5px;
-      line-height: 1.35;
-      font-weight: bold;
-    }
-    .joystick-base {
-      touch-action: none;
-      user-select: none;
-    }
-  
-    /* CHỦ ĐỀ MÀN HÌNH LCD 1604A THỰC TẾ */
-    .lcd-blue-theme {
-      background-color: #002b80 !important;
-      color: #ffffff !important;
-      text-shadow: 0 0 4px #60a5fa, 0 0 1px #ffffff;
-      box-shadow: inset 0 0 12px rgba(0, 20, 60, 0.8), 0 0 15px rgba(37, 99, 235, 0.25);
-    }
-    .lcd-yellow-theme {
-      background-color: #84cc16 !important;
-      color: #142900 !important;
-      text-shadow: none !important;
-      box-shadow: inset 0 0 12px rgba(50, 80, 0, 0.6), 0 0 15px rgba(132, 204, 22, 0.25);
-    }
-    .lcd-line {
-      font-family: 'Courier New', Courier, monospace, Consolas;
-      margin: 0;
-      padding: 0;
-      height: 20px;
-      line-height: 20px;
-      display: block;
-    }
-
-  </style>
-  <!-- THREE.JS WEBGL 3D ENGINE & ORBIT CONTROLS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <style>
+    :root {
+      --bg-dark: #07090e;
+      --card-dark: #0f141f;
+      --border-dark: #1e293b;
+    }
+    body {
+      background-color: var(--bg-dark);
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    /* Module LCD 1604A Physical Glass */
+    .lcd-1604-container {
+      width: 360px;
+      height: 96px;
+      font-family: 'Share Tech Mono', 'Courier New', monospace;
+      letter-spacing: 1.5px;
+      user-select: none;
+    }
+    .lcd-blue-theme {
+      background: radial-gradient(circle at 50% 50%, #0038a8 0%, #001f5c 100%) !important;
+      color: #ffffff !important;
+      text-shadow: 0 0 4px #93c5fd, 0 0 1px #ffffff;
+      box-shadow: inset 0 0 14px rgba(0, 10, 40, 0.9), 0 0 20px rgba(37, 99, 235, 0.35);
+    }
+    .lcd-yellow-theme {
+      background: radial-gradient(circle at 50% 50%, #9acd32 0%, #6b8e23 100%) !important;
+      color: #1a3300 !important;
+      text-shadow: none !important;
+      box-shadow: inset 0 0 14px rgba(30, 50, 0, 0.8), 0 0 20px rgba(154, 205, 50, 0.35);
+    }
+    .lcd-line-1604 {
+      height: 20px;
+      line-height: 20px;
+      margin: 0;
+      padding: 0;
+      white-space: pre;
+      font-size: 13.5px;
+      font-weight: 700;
+      display: block;
+    }
+    /* Gimbal PS2 Base */
+    .gimbal-base {
+      touch-action: none;
+      user-select: none;
+      background: radial-gradient(circle at 50% 50%, #1e293b 0%, #090d16 100%);
+      box-shadow: inset 0 3px 12px rgba(0,0,0,0.8), 0 2px 6px rgba(255,255,255,0.05);
+    }
+    .gimbal-knob {
+      background: radial-gradient(circle at 35% 35%, #334155 0%, #0f172a 100%);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.7), inset 0 1px 2px rgba(255,255,255,0.25);
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090d16;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 3px;
+    }
+  </style>
 </head>
-<body class="bg-[var(--background)] text-[var(--foreground)] antialiased p-3 sm:p-5">
-  <div class="max-w-7xl mx-auto space-y-4">
+<body class="p-2 sm:p-4 min-h-screen">
+  <div class="max-w-[1520px] mx-auto space-y-3">
     
-    <!-- HEADER THANH ĐIỀU HƯỚNG VÀ TRẠNG THÁI HỆ THỐNG -->
-    <header class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow-sm flex flex-wrap items-center justify-between gap-3">
-      <div>
-        <div class="flex items-center gap-2">
-          <span class="inline-block w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
-          <h1 class="text-xl font-bold tracking-tight text-[var(--foreground)]">TAY ĐIỀU KHIỂN RC TOÀN DIỆN - CHUYÊN BIỆT CHO MÀN HÌNH LCD 1604A</h1>
-          <span class="px-2 py-0.5 rounded text-[11px] font-black bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">ZERO-LAG 200Hz • CRSF 420k</span>
+    <!-- ================= 1. HEADER STUDIO ĐỈNH CAO ================= -->
+    <header class="bg-[#0f141f] border border-[#1e293b] rounded-xl px-4 py-3 flex flex-wrap items-center justify-between gap-3 shadow-lg">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-cyan-600 flex items-center justify-center font-black text-black shadow-md shadow-emerald-500/20 text-lg">
+          RC
         </div>
-        <p class="text-xs text-[var(--muted-foreground)] mt-0.5">Xe chạy thật trên đường 60FPS, bánh xe quay tít, khói xả, đồng hồ tốc độ + Drone bay lượn 3D</p>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base font-extrabold tracking-tight text-white flex items-center gap-1.5">
+              <span>RC PRO STUDIO</span>
+              <span class="text-emerald-400">•</span>
+              <span class="text-xs font-mono font-bold text-slate-300">STM32 TX-RX SIMULATOR</span>
+            </h1>
+            <span class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+              ZERO-LAG 200Hz
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-400">Giao diện điều khiển công thái học • Màn hình LCD 1604A thực • 3D Physics 60FPS</p>
+        </div>
       </div>
-      
-      <div class="flex items-center gap-2 flex-wrap">
-        <button id="btnSoundToggle" onclick="toggleSound()" class="px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--background)] text-xs font-semibold hover:bg-[var(--accent)] transition-all flex items-center gap-1.5">
-          <span id="soundIcon">🔊</span> <span id="soundText">Âm Thanh Động Cơ: BẬT</span>
-        </button>
 
-        <button id="btnFailsafe" onclick="triggerFailsafeToggle()" class="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5">
-          <span id="fsIcon">⚡</span> <span id="fsText">TEST CẮT SÓNG (FAILSAFE)</span>
-        </button>
-
-        <div class="px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold" id="linkStatusBadge">
-          LORA 150Hz • 4.2ms LATENCY: TỐT
+      <!-- STATUS BADGES & QUICK ACTIONS -->
+      <div class="flex items-center gap-2 flex-wrap text-xs">
+        <div id="linkStatusBadge" class="px-2.5 py-1.5 rounded-lg bg-emerald-950/70 border border-emerald-600/40 text-emerald-300 font-mono font-bold flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+          <span>LORA 150Hz • 4.2ms</span>
         </div>
+
+        <button id="btnSoundToggle" onclick="toggleSound()" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold transition-all flex items-center gap-1">
+          <span id="soundIcon">🔊</span> <span id="soundText">Âm Thanh: BẬT</span>
+        </button>
+
+        <button id="btnFailsafe" onclick="triggerFailsafeToggle()" class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold transition-all shadow-sm flex items-center gap-1">
+          <span id="fsIcon">⚡</span> <span id="fsText">TEST FAILSAFE</span>
+        </button>
       </div>
     </header>
 
-    <!-- KHUNG CHÍNH: 2 CỘT -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+    <!-- ================= 2. KHUNG CHÍNH: 2 CỘT CÂN BẰNG ================= -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
       
-      <!-- ================= CỘT TRÁI: TAY ĐIỀU KHIỂN (TRANSMITTER) ================= -->
-      <div class="lg:col-span-7 bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-sm space-y-4">
+      <!-- ================= CỘT TRÁI: BÀN ĐIỀU KHIỂN TAY CẦM RC (7 CỘT) ================= -->
+      <div class="lg:col-span-6 xl:col-span-5 bg-[#0f141f] border border-[#1e293b] rounded-xl p-4 shadow-xl space-y-4">
         
-        <!-- TIÊU ĐỀ TAY CẦM & CHỮ NỔI TOÀN DIỆN -->
-        <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+        <!-- THANH TIÊU ĐỀ TAY CẦM & MODEL ACTIVE -->
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
           <div class="flex items-center gap-2">
-            <span class="text-xs font-bold uppercase tracking-wider text-[var(--muted-foreground)]">VỎ HỘP NGUYÊN KHỐI</span>
-            <span class="px-2 py-0.5 text-xs font-extrabold rounded bg-amber-500/10 text-amber-500 border border-amber-500/20">TOÀN DIỆN</span>
+            <span class="text-xs font-black tracking-wider text-slate-400 uppercase">TAY KHIỂN:</span>
+            <span class="px-2 py-0.5 rounded text-[11px] font-black bg-amber-500/15 text-amber-400 border border-amber-500/30">
+              VỎ NGUYÊN KHỐI 1-FILE
+            </span>
           </div>
-          <div class="flex items-center gap-3">
-            <span class="text-xs font-medium text-[var(--muted-foreground)]">Model:</span>
-            <span id="badgeActiveModel" class="px-2.5 py-1 rounded-md text-xs font-black bg-amber-600 text-white shadow-sm">
-              RC CAR (XE ĐUA)
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] text-slate-400">Mô hình:</span>
+            <span id="badgeActiveModel" class="px-2.5 py-0.5 rounded text-xs font-black bg-amber-600 text-white shadow">
+              🏎️ RC CAR (XE ĐUA)
             </span>
           </div>
         </div>
 
-        <!-- ================= MÔ PHỎNG PHẦN CỨNG MODULE LCD 1604A CHUẨN THỰC TẾ ================= -->
-        <div class="flex flex-col items-center gap-2">
+        <!-- ================= MODULE LCD 1604A PHYSICAL BOX ================= -->
+        <div class="bg-[#090d16] p-3 rounded-xl border border-slate-800 shadow-inner flex flex-col items-center gap-2">
           
-          <!-- BO MẠCH PCB VÀ KHUNG KIM LOẠI MÀN HÌNH 1604A THỰC TẾ -->
-          <div class="bg-[#1e293b] p-3 rounded-2xl border-4 border-stone-800 shadow-2xl relative select-none" style="width: 100%; max-width: 440px;">
-            
-            <!-- 4 LỖ ỐC KIM LOẠI Ở 4 GÓC PCB -->
-            <div class="flex justify-between items-center px-1 mb-1.5 text-[10px] font-mono text-stone-400">
-              <span class="flex items-center gap-1">
-                <span class="inline-block w-2.5 h-2.5 rounded-full bg-stone-700 border border-stone-500 shadow-inner"></span>
-                <span class="font-bold text-stone-300">MODULE LCD 1604A (16x4 CHARACTERS)</span>
-              </span>
-              <div class="flex items-center gap-2">
-                <button onclick="toggleLcdColorTheme()" id="btnThemeToggle" class="px-2 py-0.5 rounded text-[10px] font-bold bg-stone-800 text-stone-300 border border-stone-700 hover:text-white transition-all">
-                  🎨 ĐỔI MÀU NỀN
-                </button>
-                <span class="inline-block w-2.5 h-2.5 rounded-full bg-stone-700 border border-stone-500 shadow-inner"></span>
-              </div>
+          <!-- PCB TOP HEADER & BUTTONS -->
+          <div class="w-full flex items-center justify-between px-1 text-[11px] font-mono text-slate-400 border-b border-slate-800/80 pb-1.5">
+            <div class="flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+              <span class="font-bold text-slate-200">MODULE LCD 1604A (16x4)</span>
             </div>
-
-            <!-- KHUNG VIỀN KIM LOẠI ĐEN CỦA MÀN HÌNH (METAL BEZEL) -->
-            <div class="bg-black p-2 rounded-xl border-2 border-stone-700 shadow-inner flex flex-col items-center">
-              
-              <!-- KÍNH HIỂN THỊ LCD 1604A: KÍCH THƯỚC CHUẨN RỘNG 360px X CAO 96px (TỶ LỆ ~3.7:1) -->
-              <div id="lcd1604Glass" class="lcd-blue-theme rounded-md border-2 border-black/60 shadow-inner overflow-hidden select-none relative" 
-                   style="width: 360px; max-width: 100%; height: 96px; padding: 6px 12px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-around;">
-                
-                <!-- 4 DÒNG CHỮ GỌN GÀNG, SÁT NHAU CHUẨN XÁC LCD TINH THỂ LỎNG -->
-                <div id="lcd1604_l1" class="lcd-line font-mono font-bold tracking-[2px] text-[15px] leading-tight whitespace-pre">CAR|ARM 200H 3.8m</div>
-                <div id="lcd1604_l2" class="lcd-line font-mono font-bold tracking-[2px] text-[15px] leading-tight whitespace-pre">S:-48dB TX8.2R12V</div>
-                <div id="lcd1604_l3" class="lcd-line font-mono font-bold tracking-[2px] text-[15px] leading-tight whitespace-pre">T:[====|====]1500</div>
-                <div id="lcd1604_l4" class="lcd-line font-mono font-bold tracking-[2px] text-[15px] leading-tight whitespace-pre">S:[====|====]1500</div>
-
-              </div>
-
-            </div>
-
-            <!-- CHÂN HÀNG KIM I2C VÀ THANH CHỌN TRANG MENU -->
-            <div class="flex items-center justify-between mt-2 px-1 text-[10px] font-mono">
-              <span class="text-stone-400">I2C: <b class="text-emerald-400">0x27 (PCF8574)</b></span>
-              <span class="text-amber-400 font-bold" id="lcdPageIndicator">TRANG 1/7 [HUD]</span>
-            </div>
-
-            <!-- THANH NÚT CHỌN TRANG 1604A -->
-            <div class="grid grid-cols-7 gap-1 mt-1.5 font-mono text-[10px] text-center font-bold">
-              <button onclick="setLcdPage(0)" id="pageBtn0" class="py-1 rounded bg-emerald-600 text-white shadow">HUD</button>
-              <button onclick="setLcdPage(1)" id="pageBtn1" class="py-1 rounded bg-stone-800 text-stone-400 hover:text-white">1.MDL</button>
-              <button onclick="setLcdPage(2)" id="pageBtn2" class="py-1 rounded bg-stone-800 text-stone-400 hover:text-white">2.EXPO</button>
-              <button onclick="setLcdPage(3)" id="pageBtn3" class="py-1 rounded bg-stone-800 text-stone-400 hover:text-white">3.ABS</button>
-              <button onclick="setLcdPage(4)" id="pageBtn4" class="py-1 rounded bg-stone-800 text-stone-400 hover:text-white">4.KÊNH</button>
-              <button onclick="setLcdPage(5)" id="pageBtn5" class="py-1 rounded bg-stone-800 text-stone-400 hover:text-white">5.TIME</button>
-              <button onclick="setLcdPage(6)" id="pageBtn6" class="py-1 rounded bg-stone-800 text-stone-400 hover:text-white">6.LƯU</button>
-            </div>
-
-          </div>
-
-          <!-- 3 NÚT BẤM VẬT LÝ B1, B2, B3 -->
-          <div class="flex items-center gap-2 mt-1">
-            <button onclick="onB1Press1604()" class="px-3.5 py-1.5 bg-stone-800 hover:bg-stone-700 active:bg-cyan-600 text-white text-xs font-bold rounded-lg border border-stone-700 transition-all flex items-center gap-1 shadow-sm">
-              <span>◀️</span> <span id="lblBtnB1">B1: TRANG TRƯỚC</span>
-            </button>
-            <button onclick="onB2Press1604()" class="px-3.5 py-1.5 bg-stone-800 hover:bg-stone-700 active:bg-cyan-600 text-white text-xs font-bold rounded-lg border border-stone-700 transition-all flex items-center gap-1 shadow-sm">
-              <span>▶️</span> <span id="lblBtnB2">B2: TRANG TIẾP</span>
-            </button>
-            <button onclick="onB3Press1604()" class="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1">
-              <span>🔄</span> <span id="lblBtnB3">B3: ĐỔI GIÁ TRỊ</span>
+            <button onclick="toggleLcdColorTheme()" id="btnThemeToggle" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 transition-all flex items-center gap-1">
+              <span>🎨</span> <span>MÀU: XANH DƯƠNG</span>
             </button>
           </div>
-          <div class="text-[11px] text-[var(--muted-foreground)] text-center">
-            Kích thước thực tế: Màn hình chữ nhật nằm ngang (360x96px), 4 dòng chữ nằm gọn gàng!
+
+          <!-- LCD GLASS VIEWPORT (16 CHARACTERS x 4 LINES) -->
+          <div class="relative p-2 rounded-lg bg-black border-4 border-slate-800 shadow-2xl">
+            <div id="lcd1604Glass" class="lcd-1604-container lcd-blue-theme rounded p-1 flex flex-col justify-between">
+              <div id="lcd1604_l1" class="lcd-line-1604">CAR|ARM 200H 3.8m</div>
+              <div id="lcd1604_l2" class="lcd-line-1604">S:-48dB TX8.2R12V</div>
+              <div id="lcd1604_l3" class="lcd-line-1604">T:[====|====]1500</div>
+              <div id="lcd1604_l4" class="lcd-line-1604">S:[====|====]1500</div>
+            </div>
+
+            <!-- 4 BRASS SCREWS -->
+            <div class="absolute top-1 left-1 w-1.5 h-1.5 rounded-full bg-amber-600/60 border border-amber-400/40"></div>
+            <div class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-amber-600/60 border border-amber-400/40"></div>
+            <div class="absolute bottom-1 left-1 w-1.5 h-1.5 rounded-full bg-amber-600/60 border border-amber-400/40"></div>
+            <div class="absolute bottom-1 right-1 w-1.5 h-1.5 rounded-full bg-amber-600/60 border border-amber-400/40"></div>
+          </div>
+
+          <!-- LCD STATUS FOOTER & TABS -->
+          <div class="w-full flex items-center justify-between text-[10px] font-mono text-slate-400 px-1 pt-0.5">
+            <span class="text-emerald-400 font-bold">I2C: 0x27 (PCF8574)</span>
+            <span id="lcdPageIndicator" class="text-amber-400 font-bold">TRANG 1/7 [HUD]</span>
+          </div>
+
+          <!-- QUICK PAGE SWITCH TABS (0..6) -->
+          <div class="w-full grid grid-cols-7 gap-1 text-[10px] font-bold">
+            <button onclick="setLcdPage(0)" id="pageBtn0" class="py-1 rounded bg-emerald-600 text-white shadow font-black">HUD</button>
+            <button onclick="setLcdPage(1)" id="pageBtn1" class="py-1 rounded bg-slate-800 text-slate-400 hover:text-white">1.MDL</button>
+            <button onclick="setLcdPage(2)" id="pageBtn2" class="py-1 rounded bg-slate-800 text-slate-400 hover:text-white">2.EXPO</button>
+            <button onclick="setLcdPage(3)" id="pageBtn3" class="py-1 rounded bg-slate-800 text-slate-400 hover:text-white">3.ABS</button>
+            <button onclick="setLcdPage(4)" id="pageBtn4" class="py-1 rounded bg-slate-800 text-slate-400 hover:text-white">4.KÊNH</button>
+            <button onclick="setLcdPage(5)" id="pageBtn5" class="py-1 rounded bg-slate-800 text-slate-400 hover:text-white">5.TIME</button>
+            <button onclick="setLcdPage(6)" id="pageBtn6" class="py-1 rounded bg-slate-800 text-slate-400 hover:text-white">6.LƯU</button>
+          </div>
+
+          <!-- PHYSICAL NAVIGATION HARDWARE BUTTONS B1, B2, B3 -->
+          <div class="w-full grid grid-cols-3 gap-1.5 pt-1">
+            <button onclick="onB1Press1604()" class="py-1.5 px-2 bg-slate-800 hover:bg-slate-700 active:bg-cyan-600 text-white text-xs font-bold rounded-lg border border-slate-700 transition-all flex items-center justify-center gap-1 shadow-sm">
+              <span>◀</span> <span>B1: LÙI</span>
+            </button>
+            <button onclick="onB2Press1604()" class="py-1.5 px-2 bg-slate-800 hover:bg-slate-700 active:bg-cyan-600 text-white text-xs font-bold rounded-lg border border-slate-700 transition-all flex items-center justify-center gap-1 shadow-sm">
+              <span>B2: TIẾP</span> <span>▶</span>
+            </button>
+            <button onclick="onB3Press1604()" class="py-1.5 px-2 bg-amber-600 hover:bg-amber-500 active:bg-amber-700 text-white text-xs font-black rounded-lg border border-amber-500 transition-all flex items-center justify-center gap-1 shadow-sm">
+              <span>🔘</span> <span>B3: ĐỔI/CHỌN</span>
+            </button>
           </div>
         </div>
 
-        <!-- HÀNG CÔNG TẮC GẠT VÀ CHIẾT ÁP XOAY -->
-        <div class="grid grid-cols-4 gap-2 pt-2 border-t border-[var(--border)] text-center">
-          
-          <div class="bg-[var(--background)] p-2.5 rounded-xl border border-[var(--border)]">
-            <div class="text-[11px] font-bold text-[var(--muted-foreground)]">SW1: ĐỘNG CƠ</div>
-            <button id="sw1Btn" onclick="toggleSW1()" class="mt-1.5 px-3 py-1 rounded-lg text-xs font-black bg-emerald-500/10 text-emerald-600 border border-emerald-500/30 hover:bg-emerald-500/20 transition-all w-full">
+        <!-- ================= CỤM CÔNG TẮC GẠT & BUMPERS ================= -->
+        <div class="grid grid-cols-3 gap-2">
+          <!-- SW1 -->
+          <div class="bg-[#090d16] p-2.5 rounded-xl border border-slate-800 text-center">
+            <div class="text-[10px] font-bold text-slate-400">SW1: ĐỘNG CƠ</div>
+            <button id="sw1Btn" onclick="toggleSW1()" class="mt-1 px-2 py-1 rounded-lg text-xs font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/30 transition-all w-full">
               ARMED (ON)
             </button>
-            <div class="text-[10px] text-[var(--muted-foreground)] mt-1">Khóa / Mở ga</div>
+            <div class="text-[9px] text-slate-400 mt-0.5">Khóa / Mở ga</div>
           </div>
 
-          <div class="bg-[var(--background)] p-2.5 rounded-xl border border-[var(--border)]">
-            <div class="text-[11px] font-bold text-[var(--muted-foreground)]">SW2: CHẾ ĐỘ</div>
-            <button id="sw2Btn" onclick="cycleSW2()" class="mt-1.5 px-2 py-1 rounded-lg text-xs font-black bg-blue-500/10 text-blue-600 border border-blue-500/30 hover:bg-blue-500/20 transition-all w-full truncate">
+          <!-- SW2 -->
+          <div class="bg-[#090d16] p-2.5 rounded-xl border border-slate-800 text-center">
+            <div class="text-[10px] font-bold text-slate-400">SW2: CHẾ ĐỘ</div>
+            <button id="sw2Btn" onclick="cycleSW2()" class="mt-1 px-2 py-1 rounded-lg text-xs font-black bg-blue-500/20 text-blue-400 border border-blue-500/40 hover:bg-blue-500/30 transition-all w-full truncate">
               SPORT
             </button>
-            <div id="sw2Desc" class="text-[10px] text-[var(--muted-foreground)] mt-1 truncate">Tốc độ tối đa, Drift</div>
+            <div id="sw2Desc" class="text-[9px] text-slate-400 mt-0.5 truncate">Tốc độ tối đa, Drift</div>
           </div>
 
-          <div class="bg-[var(--background)] p-2.5 rounded-xl border border-[var(--border)]">
-            <div class="text-[11px] font-bold text-[var(--muted-foreground)]">SW3: KÊNH PHỤ</div>
-            <button id="sw3Btn" onclick="toggleSW3()" class="mt-1.5 px-3 py-1 rounded-lg text-xs font-black bg-stone-500/10 text-stone-600 dark:text-stone-300 border border-stone-500/30 hover:bg-stone-500/20 transition-all w-full">
+          <!-- SW3 -->
+          <div class="bg-[#090d16] p-2.5 rounded-xl border border-slate-800 text-center">
+            <div class="text-[10px] font-bold text-slate-400">SW3: KÊNH PHỤ</div>
+            <button id="sw3Btn" onclick="toggleSW3()" class="mt-1 px-2 py-1 rounded-lg text-xs font-black bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition-all w-full">
               TẮT
             </button>
-            <div id="sw3Desc" class="text-[10px] text-[var(--muted-foreground)] mt-1">Khóa vi sai</div>
+            <div id="sw3Desc" class="text-[9px] text-slate-400 mt-0.5">Khóa vi sai</div>
           </div>
-
-          
-        <!-- ================= BẢNG CÀI ĐẶT NHANH TỐC ĐỘ TRUYỀN & MENU PRO ================= -->
-        <div class="bg-[var(--background)] p-3.5 rounded-xl border border-emerald-500/30 shadow-sm space-y-3">
-          
-          <div class="flex items-center justify-between border-b border-[var(--border)] pb-2">
-            <div class="flex items-center gap-2">
-              <span class="text-sm">⚡</span>
-              <span class="text-xs font-extrabold uppercase tracking-wide text-emerald-500">CẤU HÌNH TỐC ĐỘ TRUYỀN SIÊU TỐC (ZERO-LATENCY)</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="text-[11px] text-[var(--muted-foreground)]">Độ trễ tức thời:</span>
-              <span id="badgeLiveLatency" class="px-2 py-0.5 rounded text-xs font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 animate-pulse font-mono">
-                3.8 ms (ZERO-LAG)
-              </span>
-            </div>
-          </div>
-
-          <!-- DÒNG 1: CHỌN TẦN SỐ GÓI TIN RF (PACKET RATE) -->
-          <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 text-center text-xs">
-            <div class="sm:col-span-1 text-left font-bold text-[var(--muted-foreground)] self-center text-[11px]">
-              TẦN SỐ GÓI LORA (RF):
-            </div>
-            <div class="sm:col-span-3 grid grid-cols-4 gap-1.5">
-              <button id="btnRf50" onclick="setRfRate(0)" class="py-1.5 px-2 rounded-lg font-bold border border-[var(--border)] bg-stone-800 text-stone-300 hover:border-emerald-500 transition-all text-[11px]">
-                50Hz (20ms)
-              </button>
-              <button id="btnRf100" onclick="setRfRate(1)" class="py-1.5 px-2 rounded-lg font-bold border border-[var(--border)] bg-stone-800 text-stone-300 hover:border-emerald-500 transition-all text-[11px]">
-                100Hz (10ms)
-              </button>
-              <button id="btnRf150" onclick="setRfRate(2)" class="py-1.5 px-2 rounded-lg font-bold border border-emerald-500 bg-emerald-600/20 text-emerald-400 shadow-sm transition-all text-[11px]">
-                150Hz (6.6ms) ⭐
-              </button>
-              <button id="btnRf200" onclick="setRfRate(3)" class="py-1.5 px-2 rounded-lg font-bold border border-[var(--border)] bg-stone-800 text-stone-300 hover:border-emerald-500 transition-all text-[11px]">
-                200Hz (5ms) ⚡
-              </button>
-            </div>
-          </div>
-
-          <!-- DÒNG 2: GIAO THỨC DRONE & PWM XE -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-            
-            <div class="bg-stone-900/60 p-2.5 rounded-lg border border-stone-800 space-y-1.5">
-              <div class="text-[11px] font-bold text-blue-400 flex justify-between">
-                <span>🛸 GIAO THỨC DRONE (FC):</span>
-                <span id="txtProtBadge" class="font-mono text-emerald-400 font-black">CRSF 420k</span>
-              </div>
-              <div class="grid grid-cols-2 gap-1.5">
-                <button id="btnProtCrsf" onclick="setProtocol(0)" class="py-1 px-2 rounded font-bold border border-blue-500 bg-blue-600/20 text-blue-300 text-[11px]">
-                  CRSF 420k (4ms) 🚀
-                </button>
-                <button id="btnProtSbus" onclick="setProtocol(1)" class="py-1 px-2 rounded font-bold border border-stone-700 bg-stone-800 text-stone-400 text-[11px]">
-                  SBUS 100k (Futaba)
-                </button>
-              </div>
-            </div>
-
-            <div class="bg-stone-900/60 p-2.5 rounded-lg border border-stone-800 space-y-1.5">
-              <div class="text-[11px] font-bold text-amber-400 flex justify-between">
-                <span>🏎️ PWM ĐẦU RA XE (SERVO/ESC):</span>
-                <span id="txtPwmBadge" class="font-mono text-emerald-400 font-black">333Hz (3ms)</span>
-              </div>
-              <div class="grid grid-cols-2 gap-1.5">
-                <button id="btnPwm333" onclick="setPwmRate(0)" class="py-1 px-2 rounded font-bold border border-amber-500 bg-amber-600/20 text-amber-300 text-[11px]">
-                  PWM 333Hz Digital 🏎️
-                </button>
-                <button id="btnPwm50" onclick="setPwmRate(1)" class="py-1 px-2 rounded font-bold border border-stone-700 bg-stone-800 text-stone-400 text-[11px]">
-                  PWM 50Hz Analog
-                </button>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- DÒNG 3: DEADBAND & EXPO -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-stone-800/80 text-[11px]">
-            <div class="flex items-center justify-between bg-stone-900/40 px-2.5 py-1.5 rounded-lg border border-stone-800">
-              <span class="text-stone-400 font-bold">Deadband:</span>
-              <button onclick="cycleDeadband()" id="btnDeadband" class="font-mono font-bold text-amber-400 hover:text-amber-300 underline">
-                15 us (Chuẩn)
-              </button>
-            </div>
-            <div class="flex items-center justify-between bg-stone-900/40 px-2.5 py-1.5 rounded-lg border border-stone-800">
-              <span class="text-stone-400 font-bold">Expo Lái:</span>
-              <button onclick="cycleExpo()" id="btnExpo" class="font-mono font-bold text-blue-400 hover:text-blue-300 underline">
-                20% (Mượt)
-              </button>
-            </div>
-            <div class="flex items-center justify-between bg-stone-900/40 px-2.5 py-1.5 rounded-lg border border-stone-800">
-              <span class="text-stone-400 font-bold">Sóng LoRa:</span>
-              <span class="font-mono font-bold text-emerald-400">-48 dBm (99%)</span>
-            </div>
-            <div class="flex items-center justify-between bg-stone-900/40 px-2.5 py-1.5 rounded-lg border border-stone-800">
-              <span class="text-stone-400 font-bold">Áp Pin TX/RX:</span>
-              <span class="font-mono font-bold text-cyan-400">8.2V / 11.8V</span>
-            </div>
-          </div>
-
         </div>
 
-          <!-- CHIẾT ÁP POTENTIOMETER B10K -->
-          <div class="bg-[var(--background)] p-2.5 rounded-xl border border-[var(--border)]">
-            <div class="text-[11px] font-bold text-[var(--muted-foreground)] flex justify-between px-1">
-              <span id="potLabelTitle">TỐC ĐỘ MAX</span>
-              <span id="potValTxt" class="text-amber-500 font-extrabold">80%</span>
+        <!-- SHOULDER BUMPERS & SPEED LIMIT POT -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center bg-[#090d16] p-2.5 rounded-xl border border-slate-800">
+          <button onclick="triggerSW_L()" class="py-1 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 flex items-center justify-center gap-1">
+            <span>📢</span> <span>SW_L: BÓP CÒI</span>
+          </button>
+          
+          <!-- SPEED POT SLIDER -->
+          <div class="px-1 text-center">
+            <div class="flex justify-between text-[10px] font-bold text-slate-400 mb-0.5">
+              <span>CHIẾT ÁP TỐC ĐỘ:</span>
+              <span id="knobVal" class="text-amber-400 font-mono font-black">80%</span>
             </div>
-            <input type="range" id="potSlider" min="20" max="100" value="80" oninput="onPotChange(this.value)" class="w-full mt-2 accent-amber-500 cursor-pointer">
-            <div id="potDesc" class="text-[10px] text-[var(--muted-foreground)] mt-1 truncate">Speed Limiter 80%</div>
+            <input type="range" id="knobSlider" min="10" max="100" value="80" class="w-full accent-amber-500 h-1.5 bg-slate-700 rounded-lg cursor-pointer">
           </div>
 
+          <button onclick="triggerSW_R()" class="py-1 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 flex items-center justify-center gap-1">
+            <span>💡</span> <span>SW_R: ĐÈN PHA</span>
+          </button>
         </div>
 
-        <!-- 2 CẦN JOYSTICK PS2 (CẢ 2 CẦN ĐỀU CÓ LÒ XO TỰ HỒI VỀ GIỮA) -->
-        <div class="grid grid-cols-2 gap-4 pt-2">
-          
-          <!-- CẦN TRÁI PS2 -->
-          <div class="flex flex-col items-center bg-[var(--background)] p-3 rounded-2xl border border-[var(--border)]">
-            <div class="flex justify-between w-full text-xs font-bold px-1 mb-1.5">
-              <span>CẦN TRÁI PS2</span>
-              <span id="lblJoyLMode" class="text-emerald-500 font-black">GA (TIẾN / THẮNG / LÙI)</span>
-            </div>
+        <!-- ================= 2 CẦN GIMBAL PS2 CHUYÊN NGHIỆP ================= -->
+        <div class="grid grid-cols-2 gap-3">
+          <!-- CẦN TRÁI -->
+          <div class="bg-[#090d16] p-3 rounded-xl border border-slate-800 flex flex-col items-center text-center">
+            <div class="text-xs font-extrabold text-slate-300 mb-0.5">CẦN TRÁI (GA / HƯỚNG)</div>
+            <div id="lblJoyLMode" class="text-[10px] font-bold text-emerald-400 mb-2">TIẾN / THẮNG / LÙI</div>
             
-            <div class="relative w-40 h-40 bg-stone-900 rounded-full border-4 border-stone-700 flex items-center justify-center joystick-base cursor-grab" id="joyLBox">
-              <div class="absolute w-full h-[1px] bg-stone-700"></div>
-              <div class="absolute h-full w-[1px] bg-stone-700"></div>
-              <div class="absolute w-7 h-7 rounded-full border border-dashed border-emerald-500/40"></div>
-              <div class="relative w-14 h-14 rounded-full bg-stone-800 border-2 border-emerald-500 shadow-lg flex items-center justify-center cursor-pointer transition-transform duration-75 ease-out" id="joyLKnob">
-                <div class="w-4 h-4 rounded-full bg-emerald-500"></div>
+            <div class="relative w-36 h-36 rounded-full gimbal-base border-4 border-slate-700 flex items-center justify-center cursor-grab" id="joyLBox">
+              <!-- Crosshair lines -->
+              <div class="absolute w-full h-[1px] bg-slate-700/60"></div>
+              <div class="absolute h-full w-[1px] bg-slate-700/60"></div>
+              <div class="relative w-12 h-12 rounded-full gimbal-knob border-2 border-emerald-500 shadow-xl flex items-center justify-center cursor-pointer transition-transform duration-75 ease-out" id="joyLKnob">
+                <div class="w-3 h-3 rounded-full bg-emerald-400/80"></div>
               </div>
             </div>
 
-            <button onclick="triggerSW_L()" class="mt-2.5 px-3 py-1 text-xs font-bold rounded-lg border border-[var(--border)] bg-[var(--card)] hover:bg-stone-700 active:bg-amber-600 transition-all">
-              <span id="btnSW_L_Txt">📢 BẤM CẦN TRÁI (BÓP CÒI)</span>
-            </button>
-            <div class="flex justify-between w-full text-[11px] font-mono text-[var(--muted-foreground)] mt-1.5 px-2">
+            <div class="w-full flex justify-between text-[11px] font-mono text-slate-400 mt-2 px-1">
               <span id="txtJoyLY" class="font-bold text-emerald-400">Y: 1500us</span>
               <span id="txtJoyLX">X: 1500us</span>
             </div>
           </div>
 
-          <!-- CẦN PHẢI PS2 -->
-          <div class="flex flex-col items-center bg-[var(--background)] p-3 rounded-2xl border border-[var(--border)]">
-            <div class="flex justify-between w-full text-xs font-bold px-1 mb-1.5">
-              <span>CẦN PHẢI PS2</span>
-              <span id="lblJoyRMode" class="text-blue-500 font-black">BẺ LÁI BÁNH TRƯỚC</span>
-            </div>
+          <!-- CẦN PHẢI -->
+          <div class="bg-[#090d16] p-3 rounded-xl border border-slate-800 flex flex-col items-center text-center">
+            <div class="text-xs font-extrabold text-slate-300 mb-0.5">CẦN PHẢI (BẺ LÁI)</div>
+            <div id="lblJoyRMode" class="text-[10px] font-bold text-blue-400 mb-2">BẺ LÁI BÁNH TRƯỚC</div>
             
-            <div class="relative w-40 h-40 bg-stone-900 rounded-full border-4 border-stone-700 flex items-center justify-center joystick-base cursor-grab" id="joyRBox">
-              <div class="absolute w-full h-[1px] bg-stone-700"></div>
-              <div class="absolute h-full w-[1px] bg-stone-700"></div>
-              <div class="absolute w-7 h-7 rounded-full border border-dashed border-blue-500/40"></div>
-              <div class="relative w-14 h-14 rounded-full bg-stone-800 border-2 border-blue-500 shadow-lg flex items-center justify-center cursor-pointer transition-transform duration-75 ease-out" id="joyRKnob">
-                <div class="w-4 h-4 rounded-full bg-blue-500"></div>
+            <div class="relative w-36 h-36 rounded-full gimbal-base border-4 border-slate-700 flex items-center justify-center cursor-grab" id="joyRBox">
+              <!-- Crosshair lines -->
+              <div class="absolute w-full h-[1px] bg-slate-700/60"></div>
+              <div class="absolute h-full w-[1px] bg-slate-700/60"></div>
+              <div class="relative w-12 h-12 rounded-full gimbal-knob border-2 border-blue-500 shadow-xl flex items-center justify-center cursor-pointer transition-transform duration-75 ease-out" id="joyRKnob">
+                <div class="w-3 h-3 rounded-full bg-blue-400/80"></div>
               </div>
             </div>
 
-            <button onclick="triggerSW_R()" class="mt-2.5 px-3 py-1 text-xs font-bold rounded-lg border border-[var(--border)] bg-[var(--card)] hover:bg-stone-700 active:bg-blue-600 transition-all">
-              <span id="btnSW_R_Txt">💡 BẤM CẦN PHẢI (ĐÈN PHA)</span>
-            </button>
-            <div class="flex justify-between w-full text-[11px] font-mono text-[var(--muted-foreground)] mt-1.5 px-2">
+            <div class="w-full flex justify-between text-[11px] font-mono text-slate-400 mt-2 px-1">
               <span id="txtJoyRY">Y: 1500us</span>
               <span id="txtJoyRX" class="font-bold text-blue-400">X: 1500us</span>
             </div>
           </div>
-
         </div>
 
-        <div class="bg-[var(--background)] p-2.5 rounded-xl border border-[var(--border)] text-xs text-[var(--muted-foreground)] flex items-center justify-between">
-          <span>Kéo cần trái <b>LÊN TRÊN</b> để xe chạy lao nhanh về phía trước!</span>
-          <span class="font-bold text-emerald-500 font-mono">Bù dải PS2: 100% OK</span>
+        <!-- ================= BẢNG CÀI ĐẶT TỐC ĐỘ TRUYỀN (FULL-WIDTH CHUẨN) ================= -->
+        <div class="bg-[#090d16] p-3 rounded-xl border border-emerald-500/30 space-y-2.5">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
+            <div class="flex items-center gap-1.5 text-xs font-black text-emerald-400">
+              <span>⚡</span> <span>CẤU HÌNH TỐC ĐỘ TRUYỀN SIÊU TỐC (ZERO-LATENCY)</span>
+            </div>
+            <span id="badgeLiveLatency" class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-mono">
+              3.8 ms (ZERO-LAG)
+            </span>
+          </div>
+
+          <!-- RF RATES -->
+          <div class="grid grid-cols-4 gap-1.5 text-[11px] font-bold">
+            <button id="btnRf50" onclick="setRfRate(0)" class="py-1 px-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:border-emerald-500 transition-all text-center">
+              50Hz (20ms)
+            </button>
+            <button id="btnRf100" onclick="setRfRate(1)" class="py-1 px-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:border-emerald-500 transition-all text-center">
+              100Hz (10ms)
+            </button>
+            <button id="btnRf150" onclick="setRfRate(2)" class="py-1 px-1.5 rounded-lg border border-emerald-500 bg-emerald-600/20 text-emerald-300 transition-all text-center">
+              150Hz (6.6ms) ⭐
+            </button>
+            <button id="btnRf200" onclick="setRfRate(3)" class="py-1 px-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:border-emerald-500 transition-all text-center">
+              200Hz (5ms) ⚡
+            </button>
+          </div>
+
+          <!-- PROTOCOLS & PWM -->
+          <div class="grid grid-cols-2 gap-2 text-[11px]">
+            <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 space-y-1">
+              <div class="flex justify-between font-bold text-blue-400 text-[10px]">
+                <span>GIAO THỨC DRONE:</span>
+                <span id="txtProtBadge" class="font-mono text-emerald-400">CRSF 420k</span>
+              </div>
+              <div class="grid grid-cols-2 gap-1 font-bold">
+                <button id="btnProtCrsf" onclick="setProtocol(0)" class="py-1 px-1 rounded border border-blue-500 bg-blue-600/20 text-blue-300 text-[10px]">
+                  CRSF (4ms)
+                </button>
+                <button id="btnProtSbus" onclick="setProtocol(1)" class="py-1 px-1 rounded border border-slate-700 bg-slate-800 text-slate-400 text-[10px]">
+                  SBUS (Futaba)
+                </button>
+              </div>
+            </div>
+
+            <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 space-y-1">
+              <div class="flex justify-between font-bold text-amber-400 text-[10px]">
+                <span>PWM ĐẦU RA XE:</span>
+                <span id="txtPwmBadge" class="font-mono text-emerald-400">333Hz</span>
+              </div>
+              <div class="grid grid-cols-2 gap-1 font-bold">
+                <button id="btnPwm333" onclick="setPwmRate(0)" class="py-1 px-1 rounded border border-amber-500 bg-amber-600/20 text-amber-300 text-[10px]">
+                  333Hz Digital
+                </button>
+                <button id="btnPwm50" onclick="setPwmRate(1)" class="py-1 px-1 rounded border border-slate-700 bg-slate-800 text-slate-400 text-[10px]">
+                  50Hz Analog
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- DEADBAND & EXPO -->
+          <div class="grid grid-cols-2 gap-2 text-[10px] font-bold">
+            <button onclick="cycleDeadband()" class="py-1 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 flex justify-between">
+              <span>DEADBAND:</span>
+              <span id="badgeDeadband" class="text-cyan-400 font-mono">15us</span>
+            </button>
+            <button onclick="cycleExpo()" class="py-1 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 flex justify-between">
+              <span>EXPO STEER:</span>
+              <span id="badgeExpo" class="text-amber-400 font-mono">35%</span>
+            </button>
+          </div>
         </div>
 
       </div>
 
-      <!-- ================= CỘT PHẢI: BỘ THU 2-TRONG-1 & XE CHẠY THẬT SỰ ================= -->
-      <div class="lg:col-span-5 bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-sm space-y-4 flex flex-col justify-between">
+      <!-- ================= CỘT PHẢI: 3D REAL-TIME STUDIO & TELEMETRY (7 CỘT) ================= -->
+      <div class="lg:col-span-6 xl:col-span-7 bg-[#0f141f] border border-[#1e293b] rounded-xl p-4 shadow-xl space-y-3 flex flex-col justify-between">
         
-        <!-- TRẠNG THÁI KHÓA AN TOÀN CHỐNG XUNG ĐỘT -->
-        <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
-          <div>
-            <h2 class="text-sm font-bold text-[var(--foreground)]">MÔ PHỎNG VẬT LÝ XE ĐANG CHẠY</h2>
-            <p class="text-xs text-[var(--muted-foreground)]" id="isolationDesc">Xe nhận xung PWM 50Hz | Đang di chuyển</p>
+        <!-- TOOLBAR CHỌN CHẾ ĐỘ 3D -->
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-black tracking-wider text-slate-400 uppercase">3D STUDIO:</span>
+            <span id="txt3dStatus" class="px-2 py-0.5 rounded text-[11px] font-black bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+              60 FPS REAL-TIME
+            </span>
           </div>
-          <span id="rxModeBadge" class="px-2.5 py-1 rounded text-xs font-extrabold bg-amber-500/10 text-amber-500 border border-amber-500/20">
-            CHẾ ĐỘ RC CAR ACTIVE
-          </span>
+
+          <div class="flex items-center gap-1.5 text-xs font-bold">
+            <button id="btn3dCar" onclick="set3dSceneMode(0)" class="px-2.5 py-1 rounded-lg bg-amber-600 text-white shadow transition-all flex items-center gap-1">
+              <span>🏎️</span> <span>XE ĐUA</span>
+            </button>
+            <button id="btn3dDrone" onclick="set3dSceneMode(1)" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-all flex items-center gap-1">
+              <span>🛸</span> <span>DRONE</span>
+            </button>
+            <button id="btn3dCase" onclick="set3dSceneMode(2)" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-all flex items-center gap-1">
+              <span>🎮</span> <span>TAY CẦM</span>
+            </button>
+          </div>
         </div>
 
-        <!-- ================= MÀN HÌNH 3D WEBGL ENGINE THẬT SỰ (THREE.JS 360 ĐỘ) ================= -->
-        <div class="space-y-2">
+        <!-- ================= KHUNG RENDER 3D WEBGL INTERACTIVE ================= -->
+        <div class="relative bg-[#07090e] rounded-xl border border-slate-800 h-[380px] sm:h-[420px] overflow-hidden shadow-2xl flex items-center justify-center">
           
-          <!-- THANH CHỌN CHẾ ĐỘ XEM 3D -->
-          <div class="flex items-center justify-between text-xs bg-stone-900/80 p-1.5 rounded-xl border border-stone-800">
-            <div class="flex items-center gap-1.5 font-bold">
-              <span class="text-sm">🌐</span>
-              <span class="text-stone-300">CHẾ ĐỘ XEM 3D:</span>
-            </div>
-            <div class="flex items-center gap-1">
-              <button id="btn3dCar" onclick="set3dSceneMode(0)" class="px-2.5 py-1 rounded-lg font-bold bg-amber-600 text-white shadow-sm transition-all text-[11px] flex items-center gap-1">
-                <span>🏎️</span> <span>3D XE ĐUA</span>
-              </button>
-              <button id="btn3dDrone" onclick="set3dSceneMode(1)" class="px-2.5 py-1 rounded-lg font-bold bg-stone-800 text-stone-400 hover:text-white transition-all text-[11px] flex items-center gap-1">
-                <span>🛸</span> <span>3D DRONE</span>
-              </button>
-              <button id="btn3dCase" onclick="set3dSceneMode(2)" class="px-2.5 py-1 rounded-lg font-bold bg-stone-800 text-stone-400 hover:text-white transition-all text-[11px] flex items-center gap-1">
-                <span>🎮</span> <span>3D TAY CẦM</span>
-              </button>
-            </div>
+          <div id="threejsViewport" class="w-full h-full cursor-grab active:cursor-grabbing"></div>
+
+          <!-- OVERLAYS HUD -->
+          <!-- SPEEDOMETER -->
+          <div class="absolute top-3 left-3 bg-black/80 backdrop-blur px-3 py-1.5 rounded-lg border border-slate-800 text-xs font-mono text-slate-300 flex items-center gap-2 z-10">
+            <span class="text-slate-400">TỐC ĐỘ:</span>
+            <span id="speedKmh" class="text-base font-black text-amber-400">0 km/h</span>
           </div>
 
-          <!-- KHUNG RENDER 3D WEBGL INTERACTIVE (XOAY 360 ĐỘ) -->
-          <div class="relative bg-stone-950 rounded-2xl border-2 border-stone-800 h-80 sm:h-96 flex flex-col items-center justify-center overflow-hidden shadow-2xl">
-            
-            <div id="threejsViewport" class="w-full h-full cursor-grab active:cursor-grabbing"></div>
-            
-            <!-- HƯỚNG DẪN ĐIỀU KHIỂN CHUỘT 3D -->
-            <div class="absolute bottom-2 right-2 bg-black/75 backdrop-blur px-2.5 py-1 rounded-lg text-[10px] font-mono text-stone-400 border border-stone-700/60 pointer-events-none select-none flex items-center gap-1.5">
-              <span>🖱️</span> <span>Chuột trái: <b>Xoay 360°</b> | Cuộn: <b>Zoom</b></span>
-            </div>
-
-            <!-- OVERLAY CẢNH BÁO FAILSAFE -->
-            <div id="fsOverlay" class="absolute inset-0 bg-rose-950/80 backdrop-blur-sm flex flex-col items-center justify-center text-white hidden z-20">
-              <span class="text-3xl animate-bounce">⚠️</span>
-              <span class="text-base font-black tracking-wider text-rose-300 mt-1">FAILSAFE KÍCH HOẠT!</span>
-              <span class="text-xs text-rose-200" id="fsDesc">Mất sóng LoRa - Khóa phanh dừng hẳn</span>
-            </div>
-
-            <!-- ĐỒNG HỒ TỐC ĐỘ 3D HUD -->
-            <div class="absolute top-2 left-2 bg-black/75 backdrop-blur px-2.5 py-1.5 rounded-xl text-xs font-mono text-emerald-400 border border-emerald-500/30 flex items-center gap-2 z-10">
-              <span class="text-xs text-stone-400">TỐC ĐỘ:</span>
-              <span id="speedKmh" class="text-base font-black text-amber-400 font-mono">0 km/h</span>
-            </div>
-
-            <div class="absolute top-2 right-2 bg-black/75 backdrop-blur px-2.5 py-1.5 rounded-xl text-[11px] font-mono text-cyan-400 border border-cyan-500/30 z-10">
-              Pin RX: <span id="telemetryVolts" class="font-bold">11.9V</span> | RSSI: <span id="telemRssi" class="font-bold">-48dBm</span>
-            </div>
-
-            <!-- BONG BÓNG BÁO TRẠNG THÁI -->
-            <div id="motionStatusBadge" class="absolute bottom-2 left-2 bg-emerald-950/80 backdrop-blur px-2.5 py-1 rounded-lg text-[11px] font-mono text-emerald-300 border border-emerald-500/40 z-10">
-              TRẠNG THÁI 3D: SẴN SÀNG
-            </div>
-
+          <!-- TELEMETRY RX -->
+          <div class="absolute top-3 right-3 bg-black/80 backdrop-blur px-3 py-1.5 rounded-lg border border-slate-800 text-[11px] font-mono text-cyan-300 z-10 flex items-center gap-2">
+            <span>PIN RX: <b id="hudPinRx" class="text-white">11.9V</b></span>
+            <span>|</span>
+            <span>RSSI: <b id="hudRssi" class="text-emerald-400">-48dBm</b></span>
           </div>
 
+          <!-- FAILSAFE OVERLAY -->
+          <div id="fsOverlay" class="absolute inset-0 bg-rose-950/85 backdrop-blur-sm flex flex-col items-center justify-center text-white hidden z-20">
+            <span class="text-4xl animate-bounce">⚠️</span>
+            <span class="text-lg font-black tracking-wider text-rose-300 mt-1">FAILSAFE KÍCH HOẠT!</span>
+            <span class="text-xs text-rose-200 mt-0.5" id="fsDesc">Mất sóng LoRa - Khóa phanh dừng hẳn</span>
+          </div>
+
+          <!-- CAMERA CONTROLS HINT -->
+          <div class="absolute bottom-2 right-2 bg-black/80 backdrop-blur px-2.5 py-1 rounded text-[10px] font-mono text-slate-400 border border-slate-800 pointer-events-none select-none">
+            🖱️ Chuột trái: Xoay 360° | Cuộn: Zoom
+          </div>
         </div>
 
-        <!-- BẢNG GIẢI MÃ TÍN HIỆU ĐẦU RA BỘ THU REAL-TIME -->
-        <div class="bg-[var(--background)] p-3.5 rounded-xl border border-[var(--border)] space-y-2.5">
-          <div class="flex items-center justify-between text-xs font-bold border-b border-[var(--border)] pb-1.5">
-            <span id="rxChannelTitle">ĐẦU RA SERVO & ESC XE (PWM 50Hz)</span>
-            <span id="conflictStatusBadge" class="text-emerald-500 font-mono text-[11px]">XUNG ĐỘT: 0%</span>
+        <!-- ================= 8-CHANNEL SERVO MICROSECOND BARS ================= -->
+        <div class="bg-[#090d16] p-3 rounded-xl border border-slate-800 space-y-2">
+          <div class="flex items-center justify-between text-xs font-bold border-b border-slate-800/80 pb-1.5">
+            <span class="text-slate-300 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+              <span>ĐẦU RA 8 KÊNH MICROSECOND (1000us - 2000us)</span>
+            </span>
+            <span class="text-[10px] font-mono text-emerald-400 font-bold" id="txtRefreshRateHz">333 Hz REFRESH</span>
           </div>
 
-          <div class="space-y-1.5 font-mono text-xs">
-            <div class="flex items-center justify-between">
-              <span class="w-24 text-[var(--muted-foreground)]" id="lblCh1">CH1 (Lái):</span>
-              <div class="flex-1 bg-stone-800 rounded-full h-2 mx-2 overflow-hidden">
-                <div id="barCh1" class="bg-blue-500 h-full w-1/2"></div>
+          <!-- CH1 - CH4 BARS -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 text-[11px] font-mono">
+            <div>
+              <div class="flex justify-between text-slate-400 text-[10px]">
+                <span>CH1 (Bẻ lái):</span>
+                <span id="barCh1Txt" class="text-blue-400 font-bold">1500us</span>
               </div>
-              <span class="w-16 text-right font-bold" id="valCh1">1500us</span>
+              <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden mt-0.5">
+                <div id="barCh1" class="bg-blue-500 h-full w-1/2 transition-all duration-75"></div>
+              </div>
             </div>
 
-            <div class="flex items-center justify-between">
-              <span class="w-24 text-[var(--muted-foreground)]" id="lblCh2">CH2 (Số):</span>
-              <div class="flex-1 bg-stone-800 rounded-full h-2 mx-2 overflow-hidden">
-                <div id="barCh2" class="bg-blue-500 h-full w-1/2"></div>
+            <div>
+              <div class="flex justify-between text-slate-400 text-[10px]">
+                <span>CH2 (Pitch / Phụ):</span>
+                <span id="barCh2Txt" class="text-cyan-400 font-bold">1500us</span>
               </div>
-              <span class="w-16 text-right font-bold" id="valCh2">1500us</span>
+              <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden mt-0.5">
+                <div id="barCh2" class="bg-cyan-500 h-full w-1/2 transition-all duration-75"></div>
+              </div>
             </div>
 
-            <div class="flex items-center justify-between">
-              <span class="w-24 text-[var(--muted-foreground)]" id="lblCh3">CH3 (Ga ESC):</span>
-              <div class="flex-1 bg-stone-800 rounded-full h-2 mx-2 overflow-hidden">
-                <div id="barCh3" class="bg-emerald-500 h-full w-1/2"></div>
+            <div>
+              <div class="flex justify-between text-slate-400 text-[10px]">
+                <span>CH3 (Ga / Throttle):</span>
+                <span id="barCh3Txt" class="text-emerald-400 font-bold">1500us</span>
               </div>
-              <span class="w-16 text-right font-bold text-emerald-500" id="valCh3">1500us</span>
+              <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden mt-0.5">
+                <div id="barCh3" class="bg-emerald-500 h-full w-1/2 transition-all duration-75"></div>
+              </div>
             </div>
 
-            <div class="flex items-center justify-between">
-              <span class="w-24 text-[var(--muted-foreground)]" id="lblCh4">CH4 (Còi):</span>
-              <div class="flex-1 bg-stone-800 rounded-full h-2 mx-2 overflow-hidden">
-                <div id="barCh4" class="bg-amber-500 h-full w-0"></div>
+            <div>
+              <div class="flex justify-between text-slate-400 text-[10px]">
+                <span>CH4 (Yaw / Đổi hướng):</span>
+                <span id="barCh4Txt" class="text-purple-400 font-bold">1500us</span>
               </div>
-              <span class="w-16 text-right font-bold" id="valCh4">OFF</span>
+              <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden mt-0.5">
+                <div id="barCh4" class="bg-purple-500 h-full w-1/2 transition-all duration-75"></div>
+              </div>
             </div>
+          </div>
 
-            <div class="flex items-center justify-between">
-              <span class="w-24 text-[var(--muted-foreground)]" id="lblCh5">CH5 (Đèn):</span>
-              <div class="flex-1 bg-stone-800 rounded-full h-2 mx-2 overflow-hidden">
-                <div id="barCh5" class="bg-cyan-500 h-full w-0"></div>
-              </div>
-              <span class="w-16 text-right font-bold text-cyan-400" id="valCh5">OFF</span>
+          <!-- CH5 - CH8 PILLS -->
+          <div class="grid grid-cols-4 gap-1.5 text-center text-[10px] font-mono font-bold pt-1 border-t border-slate-800/80">
+            <div class="bg-slate-900/90 py-1 rounded border border-slate-800">
+              <span class="text-slate-400">CH5:</span> <span id="txtCh5" class="text-emerald-400">2000u</span>
+            </div>
+            <div class="bg-slate-900/90 py-1 rounded border border-slate-800">
+              <span class="text-slate-400">CH6:</span> <span id="txtCh6" class="text-blue-400">1500u</span>
+            </div>
+            <div class="bg-slate-900/90 py-1 rounded border border-slate-800">
+              <span class="text-slate-400">CH7:</span> <span id="txtCh7" class="text-amber-400">1000u</span>
+            </div>
+            <div class="bg-slate-900/90 py-1 rounded border border-slate-800">
+              <span class="text-slate-400">CH8:</span> <span id="txtCh8" class="text-slate-300">1000u</span>
             </div>
           </div>
         </div>
 
-        <!-- CẢNH BÁO KHÓA CÁCH LY THIẾT BỊ KHÔNG SỬ DỤNG -->
-        <div id="isolationAlert" class="bg-amber-500/10 border border-amber-500/20 p-2.5 rounded-xl text-xs flex items-center gap-2">
-          <span class="text-base">🛡️</span>
-          <span class="text-amber-400 font-medium">Bảo vệ an toàn: Mạch bay Drone nhận tín hiệu DISARM và cờ Failsafe (Ga=1000us). Lái xe không bao giờ làm quay cánh quạt!</span>
+        <!-- FOOTER HINT -->
+        <div class="flex items-center justify-between text-[11px] text-slate-400 bg-[#090d16] px-3 py-2 rounded-xl border border-slate-800">
+          <span>⌨️ Phím tắt: <b>W/S</b> Ga, <b>A/D</b> Lái, <b>Space</b> ARM, <b>Mũi tên</b> Trim</span>
+          <span class="text-emerald-400 font-bold font-mono">STM32F103C8T6 • SX1280 2.4GHz</span>
         </div>
 
       </div>
@@ -502,432 +504,124 @@
 
   </div>
 
+  <!-- ================= JAVASCRIPT LOGIC & 3D ENGINE ================= -->
   <script>
+    // 1. STATE & SYSTEM CONFIG
     let soundEnabled = true;
     let failsafeTriggered = false;
-    let activeModel = 1; // Mặc định ở RC_CAR để bạn thấy xe chạy ngay!
-    let inLcdMenu = false;
-    let menuCursor = 1;
-    let b1HoldTimer = null;
+    let activeModel = 1; // 0: Drone, 1: Car
+    let active3DMode = 0; // 0: Car, 1: Drone, 2: Controller
 
-    // Kênh điều khiển
+    // Channels (1000 - 2000us)
     let chThrottle = 1500;
-    let chYawSteer = 1500;
+    let chRoll = 1500;     // Lái bánh trước
     let chPitchAux = 1500;
-    let chRoll     = 1500;
-    let swArm      = 1; // Mặc định ARMED để xe sẵn sàng chạy
-    let swMode     = 2; // Sport
-    let swAux      = 0;
-    let knobPot    = 80; // Speed Limit 80%
+    let chYawSteer = 1500;
+    let swArm = 1;         // 1: ARMED, 0: DISARMED
+    let swMode = 1;        // 0: ECO, 1: SPORT, 2: DRIFT
+    let swAux = 0;         // 0: OFF, 1: ON
+    let knobPot = 80;      // 80%
 
-    let modelBattery = 12.1;
-    let txBattery = 8.2;
-    let isHeadlightOn = false;
-    let isHornOn = false;
+    // RF & Protocol
+    let currentRfRateIdx = 2; // 0: 50Hz, 1: 100Hz, 2: 150Hz, 3: 200Hz
+    let currentProtIdx = 0;   // 0: CRSF, 1: SBUS
+    let currentPwmIdx = 0;    // 0: 333Hz, 1: 50Hz
+    let expoValue = 35;
+    let deadbandValue = 15;
+    let absBrakeOn = true;
+    let driftGyroVal = 65;
+    let steerSpeedVal = 100;
 
-    // Biến mô phỏng vật lý xe chạy
-    let roadOffset = 0;
-    let wheelRotation = 0;
-    let currentCarSpeed = 0;
-    let particles = [];
-
-    // Audio Context (Âm thanh động cơ chân thực)
-    let audioCtx = null;
-    let engineOsc = null;
-    let engineGain = null;
-
-    function initAudio() {
-      if (!soundEnabled || audioCtx) return;
-      try {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        engineOsc = audioCtx.createOscillator();
-        engineGain = audioCtx.createGain();
-        engineOsc.type = 'sawtooth';
-        engineOsc.frequency.value = 65; // Tiếng nổ garanti 65Hz
-        engineGain.gain.value = 0.03;
-        engineOsc.connect(engineGain);
-        engineGain.connect(audioCtx.destination);
-        engineOsc.start();
-      } catch (e) {}
-    }
-
-    function updateEngineSound(speedRatio) {
-      if (!audioCtx || !engineOsc || !engineGain) return;
-      if (!soundEnabled || swArm === 0 || failsafeTriggered) {
-        engineGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05);
-        return;
-      }
-      engineGain.gain.setTargetAtTime(0.04, audioCtx.currentTime, 0.05);
-      // Tần số tiếng gầm động cơ tăng theo tốc độ ga
-      let targetFreq = 65 + Math.abs(speedRatio) * 220;
-      engineOsc.frequency.setTargetAtTime(targetFreq, audioCtx.currentTime, 0.05);
-    }
-
-    function playBeep(freq = 2400, durationMs = 60, type = 'square') {
-      if (!soundEnabled) return;
-      try {
-        if (!audioCtx) initAudio();
-        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = type;
-        osc.frequency.value = freq;
-        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + durationMs / 1000);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + durationMs / 1000);
-      } catch (e) {}
-    }
-
-    function toggleSound() {
-      soundEnabled = !soundEnabled;
-      document.getElementById('soundIcon').innerText = soundEnabled ? '🔊' : '🔇';
-      document.getElementById('soundText').innerText = soundEnabled ? 'Âm Thanh Động Cơ: BẬT' : 'Âm Thanh Động Cơ: TẮT';
-      if (soundEnabled) {
-        initAudio();
-        playBeep(2800, 80);
-      }
-    }
-
-    // Cấu hình Zero-Latency & Menu Đa Tầng
-    let rfRateIdx = 2; // 0: 50Hz, 1: 100Hz, 2: 150Hz, 3: 200Hz
-    let protocolIdx = 0; // 0: CRSF 420k, 1: SBUS 100k
-    let pwmRateIdx = 0; // 0: 333Hz Digital, 1: 50Hz Analog
-    let deadbandIdx = 1; // 0: 0us, 1: 15us, 2: 30us
-    let expoIdx = 1; // 0: 0%, 1: 20%, 2: 40%, 3: 60%
-    let menuPage = 0; // 0..5 (6 trang cài đặt)
-    let chReverse = 0; // bitmask
-
-    const RF_RATES = [
-      { name: "50Hz (20ms) ", hz: 50,  latency: 20.0, interval: 20 },
-      { name: "100Hz(10ms) ", hz: 100, latency: 10.0, interval: 10 },
-      { name: "150Hz(6.6ms)", hz: 150, latency: 4.2,  interval: 7 },
-      { name: "200Hz(5.0ms)", hz: 200, latency: 3.8,  interval: 5 }
-    ];
-    const DEADBANDS = [0, 15, 30];
-    const EXPOS = [0, 20, 40, 60];
-
-    function setRfRate(idx) {
-      rfRateIdx = idx;
-      playBeep(2400 + idx * 200, 40);
-      updateSpeedUI();
-    }
-
-    function setProtocol(idx) {
-      protocolIdx = idx;
-      playBeep(2600 + idx * 200, 50);
-      updateSpeedUI();
-    }
-
-    function setPwmRate(idx) {
-      pwmRateIdx = idx;
-      playBeep(2800 - idx * 300, 50);
-      updateSpeedUI();
-    }
-
-    function cycleDeadband() {
-      deadbandIdx = (deadbandIdx + 1) % DEADBANDS.length;
-      playBeep(2200, 30);
-      updateSpeedUI();
-    }
-
-    function cycleExpo() {
-      expoIdx = (expoIdx + 1) % EXPOS.length;
-      playBeep(2400, 30);
-      updateSpeedUI();
-    }
-
-    function updateSpeedUI() {
-      const cur = RF_RATES[rfRateIdx];
-      let lat = cur.latency;
-      if (pwmRateIdx === 1) lat += 15.0;
-      if (protocolIdx === 1 && activeModel === 0) lat += 8.0;
-
-      const badgeLat = document.getElementById('badgeLiveLatency');
-      if (badgeLat) {
-        badgeLat.innerText = `${lat.toFixed(1)} ms ${lat <= 5 ? '(ZERO-LAG)' : ''}`;
-        badgeLat.className = `px-2 py-0.5 rounded text-xs font-black font-mono animate-pulse ${
-          lat <= 5 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 
-          lat <= 12 ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40' :
-          'bg-amber-500/20 text-amber-400 border border-amber-500/40'
-        }`;
-      }
-
-      for (let i = 0; i < 4; i++) {
-        const b = document.getElementById(`btnRf${[50, 100, 150, 200][i]}`);
-        if (b) {
-          b.className = (i === rfRateIdx) ?
-            "py-1.5 px-2 rounded-lg font-bold border border-emerald-500 bg-emerald-600/20 text-emerald-400 shadow-sm transition-all text-[11px]" :
-            "py-1.5 px-2 rounded-lg font-bold border border-[var(--border)] bg-stone-800 text-stone-300 hover:border-emerald-500 transition-all text-[11px]";
-        }
-      }
-
-      const txtProt = document.getElementById('txtProtBadge');
-      if (txtProt) txtProt.innerText = protocolIdx === 0 ? "CRSF 420k" : "SBUS 100k";
-      const btnCrsf = document.getElementById('btnProtCrsf');
-      if (btnCrsf) btnCrsf.className = protocolIdx === 0 ? "py-1 px-2 rounded font-bold border border-blue-500 bg-blue-600/20 text-blue-300 text-[11px]" : "py-1 px-2 rounded font-bold border border-stone-700 bg-stone-800 text-stone-400 text-[11px]";
-      const btnSbus = document.getElementById('btnProtSbus');
-      if (btnSbus) btnSbus.className = protocolIdx === 1 ? "py-1 px-2 rounded font-bold border border-blue-500 bg-blue-600/20 text-blue-300 text-[11px]" : "py-1 px-2 rounded font-bold border border-stone-700 bg-stone-800 text-stone-400 text-[11px]";
-
-      const txtPwm = document.getElementById('txtPwmBadge');
-      if (txtPwm) txtPwm.innerText = pwmRateIdx === 0 ? "333Hz (3ms)" : "50Hz (20ms)";
-      const btnPwm3 = document.getElementById('btnPwm333');
-      if (btnPwm3) btnPwm3.className = pwmRateIdx === 0 ? "py-1 px-2 rounded font-bold border border-amber-500 bg-amber-600/20 text-amber-300 text-[11px]" : "py-1 px-2 rounded font-bold border border-stone-700 bg-stone-800 text-stone-400 text-[11px]";
-      const btnPwm5 = document.getElementById('btnPwm50');
-      if (btnPwm5) btnPwm5.className = pwmRateIdx === 1 ? "py-1 px-2 rounded font-bold border border-amber-500 bg-amber-600/20 text-amber-300 text-[11px]" : "py-1 px-2 rounded font-bold border border-stone-700 bg-stone-800 text-stone-400 text-[11px]";
-
-      const btnDb = document.getElementById('btnDeadband');
-      if (btnDb) btnDb.innerText = `${DEADBANDS[deadbandIdx]} us`;
-      const btnEx = document.getElementById('btnExpo');
-      if (btnEx) btnEx.innerText = `${EXPOS[expoIdx]}%`;
-
-      const linkSt = document.getElementById('linkStatusBadge');
-      if (linkSt) linkSt.innerText = `LORA ${cur.hz}Hz • ${lat.toFixed(1)}ms: TỐT`;
-
-      updateLcdDisplay();
-    }
-
-    function onB1Click() {
-      inLcdMenu = !inLcdMenu;
-      playBeep(inLcdMenu ? 3200 : 2600, 80);
-      const b1 = document.getElementById('lblBtnB1');
-      if (b1) b1.innerText = inLcdMenu ? "B1: THOÁT MENU" : "B1: MENU (6 Trang)";
-      const b2 = document.getElementById('lblBtnB2');
-      if (b2) b2.innerText = inLcdMenu ? "B2: TRANG TIẾP" : "B2: DOWN (-)";
-      const b3 = document.getElementById('lblBtnB3');
-      if (b3) b3.innerText = inLcdMenu ? "B3: ĐỔI GIÁ TRỊ" : "B3: UP / CHỌN (+)";
-      updateLcdDisplay();
-    }
-
-    function onB2Click() {
-      if (inLcdMenu) {
-        menuPage = (menuPage + 1) % 6;
-        playBeep(2400, 35);
-        updateLcdDisplay();
-      } else {
-        playBeep(2000, 30);
-      }
-    }
-
-    function onB3Click() {
-      if (inLcdMenu) {
-        playBeep(2800, 60);
-        switch (menuPage) {
-          case 0: // Đổi Model
-            activeModel = 1 - activeModel;
-            applyModelSwitch();
-            break;
-          case 1: // Đổi RF Rate
-            rfRateIdx = (rfRateIdx + 1) % 4;
-            updateSpeedUI();
-            break;
-          case 2: // Đổi Protocol hoặc PWM
-            if (activeModel === 0) protocolIdx = 1 - protocolIdx;
-            else pwmRateIdx = 1 - pwmRateIdx;
-            updateSpeedUI();
-            break;
-          case 3: // Tăng Deadband & Expo
-            deadbandIdx = (deadbandIdx + 1) % DEADBANDS.length;
-            expoIdx = (expoIdx + 1) % EXPOS.length;
-            updateSpeedUI();
-            break;
-          case 4: // Đảo chiều kênh 1 (Steering)
-            chReverse ^= (1 << 0);
-            break;
-          case 5: // Lưu EEPROM & Thoát
-            playBeep(3400, 150);
-            inLcdMenu = false;
-            const b1e = document.getElementById('lblBtnB1'); if (b1e) b1e.innerText = 'B1: MENU';
-            break;
-        }
-        updateLcdDisplay();
-      } else {
-        playBeep(2400, 30);
-      }
-    }
-
-    function applyModelSwitch() {
-      if (activeModel === 0) {
-
-        if (activeModel === 0) {
-          // Drone
-          document.getElementById('badgeActiveModel').innerText = "DRONE (DJI ALT-HOLD)";
-          document.getElementById('badgeActiveModel').className = "px-2.5 py-1 rounded-md text-xs font-black bg-blue-600 text-white shadow-sm";
-          document.getElementById('lblJoyLMode').innerText = "GA & QUAY ĐẦU";
-          document.getElementById('lblJoyRMode').innerText = "TIẾN/LÙI & LIỆNG";
-          document.getElementById('btnSW_L_Txt').innerText = "🚨 BẤM CẦN TRÁI (BEEPER)";
-          document.getElementById('btnSW_R_Txt').innerText = "💡 BẤM CẦN PHẢI (CHỤP ẢNH)";
-          document.getElementById('rxModeBadge').innerText = "CHẾ ĐỘ DRONE ACTIVE";
-          document.getElementById('rxModeBadge').className = "px-2.5 py-1 rounded text-xs font-extrabold bg-blue-500/10 text-blue-500 border border-blue-500/20";
-          document.getElementById('isolationDesc').innerText = "Drone nhận SBUS 70Hz | Xe bị khóa an toàn";
-          document.getElementById('rxChannelTitle').innerText = "ĐẦU RA SBUS 16 KÊNH (CHO MẠCH BAY BETAFLIGHT)";
-          document.getElementById('isolationAlert').innerHTML = `
-            <span class="text-base">🛡️</span>
-            <span class="text-blue-400 font-medium">Bảo vệ an toàn: Xe RC đang bị khóa ở 1500us (Phanh dừng hẳn). Drone đang bay không bao giờ làm nhầm ga xe!</span>
-          `;
-          document.getElementById('potLabelTitle').innerText = "HOVER GA";
-          document.getElementById('potDesc').innerText = `Hover Bias ${calcHoverThrottleUs()}us`;
-          chThrottle = calcHoverThrottleUs();
-        } else {
-          // Xe RC
-          document.getElementById('badgeActiveModel').innerText = "RC CAR (XE ĐUA)";
-          document.getElementById('badgeActiveModel').className = "px-2.5 py-1 rounded-md text-xs font-black bg-amber-600 text-white shadow-sm";
-          document.getElementById('lblJoyLMode').innerText = "GA (TIẾN / THẮNG / LÙI)";
-          document.getElementById('lblJoyRMode').innerText = "BẺ LÁI BÁNH TRƯỚC";
-          document.getElementById('btnSW_L_Txt').innerText = "📢 BẤM CẦN TRÁI (BÓP CÒI)";
-          document.getElementById('btnSW_R_Txt').innerText = "💡 BẤM CẦN PHẢI (ĐÈN PHA)";
-          document.getElementById('rxModeBadge').innerText = "CHẾ ĐỘ RC CAR ACTIVE";
-          document.getElementById('rxModeBadge').className = "px-2.5 py-1 rounded text-xs font-extrabold bg-amber-500/10 text-amber-500 border border-amber-500/20";
-          document.getElementById('isolationDesc').innerText = "Xe nhận PWM 50Hz | Drone bị ngắt ga & Failsafe";
-          document.getElementById('rxChannelTitle').innerText = "ĐẦU RA SERVO & ESC XE (PWM 50Hz)";
-          document.getElementById('isolationAlert').innerHTML = `
-            <span class="text-base">🛡️</span>
-            <span class="text-amber-400 font-medium">Bảo vệ an toàn: Mạch bay Drone nhận tín hiệu DISARM và cờ Failsafe (Ga=1000us). Lái xe không bao giờ làm quay cánh quạt!</span>
-          `;
-          document.getElementById('potLabelTitle').innerText = "TỐC ĐỘ MAX";
-          document.getElementById('potDesc').innerText = `Speed Limiter ${knobPot}%`;
-          chThrottle = 1500;
-        }
-        updateLcdDisplay();
-      } else {
-        playBeep(2400, 30);
-      }
-    }
-
-    function calcHoverThrottleUs() {
-      return Math.round(1250 + (knobPot / 100) * 300);
-    }
-
-    function toggleSW1() {
-      swArm = 1 - swArm;
-      const btn = document.getElementById('sw1Btn');
-      if (swArm === 1) {
-        btn.innerText = "ARMED (ON)";
-        btn.className = "mt-1.5 px-3 py-1 rounded-lg text-xs font-black bg-emerald-500/10 text-emerald-600 border border-emerald-500/30 hover:bg-emerald-500/20 transition-all w-full";
-        playBeep(1800, 70);
-        setTimeout(() => playBeep(2600, 90), 80);
-      } else {
-        btn.innerText = "DISARMED";
-        btn.className = "mt-1.5 px-3 py-1 rounded-lg text-xs font-black bg-rose-500/10 text-rose-600 border border-rose-500/30 hover:bg-rose-500/20 transition-all w-full";
-        playBeep(1600, 100);
-      }
-      updateLcdDisplay();
-    }
-
-    function cycleSW2() {
-      swMode = (swMode + 1) % 3;
-      const btn = document.getElementById('sw2Btn');
-      const desc = document.getElementById('sw2Desc');
-      if (activeModel === 0) {
-        if (swMode === 0) { btn.innerText = "ANGLE"; desc.innerText = "Tự cân bằng"; }
-        else if (swMode === 1) { btn.innerText = "HORIZON"; desc.innerText = "Nhào lộn tự cân"; }
-        else { btn.innerText = "ACRO"; desc.innerText = "Bay nhào lộn tự do"; }
-      } else {
-        if (swMode === 0) { btn.innerText = "CRAWLER"; desc.innerText = "Leo dốc mô-men cao"; }
-        else if (swMode === 1) { btn.innerText = "NORMAL"; desc.innerText = "Chạy phố bình thường"; }
-        else { btn.innerText = "SPORT"; desc.innerText = "Tốc độ tối đa, Drift"; }
-      }
-      playBeep(2200 + swMode * 200, 45);
-      updateLcdDisplay();
-    }
-
-    function toggleSW3() {
-      swAux = 1 - swAux;
-      const btn = document.getElementById('sw3Btn');
-      if (swAux === 1) {
-        btn.innerText = "BẬT (ON)";
-        btn.className = "mt-1.5 px-3 py-1 rounded-lg text-xs font-black bg-purple-500/10 text-purple-600 border border-purple-500/30 hover:bg-purple-500/20 transition-all w-full";
-        playBeep(2800, 60);
-      } else {
-        btn.innerText = "TẮT";
-        btn.className = "mt-1.5 px-3 py-1 rounded-lg text-xs font-black bg-stone-500/10 text-stone-600 dark:text-stone-300 border border-stone-500/30 hover:bg-stone-500/20 transition-all w-full";
-        playBeep(2000, 50);
-      }
-      updateLcdDisplay();
-    }
-
-    function onPotChange(val) {
-      knobPot = parseInt(val);
-      document.getElementById('potValTxt').innerText = knobPot + "%";
-      if (activeModel === 0) {
-        let hoverUs = calcHoverThrottleUs();
-        document.getElementById('potDesc').innerText = `Hover Bias ${hoverUs}us`;
-        chThrottle = hoverUs;
-      } else {
-        document.getElementById('potDesc').innerText = `Speed Limiter ${knobPot}%`;
-      }
-      updateLcdDisplay();
-    }
-
-    function triggerSW_L() {
-      isHornOn = !isHornOn;
-      document.getElementById('valCh4').innerText = isHornOn ? "ON (BÍP!)" : "OFF";
-      if (activeModel === 0) playBeep(3500, 200);
-      else playBeep(750, 250, 'sawtooth');
-    }
-
-    function triggerSW_R() {
-      isHeadlightOn = !isHeadlightOn;
-      document.getElementById('valCh5').innerText = isHeadlightOn ? "ON (SÁNG)" : "OFF";
-      playBeep(2400, 40);
-    }
-
-    function triggerFailsafeToggle() {
-      failsafeTriggered = !failsafeTriggered;
-      const btn = document.getElementById('btnFailsafe');
-      const badge = document.getElementById('linkStatusBadge');
-      const overlay = document.getElementById('fsOverlay');
-
-      if (failsafeTriggered) {
-        btn.className = "px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5";
-        document.getElementById('fsText').innerText = "KHÔI PHỤC SÓNG LORA";
-        badge.innerText = "MẤT SÓNG LORA (0%)";
-        badge.className = "px-3 py-1.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-500 text-xs font-bold animate-pulse";
-        overlay.classList.remove('hidden');
-
-        if (activeModel === 0) {
-          document.getElementById('fsDesc').innerText = "Cắt ga về 0 & Bật cờ Failsafe SBUS cho Betaflight RTH";
-        } else {
-          document.getElementById('fsDesc').innerText = "Khóa ga về dừng hẳn (1500us) & Trả thẳng lái (1500us)";
-        }
-        playBeep(1200, 300);
-        setTimeout(() => playBeep(1200, 300), 400);
-      } else {
-        btn.className = "px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5";
-        document.getElementById('fsText').innerText = "TEST CẮT SÓNG (FAILSAFE)";
-        badge.innerText = "LORA 150Hz • 4.2ms LATENCY: TỐT";
-        badge.className = "px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold";
-        overlay.classList.add('hidden');
-        playBeep(2600, 80);
-      }
-      updateLcdDisplay();
-    }
-
-    function updateLcdDisplay() {
-      if (typeof updateLcd1604Display === 'function') {
-        updateLcd1604Display();
-      }
-    }
-
-    
-    // =========================================================================
-    // HỆ THỐNG ĐIỀU KHIỂN & GIAO DIỆN MÀN HÌNH LCD 1604A THỰC TẾ
-    // =========================================================================
-    let lcd1604Page = 0; // 0: HUD, 1: MODEL & RF, 2: EXPO, 3: ABS, 4: KÊNH, 5: TIMER, 6: LƯU
-    let lcdThemeIdx = 0; // 0: Xanh dương, 1: Vàng chanh
+    // Lap Timer
     let lapTimerActive = false;
     let lapStartMs = 0;
     let lapElapsedMs = 0;
     let lapBestTimeMs = 0;
     let lapCountNum = 0;
 
-    let expoValue = 35;
-    let deadbandValue = 15;
-    let absBrakeOn = true;
-    let driftGyroVal = 65;
-    let steerSpeedVal = 100;
+    // Telemetry
+    let modelBattery = 11.9;
+    let txBattery = 8.2;
+    let currentCarSpeed = 0;
+
+    // Audio Context
+    let audioCtx = null;
+    let engineOsc = null;
+    let engineGain = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        try {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          audioCtx = new AudioContext();
+          
+          engineOsc = audioCtx.createOscillator();
+          engineGain = audioCtx.createGain();
+          engineOsc.type = 'sawtooth';
+          engineOsc.frequency.value = 55;
+          engineGain.gain.value = 0.04;
+          engineOsc.connect(engineGain);
+          engineGain.connect(audioCtx.destination);
+          engineOsc.start();
+        } catch (e) {
+          console.warn("Audio init error:", e);
+        }
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playBeep(freq = 2400, duration = 40) {
+      if (!soundEnabled) return;
+      initAudio();
+      if (!audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration / 1000);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration / 1000);
+      } catch (e) {}
+    }
+
+    function updateEngineSound(rpmFactor) {
+      if (!soundEnabled || !engineOsc || !engineGain || !audioCtx) return;
+      try {
+        let baseFreq = activeModel === 1 ? 50 : 120;
+        let maxFreq = activeModel === 1 ? 260 : 380;
+        let targetFreq = baseFreq + rpmFactor * (maxFreq - baseFreq);
+        engineOsc.frequency.setTargetAtTime(targetFreq, audioCtx.currentTime, 0.05);
+        let targetGain = swArm === 1 ? (0.03 + rpmFactor * 0.05) : 0.005;
+        engineGain.gain.setTargetAtTime(targetGain, audioCtx.currentTime, 0.05);
+      } catch (e) {}
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const icon = document.getElementById('soundIcon');
+      const text = document.getElementById('soundText');
+      if (soundEnabled) {
+        initAudio();
+        if (icon) icon.innerText = '🔊';
+        if (text) text.innerText = 'Âm Thanh: BẬT';
+      } else {
+        if (engineGain) engineGain.gain.value = 0;
+        if (icon) icon.innerText = '🔇';
+        if (text) text.innerText = 'Âm Thanh: TẮT';
+      }
+    }
+
+    // =========================================================================
+    // LCD 1604A ENGINE & PAGE NAVIGATION
+    // =========================================================================
+    let lcd1604Page = 0;
+    let lcdThemeIdx = 0; // 0: Blue, 1: Yellow-Green
 
     function toggleLcdColorTheme() {
       lcdThemeIdx = 1 - lcdThemeIdx;
@@ -936,26 +630,24 @@
       const btn = document.getElementById('btnThemeToggle');
       if (glass) {
         if (lcdThemeIdx === 0) {
-          glass.className = "lcd-blue-theme rounded-md border-2 border-black/60 shadow-inner overflow-hidden select-none relative";
-          if (btn) btn.innerText = "🎨 MÀU: XANH DƯƠNG";
+          glass.className = "lcd-1604-container lcd-blue-theme rounded p-1 flex flex-col justify-between";
+          if (btn) btn.innerHTML = "<span>🎨</span> <span>MÀU: XANH DƯƠNG</span>";
         } else {
-          glass.className = "lcd-yellow-theme rounded-md border-2 border-black/60 shadow-inner overflow-hidden select-none relative";
-          if (btn) btn.innerText = "🎨 MÀU: VÀNG CHANH";
+          glass.className = "lcd-1604-container lcd-yellow-theme rounded p-1 flex flex-col justify-between";
+          if (btn) btn.innerHTML = "<span>🎨</span> <span>MÀU: VÀNG CHANH</span>";
         }
       }
     }
 
     function setLcdPage(page) {
       lcd1604Page = page;
-      playBeep(2400 + page * 100, 35);
+      playBeep(2400 + page * 80, 35);
       for (let i = 0; i < 7; i++) {
         const btn = document.getElementById(`pageBtn${i}`);
         if (btn) {
-          if (i === page) {
-            btn.className = "py-1 rounded bg-emerald-600 text-white shadow font-black";
-          } else {
-            btn.className = "py-1 rounded bg-stone-800 text-stone-400 hover:text-white";
-          }
+          btn.className = (i === page)
+            ? "py-1 rounded bg-emerald-600 text-white shadow font-black"
+            : "py-1 rounded bg-slate-800 text-slate-400 hover:text-white";
         }
       }
       const pageNames = ["[HUD]", "[1.MDL]", "[2.EXPO]", "[3.ABS]", "[4.KÊNH]", "[5.TIME]", "[6.LƯU]"];
@@ -975,22 +667,22 @@
     function onB3Press1604() {
       playBeep(3000, 50);
       switch (lcd1604Page) {
-        case 0: // HUD: Bật/tắt ABS nhanh
+        case 0:
           absBrakeOn = !absBrakeOn;
           break;
-        case 1: // Model: Đổi xe <-> drone
+        case 1:
           activeModel = 1 - activeModel;
           applyModelSwitch();
           break;
-        case 2: // Expo: Tăng 15%
-          expoValue = (expoValue + 15) % 70;
+        case 2:
+          expoValue = (expoValue + 15) % 75;
           break;
-        case 3: // ABS: Bật/Tắt
+        case 3:
           absBrakeOn = !absBrakeOn;
           break;
-        case 4: // Kênh
+        case 4:
           break;
-        case 5: // Lap timer: Bắt đầu / Bấm lap
+        case 5:
           if (!lapTimerActive) {
             lapTimerActive = true;
             lapStartMs = Date.now() - lapElapsedMs;
@@ -1001,7 +693,7 @@
             lapStartMs = Date.now();
           }
           break;
-        case 6: // Lưu EEPROM
+        case 6:
           playBeep(3400, 150);
           break;
       }
@@ -1038,10 +730,10 @@
       const pad16 = (s) => (s + '                ').substring(0, 16);
 
       switch (lcd1604Page) {
-        case 0: { // TRANG 1: HUD COCKPIT
+        case 0: { // HUD
           const mStr = (activeModel === 0) ? "DRN" : "CAR";
           const aStr = (swArm === 1) ? "ARM" : "DIS";
-          l1.innerText = pad16(`${mStr}|${aStr} 200H 3.8m`);
+          l1.innerText = pad16(`${mStr}|${aStr} 200H 4ms`);
 
           let rVal = failsafeTriggered ? "-110" : "-48";
           let rxV = failsafeTriggered ? "--" : modelBattery.toFixed(0);
@@ -1054,56 +746,47 @@
           l4.innerText = pad16(`S:${barS}${chRoll.toString().padStart(4, ' ')}`);
           break;
         }
-
-        case 1: { // TRANG 2: MODEL & RF
+        case 1: { // MODEL
           l1.innerText = pad16("1.MDL & RF [B3] ");
           l2.innerText = pad16(`MDL: [${activeModel === 1 ? 'RC CAR RAC' : 'FPV DRONE'}]`);
           l3.innerText = pad16("RF:  [200Hz  5ms]");
           l4.innerText = pad16(`PROT:[${activeModel === 0 ? 'CRSF 420k' : 'PWM 333Hz'}]`);
           break;
         }
-
-        case 2: { // TRANG 3: EXPO & DEADBAND
+        case 2: { // EXPO
           l1.innerText = pad16("2.EXPO & DB [B3]");
           l2.innerText = pad16(`EXPO STR: [ ${expoValue}%]`);
           l3.innerText = pad16(`DEADBAND: [ ${deadbandValue}u]`);
           l4.innerText = pad16(`SPEEDLIM: [ ${knobPot}%]`);
           break;
         }
-
-        case 3: { // TRANG 4: RACING ABS
+        case 3: { // ABS
           l1.innerText = pad16("3.RACING & ABS  ");
           l2.innerText = pad16(`ABS BRAKE:[ ${absBrakeOn ? 'ON ' : 'OFF'}]`);
           l3.innerText = pad16(`DRIFTGYRO:[ ${driftGyroVal}%]`);
           l4.innerText = pad16(`STEERSPD:[ ${steerSpeedVal}%]`);
           break;
         }
-
-        case 4: { // TRANG 5: 8-CHANNEL MONITOR
+        case 4: { // CHANNELS
           l1.innerText = pad16(`1:${chRoll}  2:${chPitchAux}`);
           l2.innerText = pad16(`3:${chThrottle}  4:${chYawSteer}`);
           l3.innerText = pad16(`5:${swArm ? 2000 : 1000}  6:${swMode === 0 ? 1000 : (swMode === 1 ? 1500 : 2000)}`);
           l4.innerText = pad16(`7:${absBrakeOn ? 2000 : 1000}  8:${swAux ? 2000 : 1000}`);
           break;
         }
-
-        case 5: { // TRANG 6: LAP TIMER
-          if (lapTimerActive) {
-            lapElapsedMs = Date.now() - lapStartMs;
-          }
+        case 5: { // TIMER
+          if (lapTimerActive) lapElapsedMs = Date.now() - lapStartMs;
           let s = Math.floor((lapElapsedMs / 1000) % 60);
           let m = Math.floor(lapElapsedMs / 60000);
           let d = Math.floor((lapElapsedMs % 1000) / 100);
           let timeStr = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${d}`;
-
           l1.innerText = pad16("5.RACING TIMER  ");
           l2.innerText = pad16(`TIME: ${timeStr}`);
           l3.innerText = pad16(`LAP:  ${lapCountNum}  [RUN]`);
           l4.innerText = pad16("[B3: BAM LAP/BAT]");
           break;
         }
-
-        case 6: { // TRANG 7: LƯU EEPROM
+        case 6: { // SAVE
           l1.innerText = pad16("6.LUU CAI DAT   ");
           l2.innerText = pad16("NHAN B3 DE LUU  ");
           l3.innerText = pad16("FLASH: SAN SANG ");
@@ -1115,18 +798,218 @@
 
     function updateLcdDisplay() {
       updateLcd1604Display();
+      updateTelemetryUI();
     }
 
+    // =========================================================================
+    // SWITCHES, SLIDERS & CONTROLS
+    // =========================================================================
+    function toggleSW1() {
+      swArm = 1 - swArm;
+      playBeep(swArm ? 2800 : 1800, 45);
+      const btn = document.getElementById('sw1Btn');
+      if (btn) {
+        if (swArm === 1) {
+          btn.className = "mt-1 px-2 py-1 rounded-lg text-xs font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/30 transition-all w-full";
+          btn.innerText = "ARMED (ON)";
+        } else {
+          btn.className = "mt-1 px-2 py-1 rounded-lg text-xs font-black bg-rose-500/20 text-rose-400 border border-rose-500/40 hover:bg-rose-500/30 transition-all w-full";
+          btn.innerText = "DISARMED (OFF)";
+        }
+      }
+      updateLcdDisplay();
+    }
 
-    // --- SETUP JOYSTICK PS2 VỚI LÒ XO TỰ HỒI VỀ TÂM (0, 0) ---
+    function cycleSW2() {
+      swMode = (swMode + 1) % 3;
+      playBeep(2400 + swMode * 200, 40);
+      const btn = document.getElementById('sw2Btn');
+      const desc = document.getElementById('sw2Desc');
+      const names = ["ECO (TIẾT KIỆM)", "SPORT (THỂ THAO)", "DRIFT (TRƯỢT BÁNH)"];
+      const descs = ["Giới hạn 50% ga", "Tốc độ tối đa, bốc ga", "Hỗ trợ Gyro Drift"];
+      if (btn) btn.innerText = names[swMode].split(' ')[0];
+      if (desc) desc.innerText = descs[swMode];
+      updateLcdDisplay();
+    }
+
+    function toggleSW3() {
+      swAux = 1 - swAux;
+      playBeep(2500, 40);
+      const btn = document.getElementById('sw3Btn');
+      const desc = document.getElementById('sw3Desc');
+      if (btn) {
+        btn.innerText = swAux ? "BẬT" : "TẮT";
+        btn.className = swAux 
+          ? "mt-1 px-2 py-1 rounded-lg text-xs font-black bg-purple-500/20 text-purple-400 border border-purple-500/40 w-full"
+          : "mt-1 px-2 py-1 rounded-lg text-xs font-black bg-slate-800 text-slate-300 border border-slate-700 w-full";
+      }
+      if (desc) desc.innerText = swAux ? "Khóa vi sai ON" : "Khóa vi sai OFF";
+      updateLcdDisplay();
+    }
+
+    function triggerSW_L() {
+      playBeep(1200, 150);
+    }
+
+    function triggerSW_R() {
+      playBeep(3200, 80);
+    }
+
+    function triggerFailsafeToggle() {
+      failsafeTriggered = !failsafeTriggered;
+      playBeep(failsafeTriggered ? 1200 : 2800, 120);
+      const fsO = document.getElementById('fsOverlay');
+      const btn = document.getElementById('btnFailsafe');
+      const badge = document.getElementById('linkStatusBadge');
+
+      if (fsO) {
+        if (failsafeTriggered) fsO.classList.remove('hidden');
+        else fsO.classList.add('hidden');
+      }
+      if (btn) {
+        btn.className = failsafeTriggered
+          ? "px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-all shadow-sm flex items-center gap-1"
+          : "px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold transition-all shadow-sm flex items-center gap-1";
+        btn.innerHTML = failsafeTriggered 
+          ? "<span>🔄</span> <span>PHỤC HỒI SÓNG</span>" 
+          : "<span>⚡</span> <span>TEST FAILSAFE</span>";
+      }
+      if (badge) {
+        badge.className = failsafeTriggered
+          ? "px-2.5 py-1.5 rounded-lg bg-rose-950/80 border border-rose-600/50 text-rose-300 font-mono font-bold flex items-center gap-1.5 animate-pulse"
+          : "px-2.5 py-1.5 rounded-lg bg-emerald-950/70 border border-emerald-600/40 text-emerald-300 font-mono font-bold flex items-center gap-1.5";
+        badge.innerHTML = failsafeTriggered
+          ? "<span>⚠️ MẤT SÓNG LORA</span>"
+          : "<span class='w-2 h-2 rounded-full bg-emerald-400 animate-ping'></span><span>LORA 150Hz • 4.2ms</span>";
+      }
+      updateLcdDisplay();
+    }
+
+    function applyModelSwitch() {
+      const badge = document.getElementById('badgeActiveModel');
+      const lblL = document.getElementById('lblJoyLMode');
+      const lblR = document.getElementById('lblJoyRMode');
+
+      if (activeModel === 1) { // CAR
+        if (badge) {
+          badge.innerText = "🏎️ RC CAR (XE ĐUA)";
+          badge.className = "px-2.5 py-0.5 rounded text-xs font-black bg-amber-600 text-white shadow";
+        }
+        if (lblL) lblL.innerText = "TIẾN / THẮNG / LÙI";
+        if (lblR) lblR.innerText = "BẺ LÁI BÁNH TRƯỚC";
+        set3dSceneMode(0);
+      } else { // DRONE
+        if (badge) {
+          badge.innerText = "🛸 FPV DRONE (BAY)";
+          badge.className = "px-2.5 py-0.5 rounded text-xs font-black bg-blue-600 text-white shadow";
+        }
+        if (lblL) lblL.innerText = "GA (THROTTLE) & YAW";
+        if (lblR) lblR.innerText = "ROLL & PITCH (LƯỢN)";
+        set3dSceneMode(1);
+      }
+    }
+
+    function setRfRate(idx) {
+      currentRfRateIdx = idx;
+      playBeep(2600 + idx * 100, 35);
+      const rates = ["50Hz (20ms)", "100Hz (10ms)", "150Hz (6.6ms)", "200Hz (5ms)"];
+      for (let i = 0; i < 4; i++) {
+        const b = document.getElementById(`btnRf${[50, 100, 150, 200][i]}`);
+        if (b) {
+          b.className = (i === idx)
+            ? "py-1 px-1.5 rounded-lg border border-emerald-500 bg-emerald-600/20 text-emerald-300 font-bold transition-all text-center"
+            : "py-1 px-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:border-emerald-500 transition-all text-center";
+        }
+      }
+      const badge = document.getElementById('badgeLiveLatency');
+      const latencies = ["20.2 ms", "10.4 ms", "6.8 ms", "3.8 ms (ZERO-LAG)"];
+      if (badge) badge.innerText = latencies[idx];
+      updateLcdDisplay();
+    }
+
+    function setProtocol(idx) {
+      currentProtIdx = idx;
+      playBeep(2800, 35);
+      const bCrsf = document.getElementById('btnProtCrsf');
+      const bSbus = document.getElementById('btnProtSbus');
+      const badge = document.getElementById('txtProtBadge');
+      if (bCrsf && bSbus) {
+        if (idx === 0) {
+          bCrsf.className = "py-1 px-1 rounded border border-blue-500 bg-blue-600/20 text-blue-300 text-[10px]";
+          bSbus.className = "py-1 px-1 rounded border border-slate-700 bg-slate-800 text-slate-400 text-[10px]";
+          if (badge) badge.innerText = "CRSF 420k";
+        } else {
+          bCrsf.className = "py-1 px-1 rounded border border-slate-700 bg-slate-800 text-slate-400 text-[10px]";
+          bSbus.className = "py-1 px-1 rounded border border-blue-500 bg-blue-600/20 text-blue-300 text-[10px]";
+          if (badge) badge.innerText = "SBUS 100k";
+        }
+      }
+      updateLcdDisplay();
+    }
+
+    function setPwmRate(idx) {
+      currentPwmIdx = idx;
+      playBeep(2900, 35);
+      const b333 = document.getElementById('btnPwm333');
+      const b50 = document.getElementById('btnPwm50');
+      const badge = document.getElementById('txtPwmBadge');
+      const refTxt = document.getElementById('txtRefreshRateHz');
+      if (b333 && b50) {
+        if (idx === 0) {
+          b333.className = "py-1 px-1 rounded border border-amber-500 bg-amber-600/20 text-amber-300 text-[10px]";
+          b50.className = "py-1 px-1 rounded border border-slate-700 bg-slate-800 text-slate-400 text-[10px]";
+          if (badge) badge.innerText = "333Hz";
+          if (refTxt) refTxt.innerText = "333 Hz REFRESH";
+        } else {
+          b333.className = "py-1 px-1 rounded border border-slate-700 bg-slate-800 text-slate-400 text-[10px]";
+          b50.className = "py-1 px-1 rounded border border-amber-500 bg-amber-600/20 text-amber-300 text-[10px]";
+          if (badge) badge.innerText = "50Hz";
+          if (refTxt) refTxt.innerText = "50 Hz REFRESH";
+        }
+      }
+      updateLcdDisplay();
+    }
+
+    function cycleDeadband() {
+      deadbandValue = (deadbandValue + 5) % 25;
+      if (deadbandValue === 0) deadbandValue = 5;
+      playBeep(2600, 30);
+      const b = document.getElementById('badgeDeadband');
+      if (b) b.innerText = `${deadbandValue}us`;
+      updateLcdDisplay();
+    }
+
+    function cycleExpo() {
+      expoValue = (expoValue + 15) % 75;
+      playBeep(2700, 30);
+      const b = document.getElementById('badgeExpo');
+      if (b) b.innerText = `${expoValue}%`;
+      updateLcdDisplay();
+    }
+
+    // Slider listener
+    const knobSlider = document.getElementById('knobSlider');
+    if (knobSlider) {
+      knobSlider.addEventListener('input', (e) => {
+        knobPot = parseInt(e.target.value);
+        const valEl = document.getElementById('knobVal');
+        if (valEl) valEl.innerText = `${knobPot}%`;
+        updateLcdDisplay();
+      });
+    }
+
+    // =========================================================================
+    // JOYSTICK LOGIC (HALL SENSOR GIMBALS WITH SPRING RETURN)
+    // =========================================================================
     function setupJoystick(boxId, knobId, onMove, onEnd) {
       const box = document.getElementById(boxId);
       const knob = document.getElementById(knobId);
+      if (!box || !knob) return;
       let isDragging = false;
-      const maxRadius = 45;
+      const maxRadius = 42;
 
       function updateKnob(clientX, clientY) {
-        initAudio(); // Kích hoạt âm thanh khi tương tác
+        initAudio();
         const rect = box.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
         const centerY = rect.top + rect.height / 2;
@@ -1164,14 +1047,12 @@
 
       box.addEventListener('touchstart', (e) => {
         isDragging = true;
-        const t = e.touches[0];
-        updateKnob(t.clientX, t.clientY);
+        updateKnob(e.touches[0].clientX, e.touches[0].clientY);
       }, { passive: true });
 
       window.addEventListener('touchmove', (e) => {
         if (!isDragging) return;
-        const t = e.touches[0];
-        updateKnob(t.clientX, t.clientY);
+        updateKnob(e.touches[0].clientX, e.touches[0].clientY);
       }, { passive: true });
 
       window.addEventListener('touchend', () => {
@@ -1182,129 +1063,123 @@
       });
     }
 
-    // Cần trái PS2 (Ga)
-    setupJoystick('joyLBox', 'joyLKnob', 
+    setupJoystick('joyLBox', 'joyLKnob',
       (nx, ny) => {
         chYawSteer = Math.round(1500 + nx * 500);
-        if (activeModel === 0) {
-          // Drone
-          let hoverUs = calcHoverThrottleUs();
-          if (Math.abs(ny) < 0.08) {
-            chThrottle = hoverUs;
-          } else if (ny > 0) {
-            chThrottle = Math.round(hoverUs + ny * (2000 - hoverUs));
-          } else {
-            chThrottle = Math.round(1000 + (1 + ny) * (hoverUs - 1000));
-          }
-        } else {
-          // Xe RC: Đẩy lên là Tiến, kéo xuống là Lùi
-          let speedFactor = (20 + (knobPot / 100) * 80) / 100.0;
-          let carRaw = ny * 500 * speedFactor;
-          chThrottle = Math.round(1500 + carRaw);
-        }
-        document.getElementById('txtJoyLY').innerText = `Y: ${chThrottle}us`;
-        document.getElementById('txtJoyLX').innerText = `X: ${chYawSteer}us`;
+        let speedFactor = (20 + (knobPot / 100) * 80) / 100.0;
+        chThrottle = Math.round(1500 + ny * 500 * speedFactor);
+        const yEl = document.getElementById('txtJoyLY');
+        const xEl = document.getElementById('txtJoyLX');
+        if (yEl) yEl.innerText = `Y: ${chThrottle}us`;
+        if (xEl) xEl.innerText = `X: ${chYawSteer}us`;
         updateLcdDisplay();
       },
       () => {
-        // Buông tay lò xo nảy về tâm:
-        if (activeModel === 0) {
-          chYawSteer = 1500;
-          chThrottle = calcHoverThrottleUs();
-        } else {
-          chThrottle = 1500; // Xe tự phanh dừng hẳn
-          chYawSteer = 1500; // Trả thẳng lái
-        }
-        document.getElementById('txtJoyLY').innerText = `Y: ${chThrottle}us`;
-        document.getElementById('txtJoyLX').innerText = `X: ${chYawSteer}us`;
+        chThrottle = 1500;
+        chYawSteer = 1500;
+        const yEl = document.getElementById('txtJoyLY');
+        const xEl = document.getElementById('txtJoyLX');
+        if (yEl) yEl.innerText = `Y: 1500us`;
+        if (xEl) xEl.innerText = `X: 1500us`;
         updateLcdDisplay();
       }
     );
 
-    // Cần phải PS2 (Lái)
     setupJoystick('joyRBox', 'joyRKnob',
       (nx, ny) => {
         chRoll = Math.round(1500 + nx * 500);
         chPitchAux = Math.round(1500 + ny * 500);
-        document.getElementById('txtJoyRY').innerText = `Y: ${chPitchAux}us`;
-        document.getElementById('txtJoyRX').innerText = `X: ${chRoll}us`;
+        const yEl = document.getElementById('txtJoyRY');
+        const xEl = document.getElementById('txtJoyRX');
+        if (yEl) yEl.innerText = `Y: ${chPitchAux}us`;
+        if (xEl) xEl.innerText = `X: ${chRoll}us`;
         updateLcdDisplay();
       },
       () => {
         chRoll = 1500;
         chPitchAux = 1500;
-        document.getElementById('txtJoyRY').innerText = `Y: 1500us`;
-        document.getElementById('txtJoyRX').innerText = `X: 1500us`;
+        const yEl = document.getElementById('txtJoyRY');
+        const xEl = document.getElementById('txtJoyRX');
+        if (yEl) yEl.innerText = `Y: 1500us`;
+        if (xEl) xEl.innerText = `X: 1500us`;
         updateLcdDisplay();
       }
     );
 
-    // Bàn phím
+    // Keyboard support
     window.addEventListener('keydown', (e) => {
       initAudio();
       if (e.repeat) return;
-      if (e.code === 'KeyW') {
-        let speedFactor = (20 + (knobPot / 100) * 80) / 100.0;
-        chThrottle = Math.round(1500 + 500 * speedFactor);
-      }
-      if (e.code === 'KeyS') {
-        let speedFactor = (20 + (knobPot / 100) * 80) / 100.0;
-        chThrottle = Math.round(1500 - 500 * speedFactor);
-      }
-      if (e.code === 'KeyA') chRoll = 1200;
-      if (e.code === 'KeyD') chRoll = 1800;
-      if (e.code === 'ArrowUp') chThrottle = Math.min(2000, chThrottle + 100);
-      if (e.code === 'ArrowDown') chThrottle = Math.max(1000, chThrottle - 100);
-      if (e.code === 'ArrowLeft') chRoll = 1200;
-      if (e.code === 'ArrowRight') chRoll = 1800;
+      let sf = (20 + (knobPot / 100) * 80) / 100.0;
+      if (e.code === 'KeyW') chThrottle = Math.round(1500 + 500 * sf);
+      if (e.code === 'KeyS') chThrottle = Math.round(1500 - 500 * sf);
+      if (e.code === 'KeyA') chRoll = 1150;
+      if (e.code === 'KeyD') chRoll = 1850;
       if (e.code === 'Space') toggleSW1();
       updateLcdDisplay();
     });
 
     window.addEventListener('keyup', (e) => {
-      if (e.code === 'KeyW' || e.code === 'KeyS') {
-        chThrottle = (activeModel === 0) ? calcHoverThrottleUs() : 1500;
-      }
-      if (e.code === 'KeyA' || e.code === 'KeyD' || e.code === 'ArrowLeft' || e.code === 'ArrowRight') {
-        chRoll = 1500;
-      }
+      if (e.code === 'KeyW' || e.code === 'KeyS') chThrottle = 1500;
+      if (e.code === 'KeyA' || e.code === 'KeyD') chRoll = 1500;
       updateLcdDisplay();
     });
 
-    
     // =========================================================================
-    // HỆ ĐIỀU HÀNH LCD 1604A ENGINE
-    let currentOsTab = 0;
-    let absBrakeEnabled = true;
-    let driftGyroGain = 65;
-    let steerSpeedLimit = 100;
+    // TELEMETRY & 8-CHANNEL OUTPUT MONITOR
+    // =========================================================================
+    function updateTelemetryUI() {
+      // Channels 1 - 4 bars
+      const setBar = (barId, txtId, us) => {
+        const b = document.getElementById(barId);
+        const t = document.getElementById(txtId);
+        let pct = ((us - 1000) / 1000.0) * 100;
+        if (b) b.style.width = `${Math.max(0, Math.min(100, pct))}%`;
+        if (t) t.innerText = `${us}us`;
+      };
+      setBar('barCh1', 'barCh1Txt', chRoll);
+      setBar('barCh2', 'barCh2Txt', chPitchAux);
+      setBar('barCh3', 'barCh3Txt', chThrottle);
+      setBar('barCh4', 'barCh4Txt', chYawSteer);
+
+      const ch5 = document.getElementById('txtCh5');
+      const ch6 = document.getElementById('txtCh6');
+      const ch7 = document.getElementById('txtCh7');
+      const ch8 = document.getElementById('txtCh8');
+      if (ch5) ch5.innerText = swArm ? "2000u" : "1000u";
+      if (ch6) ch6.innerText = swMode === 0 ? "1000u" : (swMode === 1 ? "1500u" : "2000u");
+      if (ch7) ch7.innerText = absBrakeOn ? "2000u" : "1000u";
+      if (ch8) ch8.innerText = swAux ? "2000u" : "1000u";
+
+      // HUD indicators
+      const spdEl = document.getElementById('speedKmh');
+      if (spdEl) spdEl.innerText = `${Math.round(currentCarSpeed)} km/h`;
+    }
 
     // =========================================================================
-    // TRUE 3D WEBGL ENGINE (THREE.JS PERSPECTIVE SCENE & 360° ORBIT CONTROLS)
+    // THREE.JS 3D PHYSICS & GRAPHICS STUDIO
     // =========================================================================
     let scene3D, camera3D, renderer3D, controls3D;
     let car3DGroup, drone3DGroup, controller3DGroup;
-    let groundGrid, roadMesh;
-    let frontWheels3D = [];
-    let rearWheels3D = [];
+    let frontWheels3D = [], rearWheels3D = [];
     let droneProps3D = [];
     let joyLStick3D, joyRStick3D;
-    let active3DMode = 1; // 0: Car, 1: Drone, 2: Controller Case
+    let headLightBeamL, headLightBeamR;
+    let brakeLightL, brakeLightR;
 
     function initThreeJS() {
       const container = document.getElementById('threejsViewport');
       if (!container) return;
 
-      const w = container.clientWidth || 460;
-      const h = container.clientHeight || 320;
+      const w = container.clientWidth || 600;
+      const h = container.clientHeight || 400;
 
-      // 1. Khởi tạo Scene, Camera & Renderer WebGL
       scene3D = new THREE.Scene();
-      scene3D.background = new THREE.Color(0x0a0d14);
-      scene3D.fog = new THREE.FogExp2(0x0a0d14, 0.015);
+      scene3D.background = new THREE.Color(0x07090e);
+      scene3D.fog = new THREE.FogExp2(0x07090e, 0.018);
 
       camera3D = new THREE.PerspectiveCamera(45, w / h, 0.1, 1000);
-      camera3D.position.set(0, 5, 9);
+      camera3D.position.set(3.4, 2.8, 5.8);
 
       renderer3D = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       renderer3D.setSize(w, h);
@@ -1314,154 +1189,196 @@
       container.innerHTML = '';
       container.appendChild(renderer3D.domElement);
 
-      // 2. OrbitControls (Xoay 360 độ, Zoom, Pan)
       if (typeof THREE.OrbitControls !== 'undefined') {
         controls3D = new THREE.OrbitControls(camera3D, renderer3D.domElement);
         controls3D.enableDamping = true;
         controls3D.dampingFactor = 0.05;
-        controls3D.maxPolarAngle = Math.PI / 2 - 0.02; // Không nhìn dưới mặt đất
+        controls3D.maxPolarAngle = Math.PI / 2 - 0.02;
         controls3D.minDistance = 3;
         controls3D.maxDistance = 25;
       }
 
-      // 3. Hệ thống Ánh sáng 3D
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-      scene3D.add(ambientLight);
+      // Lights
+      const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+      scene3D.add(ambient);
 
-      const sunLight = new THREE.DirectionalLight(0xffffff, 0.9);
-      sunLight.position.set(8, 15, 10);
-      sunLight.castShadow = true;
-      sunLight.shadow.mapSize.width = 1024;
-      sunLight.shadow.mapSize.height = 1024;
-      scene3D.add(sunLight);
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      dirLight.position.set(6, 12, 8);
+      dirLight.castShadow = true;
+      dirLight.shadow.mapSize.width = 1024;
+      dirLight.shadow.mapSize.height = 1024;
+      scene3D.add(dirLight);
 
-      const blueRimLight = new THREE.DirectionalLight(0x06b6d4, 0.4);
-      blueRimLight.position.set(-10, 5, -10);
-      scene3D.add(blueRimLight);
+      // Asphalt Racetrack Ground
+      buildRacetrack();
 
-      // 4. Mặt sàn 3D và Lưới Grid
-      groundGrid = new THREE.GridHelper(60, 60, 0x06b6d4, 0x1e293b);
-      groundGrid.position.y = -0.01;
-      scene3D.add(groundGrid);
-
-      // 5. Xây dựng Mô Hình 3D Xe Đua (Car 3D)
+      // Models
       build3DCar();
-
-      // 6. Xây dựng Mô Hình 3D Drone FPV
       build3DDrone();
-
-      // 7. Xây dựng Mô Hình 3D Vỏ Tay Cầm RC (Controller 3D)
       build3DController();
 
-      // Đặt chế độ 3D ban đầu
-      set3dSceneMode(activeModel === 1 ? 0 : 1);
+      set3dSceneMode(active3DMode);
 
-      // Xử lý Resize cửa sổ
       window.addEventListener('resize', onWindowResize3D);
+    }
+
+    function buildRacetrack() {
+      // Main track surface
+      const trackGeo = new THREE.PlaneGeometry(60, 60);
+      const trackMat = new THREE.MeshStandardMaterial({
+        color: 0x0c1017,
+        roughness: 0.85,
+        metalness: 0.1
+      });
+      const trackMesh = new THREE.Mesh(trackGeo, trackMat);
+      trackMesh.rotation.x = -Math.PI / 2;
+      trackMesh.receiveShadow = true;
+      scene3D.add(trackMesh);
+
+      // Grid helper
+      const grid = new THREE.GridHelper(50, 50, 0x1e293b, 0x0f172a);
+      grid.position.y = 0.01;
+      scene3D.add(grid);
+
+      // Road markings (white center dashes)
+      const lineGeo = new THREE.PlaneGeometry(0.3, 2.5);
+      const lineMat = new THREE.MeshBasicMaterial({ color: 0x94a3b8 });
+      for (let z = -24; z <= 24; z += 5) {
+        const line = new THREE.Mesh(lineGeo, lineMat);
+        line.rotation.x = -Math.PI / 2;
+        line.position.set(0, 0.02, z);
+        scene3D.add(line);
+      }
     }
 
     function build3DCar() {
       car3DGroup = new THREE.Group();
 
-      // Thân xe thể thao (Chassis)
+      // Sleek Sports Body (Orange Metallic)
       const bodyMat = new THREE.MeshStandardMaterial({
-        color: 0xd97706, // Màu cam ánh kim Amber
+        color: 0xd97706,
         metalness: 0.6,
-        roughness: 0.2
+        roughness: 0.25
       });
-      const bodyGeo = new THREE.BoxGeometry(1.8, 0.5, 3.6);
+      const bodyGeo = new THREE.BoxGeometry(1.85, 0.45, 3.6);
       const carBody = new THREE.Mesh(bodyGeo, bodyMat);
-      carBody.position.y = 0.5;
+      carBody.position.y = 0.45;
       carBody.castShadow = true;
       car3DGroup.add(carBody);
 
-      // Mui xe kính đen (Cockpit Cabin)
-      const cabinMat = new THREE.MeshStandardMaterial({
+      // Sloped Hood Wedge
+      const hoodMat = new THREE.MeshStandardMaterial({ color: 0xb45309, metalness: 0.6, roughness: 0.25 });
+      const hoodGeo = new THREE.BoxGeometry(1.7, 0.25, 1.4);
+      const hood = new THREE.Mesh(hoodGeo, hoodMat);
+      hood.position.set(0, 0.52, 1.1);
+      hood.rotation.x = 0.08;
+      car3DGroup.add(hood);
+
+      // Cockpit Cabin (Tinted Glass)
+      const glassMat = new THREE.MeshStandardMaterial({
         color: 0x0f172a,
         metalness: 0.9,
         roughness: 0.1,
         transparent: true,
         opacity: 0.85
       });
-      const cabinGeo = new THREE.BoxGeometry(1.3, 0.45, 1.8);
-      const cabin = new THREE.Mesh(cabinGeo, cabinMat);
-      cabin.position.set(0, 0.85, -0.2);
+      const cabinGeo = new THREE.BoxGeometry(1.35, 0.42, 1.7);
+      const cabin = new THREE.Mesh(cabinGeo, glassMat);
+      cabin.position.set(0, 0.82, -0.2);
       cabin.castShadow = true;
       car3DGroup.add(cabin);
 
-      // Cánh gió đuôi thể thao (Rear Spoiler)
-      const wingMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.8 });
-      const wingGeo = new THREE.BoxGeometry(1.9, 0.08, 0.4);
+      // Carbon Fiber Front Splitter
+      const splitterMat = new THREE.MeshStandardMaterial({ color: 0x020617, roughness: 0.4 });
+      const splitterGeo = new THREE.BoxGeometry(1.95, 0.06, 0.4);
+      const splitter = new THREE.Mesh(splitterGeo, splitterMat);
+      splitter.position.set(0, 0.2, 1.9);
+      car3DGroup.add(splitter);
+
+      // GT Rear Wing Spoiler
+      const wingMat = new THREE.MeshStandardMaterial({ color: 0x020617, metalness: 0.8 });
+      const wingGeo = new THREE.BoxGeometry(1.95, 0.08, 0.45);
       const wing = new THREE.Mesh(wingGeo, wingMat);
-      wing.position.set(0, 1.1, -1.6);
+      wing.position.set(0, 1.1, -1.65);
       car3DGroup.add(wing);
 
-      // Chân đỡ cánh gió
+      // Spoiler struts
       const strutGeo = new THREE.BoxGeometry(0.08, 0.4, 0.08);
-      const strutL = new THREE.Mesh(strutGeo, wingMat);
-      strutL.position.set(-0.6, 0.9, -1.6);
-      const strutR = new THREE.Mesh(strutGeo, wingMat);
-      strutR.position.set(0.6, 0.9, -1.6);
-      car3DGroup.add(strutL);
-      car3DGroup.add(strutR);
+      const sL = new THREE.Mesh(strutGeo, wingMat);
+      sL.position.set(-0.65, 0.9, -1.65);
+      const sR = new THREE.Mesh(strutGeo, wingMat);
+      sR.position.set(0.65, 0.9, -1.65);
+      car3DGroup.add(sL);
+      car3DGroup.add(sR);
 
-      // 4 Bánh xe 3D với lốp cao su và mâm đúc
+      // 4 Wheels with Rims & Calipers
       const tireMat = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.9 });
-      const rimMat  = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.9, roughness: 0.2 });
+      const rimMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.9, roughness: 0.15 });
 
-      function createWheel(isFront) {
-        const wheelGroup = new THREE.Group();
+      function createWheel() {
+        const wGroup = new THREE.Group();
         const tireGeo = new THREE.CylinderGeometry(0.38, 0.38, 0.28, 24);
         tireGeo.rotateZ(Math.PI / 2);
         const tire = new THREE.Mesh(tireGeo, tireMat);
         tire.castShadow = true;
-        wheelGroup.add(tire);
+        wGroup.add(tire);
 
         const rimGeo = new THREE.CylinderGeometry(0.24, 0.24, 0.29, 12);
         rimGeo.rotateZ(Math.PI / 2);
         const rim = new THREE.Mesh(rimGeo, rimMat);
-        wheelGroup.add(rim);
+        wGroup.add(rim);
 
-        return wheelGroup;
+        return wGroup;
       }
 
-      // 2 Bánh trước (Có thể bẻ lái)
-      const wheelFL = createWheel(true);
+      const wheelFL = createWheel();
       wheelFL.position.set(-1.05, 0.38, 1.2);
-      const wheelFR = createWheel(true);
+      const wheelFR = createWheel();
       wheelFR.position.set(1.05, 0.38, 1.2);
       frontWheels3D = [wheelFL, wheelFR];
       car3DGroup.add(wheelFL);
       car3DGroup.add(wheelFR);
 
-      // 2 Bánh sau
-      const wheelRL = createWheel(false);
+      const wheelRL = createWheel();
       wheelRL.position.set(-1.05, 0.38, -1.2);
-      const wheelRR = createWheel(false);
+      const wheelRR = createWheel();
       wheelRR.position.set(1.05, 0.38, -1.2);
       rearWheels3D = [wheelRL, wheelRR];
       car3DGroup.add(wheelRL);
       car3DGroup.add(wheelRR);
 
-      // 2 Đèn pha LED trước (Headlights)
-      const lightMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+      // Headlight Projectors
+      const lightMat = new THREE.MeshBasicMaterial({ color: 0x67e8f9 });
       const lightGeo = new THREE.SphereGeometry(0.12, 16, 16);
-      const lightL = new THREE.Mesh(lightGeo, lightMat);
-      lightL.position.set(-0.65, 0.5, 1.8);
-      const lightR = new THREE.Mesh(lightGeo, lightMat);
-      lightR.position.set(0.65, 0.5, 1.8);
-      car3DGroup.add(lightL);
-      car3DGroup.add(lightR);
+      const hL = new THREE.Mesh(lightGeo, lightMat);
+      hL.position.set(-0.65, 0.48, 1.82);
+      const hR = new THREE.Mesh(lightGeo, lightMat);
+      hR.position.set(0.65, 0.48, 1.82);
+      car3DGroup.add(hL);
+      car3DGroup.add(hR);
 
-      // Đèn hậu Neon Red (Brake lights)
-      const tailMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
-      const tailGeo = new THREE.BoxGeometry(0.4, 0.1, 0.05);
-      const tailL = new THREE.Mesh(tailGeo, tailMat);
-      tailL.position.set(-0.65, 0.55, -1.8);
-      const tailR = new THREE.Mesh(tailGeo, tailMat);
-      tailR.position.set(0.65, 0.55, -1.8);
-      car3DGroup.add(tailL);
-      car3DGroup.add(tailR);
+      // Real Spotlight beams shining forward
+      headLightBeamL = new THREE.SpotLight(0x67e8f9, 1.2, 18, Math.PI / 6, 0.3);
+      headLightBeamL.position.set(-0.65, 0.5, 1.82);
+      headLightBeamL.target.position.set(-0.65, 0, 10);
+      car3DGroup.add(headLightBeamL);
+      car3DGroup.add(headLightBeamL.target);
+
+      headLightBeamR = new THREE.SpotLight(0x67e8f9, 1.2, 18, Math.PI / 6, 0.3);
+      headLightBeamR.position.set(0.65, 0.5, 1.82);
+      headLightBeamR.target.position.set(0.65, 0, 10);
+      car3DGroup.add(headLightBeamR);
+      car3DGroup.add(headLightBeamR.target);
+
+      // Rear Brake Lights (Neon Red)
+      const brakeMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
+      const brakeGeo = new THREE.BoxGeometry(0.4, 0.1, 0.05);
+      brakeLightL = new THREE.Mesh(brakeGeo, brakeMat);
+      brakeLightL.position.set(-0.65, 0.52, -1.82);
+      brakeLightR = new THREE.Mesh(brakeGeo, brakeMat);
+      brakeLightR.position.set(0.65, 0.52, -1.82);
+      car3DGroup.add(brakeLightL);
+      car3DGroup.add(brakeLightR);
 
       scene3D.add(car3DGroup);
     }
@@ -1469,174 +1386,118 @@
     function build3DDrone() {
       drone3DGroup = new THREE.Group();
 
-      // Khung Carbon chữ X
       const carbonMat = new THREE.MeshStandardMaterial({ color: 0x18181b, metalness: 0.8, roughness: 0.3 });
-      const armGeo = new THREE.BoxGeometry(0.18, 0.08, 3.2);
-      const arm1 = new THREE.Mesh(armGeo, carbonMat);
-      arm1.rotation.y = Math.PI / 4;
-      const arm2 = new THREE.Mesh(armGeo, carbonMat);
-      arm2.rotation.y = -Math.PI / 4;
-      drone3DGroup.add(arm1);
-      drone3DGroup.add(arm2);
+      const armGeo = new THREE.BoxGeometry(0.18, 0.08, 3.4);
+      const a1 = new THREE.Mesh(armGeo, carbonMat);
+      a1.rotation.y = Math.PI / 4;
+      const a2 = new THREE.Mesh(armGeo, carbonMat);
+      a2.rotation.y = -Math.PI / 4;
+      drone3DGroup.add(a1);
+      drone3DGroup.add(a2);
 
-      // Thân giữa (Flight Controller & Pin)
-      const bodyGeo = new THREE.BoxGeometry(0.9, 0.35, 1.2);
-      const droneBody = new THREE.Mesh(bodyGeo, carbonMat);
-      droneBody.position.y = 0.15;
-      droneBody.castShadow = true;
-      drone3DGroup.add(droneBody);
+      const bodyGeo = new THREE.BoxGeometry(0.95, 0.35, 1.3);
+      const body = new THREE.Mesh(bodyGeo, carbonMat);
+      body.position.y = 0.15;
+      body.castShadow = true;
+      drone3DGroup.add(body);
 
-      // Camera FPV trước nghiêng 25 độ
-      const camMat = new THREE.MeshStandardMaterial({ color: 0xd97706, metalness: 0.5 });
-      const camGeo = new THREE.BoxGeometry(0.3, 0.3, 0.3);
-      const fpvCam = new THREE.Mesh(camGeo, camMat);
-      fpvCam.position.set(0, 0.25, 0.65);
-      fpvCam.rotation.x = -0.35; // Nghiêng 20 độ
-      drone3DGroup.add(fpvCam);
+      // 4 Motors & Propellers
+      const motorMat = new THREE.MeshStandardMaterial({ color: 0xd97706, metalness: 0.9 });
+      const propMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.85 });
 
-      // 4 Động cơ và 4 Cánh quạt 3D
-      droneProps3D = [];
-      const motorMat = new THREE.MeshStandardMaterial({ color: 0x3b82f6, metalness: 0.9, roughness: 0.2 });
-      const propMat  = new THREE.MeshStandardMaterial({ color: 0x06b6d4, transparent: true, opacity: 0.7 });
-
-      const motorPositions = [
-        [ 1.15, 0.1,  1.15],
-        [-1.15, 0.1,  1.15],
-        [ 1.15, 0.1, -1.15],
-        [-1.15, 0.1, -1.15]
+      const offsets = [
+        [-1.2, 0.2, 1.2],
+        [1.2, 0.2, 1.2],
+        [-1.2, 0.2, -1.2],
+        [1.2, 0.2, -1.2]
       ];
 
-      motorPositions.forEach((pos) => {
-        const motorGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.2, 16);
-        const motor = new THREE.Mesh(motorGeo, motorMat);
-        motor.position.set(pos[0], pos[1], pos[2]);
-        drone3DGroup.add(motor);
+      droneProps3D = [];
+      offsets.forEach(([x, y, z]) => {
+        const mGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.22, 16);
+        const m = new THREE.Mesh(mGeo, motorMat);
+        m.position.set(x, y, z);
+        drone3DGroup.add(m);
 
-        // Cánh quạt 3 lá
-        const propGroup = new THREE.Group();
-        const bladeGeo = new THREE.BoxGeometry(1.2, 0.02, 0.14);
-        const blade1 = new THREE.Mesh(bladeGeo, propMat);
-        const blade2 = new THREE.Mesh(bladeGeo, propMat);
-        blade2.rotation.y = Math.PI / 2;
-        propGroup.add(blade1);
-        propGroup.add(blade2);
-        propGroup.position.set(pos[0], pos[1] + 0.15, pos[2]);
-
-        droneProps3D.push(propGroup);
-        drone3DGroup.add(propGroup);
+        const pGeo = new THREE.BoxGeometry(1.2, 0.02, 0.12);
+        const p = new THREE.Mesh(pGeo, propMat);
+        p.position.set(x, y + 0.15, z);
+        drone3DGroup.add(p);
+        droneProps3D.push(p);
       });
 
-      drone3DGroup.position.y = 2.0; // Treo lơ lửng ban đầu
       scene3D.add(drone3DGroup);
     }
 
     function build3DController() {
       controller3DGroup = new THREE.Group();
 
-      // Vỏ hộp tay cầm công thái học (Ergonomic Shell)
-      const shellMat = new THREE.MeshStandardMaterial({
-        color: 0x1c1917,
-        roughness: 0.4,
-        metalness: 0.2
-      });
-      const shellGeo = new THREE.BoxGeometry(4.0, 1.2, 3.2);
+      const shellMat = new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.5, metalness: 0.2 });
+      const shellGeo = new THREE.BoxGeometry(4.2, 1.2, 3.4);
       const shell = new THREE.Mesh(shellGeo, shellMat);
       shell.castShadow = true;
       controller3DGroup.add(shell);
 
-      // Tay cầm 2 bên (Ergonomic Grips)
-      const gripGeo = new THREE.CylinderGeometry(0.5, 0.55, 3.0, 16);
-      const gripL = new THREE.Mesh(gripGeo, shellMat);
-      gripL.position.set(-2.0, -0.3, 0);
-      gripL.rotation.z = 0.25;
-      const gripR = new THREE.Mesh(gripGeo, shellMat);
-      gripR.position.set(2.0, -0.3, 0);
-      gripR.rotation.z = -0.25;
-      controller3DGroup.add(gripL);
-      controller3DGroup.add(gripR);
+      // LCD Bezel & Screen
+      const lcdMat = new THREE.MeshStandardMaterial({ color: 0x002b80, emissive: 0x38bdf8, emissiveIntensity: 0.4 });
+      const lcdGeo = new THREE.BoxGeometry(2.2, 0.05, 1.2);
+      const lcd = new THREE.Mesh(lcdGeo, lcdMat);
+      lcd.position.set(0, 0.62, 0.5);
+      controller3DGroup.add(lcd);
 
-      // Màn hình LCD phát sáng xanh ngọc
-      const lcdMat = new THREE.MeshStandardMaterial({
-        color: 0x052e16,
-        emissive: 0x10b981,
-        emissiveIntensity: 0.4
-      });
-      const lcdGeo = new THREE.BoxGeometry(2.0, 0.05, 1.2);
-      const lcd3D = new THREE.Mesh(lcdGeo, lcdMat);
-      lcd3D.position.set(0, 0.62, 0.5);
-      controller3DGroup.add(lcd3D);
-
-      // 2 Joystick 3D có thể gật gù theo ngón tay
-      const joyBaseMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.8 });
+      // 2 Moving Gimbals
       const joyGimbalMat = new THREE.MeshStandardMaterial({ color: 0xd97706, metalness: 0.9 });
+      function make3DStick(x, z) {
+        const g = new THREE.Group();
+        const baseGeo = new THREE.CylinderGeometry(0.55, 0.6, 0.15, 20);
+        const base = new THREE.Mesh(baseGeo, shellMat);
+        g.add(base);
 
-      function create3DJoyStick(posX, posZ) {
-        const jGroup = new THREE.Group();
-        const baseGeo = new THREE.CylinderGeometry(0.6, 0.65, 0.15, 24);
-        const base = new THREE.Mesh(baseGeo, joyBaseMat);
-        jGroup.add(base);
-
-        const stickGroup = new THREE.Group();
-        const stemGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.8, 12);
-        stemGeo.translate(0, 0.4, 0);
+        const stemGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.75, 12);
+        stemGeo.translate(0, 0.38, 0);
         const stem = new THREE.Mesh(stemGeo, joyGimbalMat);
-        stickGroup.add(stem);
-
-        const capGeo = new THREE.CylinderGeometry(0.3, 0.25, 0.15, 16);
-        capGeo.translate(0, 0.8, 0);
-        const cap = new THREE.Mesh(capGeo, joyBaseMat);
-        stickGroup.add(cap);
-
-        jGroup.add(stickGroup);
-        jGroup.position.set(posX, 0.65, posZ);
-        return { group: jGroup, stick: stickGroup };
+        g.add(stem);
+        g.position.set(x, 0.62, z);
+        controller3DGroup.add(g);
+        return g;
       }
 
-      const joyL = create3DJoyStick(-1.2, -0.5);
-      const joyR = create3DJoyStick(1.2, -0.5);
-      joyLStick3D = joyL.stick;
-      joyRStick3D = joyR.stick;
-      controller3DGroup.add(joyL.group);
-      controller3DGroup.add(joyR.group);
+      joyLStick3D = make3DStick(-1.2, -0.6);
+      joyRStick3D = make3DStick(1.2, -0.6);
 
-      // Ăng-ten 3D gập
-      const antMat = new THREE.MeshStandardMaterial({ color: 0x27272a, roughness: 0.5 });
-      const antGeo = new THREE.CylinderGeometry(0.08, 0.12, 2.5, 16);
-      antGeo.translate(0, 1.25, 0);
-      const ant = new THREE.Mesh(antGeo, antMat);
-      ant.position.set(0, 0.6, 1.6);
-      ant.rotation.x = 0.3;
-      controller3DGroup.add(ant);
-
-      controller3DGroup.position.y = 1.0;
       scene3D.add(controller3DGroup);
     }
 
     function set3dSceneMode(mode) {
       active3DMode = mode;
-      playBeep(2600 + mode * 200, 50);
+      playBeep(2600 + mode * 200, 45);
 
       const btnCar = document.getElementById('btn3dCar');
       const btnDrone = document.getElementById('btn3dDrone');
       const btnCase = document.getElementById('btn3dCase');
 
-      btnCar.className = mode === 0 ? "px-2.5 py-1 rounded-lg font-bold bg-amber-600 text-white shadow-sm transition-all text-[11px] flex items-center gap-1" : "px-2.5 py-1 rounded-lg font-bold bg-stone-800 text-stone-400 hover:text-white transition-all text-[11px] flex items-center gap-1";
-      btnDrone.className = mode === 1 ? "px-2.5 py-1 rounded-lg font-bold bg-blue-600 text-white shadow-sm transition-all text-[11px] flex items-center gap-1" : "px-2.5 py-1 rounded-lg font-bold bg-stone-800 text-stone-400 hover:text-white transition-all text-[11px] flex items-center gap-1";
-      btnCase.className = mode === 2 ? "px-2.5 py-1 rounded-lg font-bold bg-purple-600 text-white shadow-sm transition-all text-[11px] flex items-center gap-1" : "px-2.5 py-1 rounded-lg font-bold bg-stone-800 text-stone-400 hover:text-white transition-all text-[11px] flex items-center gap-1";
+      if (btnCar) btnCar.className = mode === 0 
+        ? "px-2.5 py-1 rounded-lg bg-amber-600 text-white shadow transition-all flex items-center gap-1 font-bold" 
+        : "px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-all flex items-center gap-1 font-bold";
+      if (btnDrone) btnDrone.className = mode === 1 
+        ? "px-2.5 py-1 rounded-lg bg-blue-600 text-white shadow transition-all flex items-center gap-1 font-bold" 
+        : "px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-all flex items-center gap-1 font-bold";
+      if (btnCase) btnCase.className = mode === 2 
+        ? "px-2.5 py-1 rounded-lg bg-purple-600 text-white shadow transition-all flex items-center gap-1 font-bold" 
+        : "px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-all flex items-center gap-1 font-bold";
 
       if (car3DGroup) car3DGroup.visible = (mode === 0);
       if (drone3DGroup) drone3DGroup.visible = (mode === 1);
       if (controller3DGroup) controller3DGroup.visible = (mode === 2);
 
-      // Điều chỉnh góc Camera mượt mà theo từng đối tượng
       if (mode === 0) {
-        if (camera3D) camera3D.position.set(0, 3.5, 6.5);
+        if (camera3D) camera3D.position.set(3.4, 2.8, 5.8);
       } else if (mode === 1) {
-        if (camera3D) camera3D.position.set(0, 4.0, 7.5);
+        if (camera3D) camera3D.position.set(3.6, 3.2, 5.8);
       } else {
-        if (camera3D) camera3D.position.set(0, 4.5, 6.0);
+        if (camera3D) camera3D.position.set(0, 4.6, 5.5);
       }
-      if (controls3D) controls3D.target.set(0, 1.0, 0);
+      if (controls3D) controls3D.target.set(0, 0.6, 0);
     }
 
     function onWindowResize3D() {
@@ -1649,119 +1510,109 @@
       renderer3D.setSize(w, h);
     }
 
-    // --- VÒNG LẶP RENDER CHÍNH 60FPS CHO THREE.JS ---
+    // =========================================================================
+    // 3D ANIMATION LOOP (60FPS CONTINUOUS)
+    // =========================================================================
     function renderThreeJSLoop() {
       requestAnimationFrame(renderThreeJSLoop);
 
       if (controls3D) controls3D.update();
 
-      let isArmed = (swArm === 1 && !failsafeTriggered);
-      let outThrottle = chThrottle;
-      let outSteer = chRoll;
-      let outPitch = chPitchAux;
-
-      if (failsafeTriggered) {
-        if (activeModel === 0) outThrottle = 1000;
-        else { outThrottle = 1500; outSteer = 1500; }
-      }
-
-      // 1. CẬP NHẬT XE 3D (CAR MODE)
+      // CAR ANIMATION
       if (car3DGroup && car3DGroup.visible) {
-        let throttleDelta = outThrottle - 1500;
-        let throttleRatio = isArmed ? (throttleDelta / 500) : 0;
-        let maxKmh = Math.round(75 * (knobPot / 100));
-        let targetSpeedKmh = throttleRatio * maxKmh;
-        currentCarSpeed += (targetSpeedKmh - currentCarSpeed) * 0.12;
+        let steerNorm = (chRoll - 1500) / 500.0;
+        let thrNorm = (chThrottle - 1500) / 500.0;
 
-        document.getElementById('speedKmh').innerText = `${Math.round(Math.abs(currentCarSpeed))} km/h`;
+        if (failsafeTriggered || swArm === 0) {
+          thrNorm = 0;
+        }
 
-        // Bẻ lái 2 bánh trước theo góc Joystick
-        let steerAngle = -((outSteer - 1500) / 500.0) * (Math.PI / 6); // Max 30 độ
+        // Steer front wheels
+        let steerAngle = -steerNorm * 0.45;
         frontWheels3D.forEach(w => {
           w.rotation.y = steerAngle;
-          w.rotation.x += currentCarSpeed * 0.05;
-        });
-        rearWheels3D.forEach(w => {
-          w.rotation.x += currentCarSpeed * 0.05;
         });
 
-        // Mặt đường cuộn dưới xe
-        if (groundGrid) {
-          groundGrid.position.z = (groundGrid.position.z + currentCarSpeed * 0.02) % 2;
+        // Speed calculation
+        let maxKmh = (knobPot / 100.0) * (swMode === 0 ? 45 : (swMode === 1 ? 85 : 105));
+        let targetSpeed = thrNorm * maxKmh;
+        currentCarSpeed += (targetSpeed - currentCarSpeed) * 0.12;
+
+        // Roll wheels
+        let wheelRotSpeed = (currentCarSpeed / 20.0) * 0.1;
+        frontWheels3D.forEach(w => { if (w && w.children && w.children[0]) w.children[0].rotation.x += wheelRotSpeed; });
+        rearWheels3D.forEach(w => { if (w && w.children && w.children[0]) w.children[0].rotation.x += wheelRotSpeed; });
+
+        // Chassis tilt on turn / drift
+        car3DGroup.rotation.y = steerNorm * 0.25;
+        car3DGroup.rotation.z = steerNorm * 0.08 * (Math.abs(currentCarSpeed) / 50.0);
+
+        // Brake lights flare
+        let isBraking = (thrNorm < -0.1 || (thrNorm === 0 && currentCarSpeed > 5));
+        if (brakeLightL && brakeLightR) {
+          brakeLightL.material.color.setHex(isBraking ? 0xff0033 : 0xef4444);
+          brakeLightR.material.color.setHex(isBraking ? 0xff0033 : 0xef4444);
         }
 
-        // Rung nhẹ thân xe khi nổ máy
-        if (isArmed && Math.abs(currentCarSpeed) > 0.5) {
-          car3DGroup.position.y = Math.sin(Date.now() * 0.03) * 0.02;
-        } else {
-          car3DGroup.position.y = 0;
-        }
-
-        updateEngineSound(currentCarSpeed / 75.0);
+        updateEngineSound(Math.abs(currentCarSpeed) / 100.0);
       }
 
-      // 2. CẬP NHẬT DRONE 3D (DRONE MODE)
+      // DRONE ANIMATION
       if (drone3DGroup && drone3DGroup.visible) {
-        let thrNorm = (outThrottle - 1000) / 1000.0; // 0..1
-        let rollNorm = (outSteer - 1500) / 500.0;    // -1..1
-        let pitchNorm = (outPitch - 1500) / 500.0;   // -1..1
+        let thrNorm = Math.max(0, (chThrottle - 1000) / 1000.0);
+        let rollNorm = (chRoll - 1500) / 500.0;
+        let pitchNorm = (chPitchAux - 1500) / 500.0;
         let yawNorm = (chYawSteer - 1500) / 500.0;
 
-        if (isArmed) {
-          // Quay 4 cánh quạt tít mù
-          let propSpeed = 0.2 + thrNorm * 0.8;
+        if (swArm === 1 && !failsafeTriggered) {
+          let propSpeed = 0.25 + thrNorm * 0.8;
           droneProps3D.forEach((p, idx) => {
             p.rotation.y += (idx % 2 === 0 ? propSpeed : -propSpeed);
           });
-
-          // Bay lên cao theo độ ga
-          let targetAlt = 0.8 + thrNorm * 4.0;
+          let targetAlt = 0.6 + thrNorm * 3.5;
           drone3DGroup.position.y += (targetAlt - drone3DGroup.position.y) * 0.08;
-
-          // Nghiêng thân theo Roll / Pitch / Yaw
           drone3DGroup.rotation.z = -rollNorm * 0.35;
           drone3DGroup.rotation.x = pitchNorm * 0.35;
-          drone3DGroup.rotation.y += yawNorm * 0.03;
+          drone3DGroup.rotation.y += yawNorm * 0.02;
         } else {
           drone3DGroup.position.y += (0.25 - drone3DGroup.position.y) * 0.1;
           drone3DGroup.rotation.set(0, 0, 0);
         }
       }
 
-      // 3. CẬP NHẬT TAY CẦM 3D (CONTROLLER CASE MODE)
+      // CONTROLLER ANIMATION
       if (controller3DGroup && controller3DGroup.visible) {
-        let joyLY_norm = (chThrottle - 1500) / 500.0;
-        let joyLX_norm = (chYawSteer - 1500) / 500.0;
-        let joyRY_norm = (chPitchAux - 1500) / 500.0;
-        let joyRX_norm = (chRoll - 1500) / 500.0;
-
+        let ly = (chThrottle - 1500) / 500.0;
+        let lx = (chYawSteer - 1500) / 500.0;
+        let ry = (chPitchAux - 1500) / 500.0;
+        let rx = (chRoll - 1500) / 500.0;
         if (joyLStick3D) {
-          joyLStick3D.rotation.x = -joyLY_norm * 0.35;
-          joyLStick3D.rotation.z = -joyLX_norm * 0.35;
+          joyLStick3D.rotation.x = -ly * 0.35;
+          joyLStick3D.rotation.z = -lx * 0.35;
         }
         if (joyRStick3D) {
-          joyRStick3D.rotation.x = -joyRY_norm * 0.35;
-          joyRStick3D.rotation.z = -joyRX_norm * 0.35;
+          joyRStick3D.rotation.x = -ry * 0.35;
+          joyRStick3D.rotation.z = -rx * 0.35;
         }
       }
 
-      // Cập nhật giao diện HUD Telemetry
-      if (typeof updateFlagshipTelemetryUI === 'function') {
-        updateFlagshipTelemetryUI();
-      }
+      updateTelemetryUI();
 
-      renderer3D.render(scene3D, camera3D);
+      if (renderer3D && scene3D && camera3D) {
+        renderer3D.render(scene3D, camera3D);
+      }
     }
 
-    // Khởi động Three.js khi trang web tải xong
+    // Init on load
     window.addEventListener('DOMContentLoaded', () => {
       initThreeJS();
       renderThreeJSLoop();
+      updateLcdDisplay();
     });
-    // Hoặc chạy ngay nếu DOM đã sẵn sàng
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
       initThreeJS();
       renderThreeJSLoop();
+      updateLcdDisplay();
     }
   </script>
 </body>
