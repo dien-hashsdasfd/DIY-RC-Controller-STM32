@@ -19,6 +19,9 @@
       user-select: none;
     }
   </style>
+  <!-- THREE.JS WEBGL 3D ENGINE & ORBIT CONTROLS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </head>
 <body class="bg-[var(--background)] text-[var(--foreground)] antialiased p-3 sm:p-5">
   <div class="max-w-7xl mx-auto space-y-4">
@@ -630,30 +633,62 @@
           </span>
         </div>
 
-        <!-- MÀN HÌNH MÔ PHỎNG XE CHẠY THỰC TẾ (CANVAS 60FPS VỚI ĐƯỜNG CHẠY VÙ VÙ) -->
-        <div class="relative bg-stone-950 rounded-2xl border-2 border-stone-800 h-64 flex flex-col items-center justify-center overflow-hidden shadow-inner">
-          <canvas id="simCanvas" width="460" height="250" class="w-full h-full"></canvas>
+        <!-- ================= MÀN HÌNH 3D WEBGL ENGINE THẬT SỰ (THREE.JS 360 ĐỘ) ================= -->
+        <div class="space-y-2">
           
-          <div id="fsOverlay" class="absolute inset-0 bg-rose-950/80 backdrop-blur-sm flex flex-col items-center justify-center text-white hidden">
-            <span class="text-3xl animate-bounce">⚠️</span>
-            <span class="text-base font-black tracking-wider text-rose-300 mt-1">FAILSAFE KÍCH HOẠT!</span>
-            <span class="text-xs text-rose-200" id="fsDesc">Xe đã phanh dừng hẳn & trả thẳng lái</span>
+          <!-- THANH CHỌN CHẾ ĐỘ XEM 3D -->
+          <div class="flex items-center justify-between text-xs bg-stone-900/80 p-1.5 rounded-xl border border-stone-800">
+            <div class="flex items-center gap-1.5 font-bold">
+              <span class="text-sm">🌐</span>
+              <span class="text-stone-300">CHẾ ĐỘ XEM 3D:</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <button id="btn3dCar" onclick="set3dSceneMode(0)" class="px-2.5 py-1 rounded-lg font-bold bg-amber-600 text-white shadow-sm transition-all text-[11px] flex items-center gap-1">
+                <span>🏎️</span> <span>3D XE ĐUA</span>
+              </button>
+              <button id="btn3dDrone" onclick="set3dSceneMode(1)" class="px-2.5 py-1 rounded-lg font-bold bg-stone-800 text-stone-400 hover:text-white transition-all text-[11px] flex items-center gap-1">
+                <span>🛸</span> <span>3D DRONE</span>
+              </button>
+              <button id="btn3dCase" onclick="set3dSceneMode(2)" class="px-2.5 py-1 rounded-lg font-bold bg-stone-800 text-stone-400 hover:text-white transition-all text-[11px] flex items-center gap-1">
+                <span>🎮</span> <span>3D TAY CẦM</span>
+              </button>
+            </div>
           </div>
 
-          <!-- ĐỒNG HỒ TỐC ĐỘ HIỆN THỜI GIAN THỰC -->
-          <div class="absolute top-2 left-2 bg-black/75 backdrop-blur px-2.5 py-1 rounded-lg text-xs font-mono text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
-            <span>TỐC ĐỘ:</span>
-            <span id="speedKmh" class="text-sm font-black text-amber-400">0 km/h</span>
+          <!-- KHUNG RENDER 3D WEBGL INTERACTIVE (XOAY 360 ĐỘ) -->
+          <div class="relative bg-stone-950 rounded-2xl border-2 border-stone-800 h-80 sm:h-96 flex flex-col items-center justify-center overflow-hidden shadow-2xl">
+            
+            <div id="threejsViewport" class="w-full h-full cursor-grab active:cursor-grabbing"></div>
+            
+            <!-- HƯỚNG DẪN ĐIỀU KHIỂN CHUỘT 3D -->
+            <div class="absolute bottom-2 right-2 bg-black/75 backdrop-blur px-2.5 py-1 rounded-lg text-[10px] font-mono text-stone-400 border border-stone-700/60 pointer-events-none select-none flex items-center gap-1.5">
+              <span>🖱️</span> <span>Chuột trái: <b>Xoay 360°</b> | Cuộn: <b>Zoom</b></span>
+            </div>
+
+            <!-- OVERLAY CẢNH BÁO FAILSAFE -->
+            <div id="fsOverlay" class="absolute inset-0 bg-rose-950/80 backdrop-blur-sm flex flex-col items-center justify-center text-white hidden z-20">
+              <span class="text-3xl animate-bounce">⚠️</span>
+              <span class="text-base font-black tracking-wider text-rose-300 mt-1">FAILSAFE KÍCH HOẠT!</span>
+              <span class="text-xs text-rose-200" id="fsDesc">Mất sóng LoRa - Khóa phanh dừng hẳn</span>
+            </div>
+
+            <!-- ĐỒNG HỒ TỐC ĐỘ 3D HUD -->
+            <div class="absolute top-2 left-2 bg-black/75 backdrop-blur px-2.5 py-1.5 rounded-xl text-xs font-mono text-emerald-400 border border-emerald-500/30 flex items-center gap-2 z-10">
+              <span class="text-xs text-stone-400">TỐC ĐỘ:</span>
+              <span id="speedKmh" class="text-base font-black text-amber-400 font-mono">0 km/h</span>
+            </div>
+
+            <div class="absolute top-2 right-2 bg-black/75 backdrop-blur px-2.5 py-1.5 rounded-xl text-[11px] font-mono text-cyan-400 border border-cyan-500/30 z-10">
+              Pin RX: <span id="telemetryVolts" class="font-bold">11.9V</span> | RSSI: <span id="telemRssi" class="font-bold">-48dBm</span>
+            </div>
+
+            <!-- BONG BÓNG BÁO TRẠNG THÁI -->
+            <div id="motionStatusBadge" class="absolute bottom-2 left-2 bg-emerald-950/80 backdrop-blur px-2.5 py-1 rounded-lg text-[11px] font-mono text-emerald-300 border border-emerald-500/40 z-10">
+              TRẠNG THÁI 3D: SẴN SÀNG
+            </div>
+
           </div>
 
-          <div class="absolute top-2 right-2 bg-black/75 backdrop-blur px-2 py-1 rounded-lg text-[11px] font-mono text-cyan-400 border border-cyan-500/30">
-            Pin RX: <span id="telemetryVolts">12.1V</span> | RSSI: <span id="telemRssi">99%</span>
-          </div>
-
-          <!-- BONG BÓNG BÁO TRẠNG THÁI GA/ĐỘNG CƠ -->
-          <div id="motionStatusBadge" class="absolute bottom-2 left-2 bg-emerald-950/80 backdrop-blur px-2.5 py-1 rounded text-[11px] font-mono text-emerald-300 border border-emerald-500/40">
-            TRẠNG THÁI: XE ĐANG ĐỨNG YÊN
-          </div>
         </div>
 
         <!-- BẢNG GIẢI MÃ TÍN HIỆU ĐẦU RA BỘ THU REAL-TIME -->
@@ -1636,18 +1671,385 @@
       }
     }
 
-    // --- CANVAS RENDER ENGINE 60FPS: XE CHẠY THẬT SỰ VÀ BÁNH XE QUAY VÙ VÙ ---
-    const canvas = document.getElementById('simCanvas');
-    const ctx = canvas.getContext('2d');
-    let droneAlt = 0;
+    // =========================================================================
+    // TRUE 3D WEBGL ENGINE (THREE.JS PERSPECTIVE SCENE & 360° ORBIT CONTROLS)
+    // =========================================================================
+    let scene3D, camera3D, renderer3D, controls3D;
+    let car3DGroup, drone3DGroup, controller3DGroup;
+    let groundGrid, roadMesh;
+    let frontWheels3D = [];
+    let rearWheels3D = [];
+    let droneProps3D = [];
+    let joyLStick3D, joyRStick3D;
+    let active3DMode = 1; // 0: Car, 1: Drone, 2: Controller Case
 
-    function renderLoop() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const cx = canvas.width / 2;
-      const cy = canvas.height / 2;
+    function initThreeJS() {
+      const container = document.getElementById('threejsViewport');
+      if (!container) return;
 
+      const w = container.clientWidth || 460;
+      const h = container.clientHeight || 320;
+
+      // 1. Khởi tạo Scene, Camera & Renderer WebGL
+      scene3D = new THREE.Scene();
+      scene3D.background = new THREE.Color(0x0a0d14);
+      scene3D.fog = new THREE.FogExp2(0x0a0d14, 0.015);
+
+      camera3D = new THREE.PerspectiveCamera(45, w / h, 0.1, 1000);
+      camera3D.position.set(0, 5, 9);
+
+      renderer3D = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer3D.setSize(w, h);
+      renderer3D.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer3D.shadowMap.enabled = true;
+      renderer3D.shadowMap.type = THREE.PCFSoftShadowMap;
+      container.innerHTML = '';
+      container.appendChild(renderer3D.domElement);
+
+      // 2. OrbitControls (Xoay 360 độ, Zoom, Pan)
+      if (typeof THREE.OrbitControls !== 'undefined') {
+        controls3D = new THREE.OrbitControls(camera3D, renderer3D.domElement);
+        controls3D.enableDamping = true;
+        controls3D.dampingFactor = 0.05;
+        controls3D.maxPolarAngle = Math.PI / 2 - 0.02; // Không nhìn dưới mặt đất
+        controls3D.minDistance = 3;
+        controls3D.maxDistance = 25;
+      }
+
+      // 3. Hệ thống Ánh sáng 3D
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+      scene3D.add(ambientLight);
+
+      const sunLight = new THREE.DirectionalLight(0xffffff, 0.9);
+      sunLight.position.set(8, 15, 10);
+      sunLight.castShadow = true;
+      sunLight.shadow.mapSize.width = 1024;
+      sunLight.shadow.mapSize.height = 1024;
+      scene3D.add(sunLight);
+
+      const blueRimLight = new THREE.DirectionalLight(0x06b6d4, 0.4);
+      blueRimLight.position.set(-10, 5, -10);
+      scene3D.add(blueRimLight);
+
+      // 4. Mặt sàn 3D và Lưới Grid
+      groundGrid = new THREE.GridHelper(60, 60, 0x06b6d4, 0x1e293b);
+      groundGrid.position.y = -0.01;
+      scene3D.add(groundGrid);
+
+      // 5. Xây dựng Mô Hình 3D Xe Đua (Car 3D)
+      build3DCar();
+
+      // 6. Xây dựng Mô Hình 3D Drone FPV
+      build3DDrone();
+
+      // 7. Xây dựng Mô Hình 3D Vỏ Tay Cầm RC (Controller 3D)
+      build3DController();
+
+      // Đặt chế độ 3D ban đầu
+      set3dSceneMode(activeModel === 1 ? 0 : 1);
+
+      // Xử lý Resize cửa sổ
+      window.addEventListener('resize', onWindowResize3D);
+    }
+
+    function build3DCar() {
+      car3DGroup = new THREE.Group();
+
+      // Thân xe thể thao (Chassis)
+      const bodyMat = new THREE.MeshStandardMaterial({
+        color: 0xd97706, // Màu cam ánh kim Amber
+        metalness: 0.6,
+        roughness: 0.2
+      });
+      const bodyGeo = new THREE.BoxGeometry(1.8, 0.5, 3.6);
+      const carBody = new THREE.Mesh(bodyGeo, bodyMat);
+      carBody.position.y = 0.5;
+      carBody.castShadow = true;
+      car3DGroup.add(carBody);
+
+      // Mui xe kính đen (Cockpit Cabin)
+      const cabinMat = new THREE.MeshStandardMaterial({
+        color: 0x0f172a,
+        metalness: 0.9,
+        roughness: 0.1,
+        transparent: true,
+        opacity: 0.85
+      });
+      const cabinGeo = new THREE.BoxGeometry(1.3, 0.45, 1.8);
+      const cabin = new THREE.Mesh(cabinGeo, cabinMat);
+      cabin.position.set(0, 0.85, -0.2);
+      cabin.castShadow = true;
+      car3DGroup.add(cabin);
+
+      // Cánh gió đuôi thể thao (Rear Spoiler)
+      const wingMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.8 });
+      const wingGeo = new THREE.BoxGeometry(1.9, 0.08, 0.4);
+      const wing = new THREE.Mesh(wingGeo, wingMat);
+      wing.position.set(0, 1.1, -1.6);
+      car3DGroup.add(wing);
+
+      // Chân đỡ cánh gió
+      const strutGeo = new THREE.BoxGeometry(0.08, 0.4, 0.08);
+      const strutL = new THREE.Mesh(strutGeo, wingMat);
+      strutL.position.set(-0.6, 0.9, -1.6);
+      const strutR = new THREE.Mesh(strutGeo, wingMat);
+      strutR.position.set(0.6, 0.9, -1.6);
+      car3DGroup.add(strutL);
+      car3DGroup.add(strutR);
+
+      // 4 Bánh xe 3D với lốp cao su và mâm đúc
+      const tireMat = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.9 });
+      const rimMat  = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.9, roughness: 0.2 });
+
+      function createWheel(isFront) {
+        const wheelGroup = new THREE.Group();
+        const tireGeo = new THREE.CylinderGeometry(0.38, 0.38, 0.28, 24);
+        tireGeo.rotateZ(Math.PI / 2);
+        const tire = new THREE.Mesh(tireGeo, tireMat);
+        tire.castShadow = true;
+        wheelGroup.add(tire);
+
+        const rimGeo = new THREE.CylinderGeometry(0.24, 0.24, 0.29, 12);
+        rimGeo.rotateZ(Math.PI / 2);
+        const rim = new THREE.Mesh(rimGeo, rimMat);
+        wheelGroup.add(rim);
+
+        return wheelGroup;
+      }
+
+      // 2 Bánh trước (Có thể bẻ lái)
+      const wheelFL = createWheel(true);
+      wheelFL.position.set(-1.05, 0.38, 1.2);
+      const wheelFR = createWheel(true);
+      wheelFR.position.set(1.05, 0.38, 1.2);
+      frontWheels3D = [wheelFL, wheelFR];
+      car3DGroup.add(wheelFL);
+      car3DGroup.add(wheelFR);
+
+      // 2 Bánh sau
+      const wheelRL = createWheel(false);
+      wheelRL.position.set(-1.05, 0.38, -1.2);
+      const wheelRR = createWheel(false);
+      wheelRR.position.set(1.05, 0.38, -1.2);
+      rearWheels3D = [wheelRL, wheelRR];
+      car3DGroup.add(wheelRL);
+      car3DGroup.add(wheelRR);
+
+      // 2 Đèn pha LED trước (Headlights)
+      const lightMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+      const lightGeo = new THREE.SphereGeometry(0.12, 16, 16);
+      const lightL = new THREE.Mesh(lightGeo, lightMat);
+      lightL.position.set(-0.65, 0.5, 1.8);
+      const lightR = new THREE.Mesh(lightGeo, lightMat);
+      lightR.position.set(0.65, 0.5, 1.8);
+      car3DGroup.add(lightL);
+      car3DGroup.add(lightR);
+
+      // Đèn hậu Neon Red (Brake lights)
+      const tailMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
+      const tailGeo = new THREE.BoxGeometry(0.4, 0.1, 0.05);
+      const tailL = new THREE.Mesh(tailGeo, tailMat);
+      tailL.position.set(-0.65, 0.55, -1.8);
+      const tailR = new THREE.Mesh(tailGeo, tailMat);
+      tailR.position.set(0.65, 0.55, -1.8);
+      car3DGroup.add(tailL);
+      car3DGroup.add(tailR);
+
+      scene3D.add(car3DGroup);
+    }
+
+    function build3DDrone() {
+      drone3DGroup = new THREE.Group();
+
+      // Khung Carbon chữ X
+      const carbonMat = new THREE.MeshStandardMaterial({ color: 0x18181b, metalness: 0.8, roughness: 0.3 });
+      const armGeo = new THREE.BoxGeometry(0.18, 0.08, 3.2);
+      const arm1 = new THREE.Mesh(armGeo, carbonMat);
+      arm1.rotation.y = Math.PI / 4;
+      const arm2 = new THREE.Mesh(armGeo, carbonMat);
+      arm2.rotation.y = -Math.PI / 4;
+      drone3DGroup.add(arm1);
+      drone3DGroup.add(arm2);
+
+      // Thân giữa (Flight Controller & Pin)
+      const bodyGeo = new THREE.BoxGeometry(0.9, 0.35, 1.2);
+      const droneBody = new THREE.Mesh(bodyGeo, carbonMat);
+      droneBody.position.y = 0.15;
+      droneBody.castShadow = true;
+      drone3DGroup.add(droneBody);
+
+      // Camera FPV trước nghiêng 25 độ
+      const camMat = new THREE.MeshStandardMaterial({ color: 0xd97706, metalness: 0.5 });
+      const camGeo = new THREE.BoxGeometry(0.3, 0.3, 0.3);
+      const fpvCam = new THREE.Mesh(camGeo, camMat);
+      fpvCam.position.set(0, 0.25, 0.65);
+      fpvCam.rotation.x = -0.35; // Nghiêng 20 độ
+      drone3DGroup.add(fpvCam);
+
+      // 4 Động cơ và 4 Cánh quạt 3D
+      droneProps3D = [];
+      const motorMat = new THREE.MeshStandardMaterial({ color: 0x3b82f6, metalness: 0.9, roughness: 0.2 });
+      const propMat  = new THREE.MeshStandardMaterial({ color: 0x06b6d4, transparent: true, opacity: 0.7 });
+
+      const motorPositions = [
+        [ 1.15, 0.1,  1.15],
+        [-1.15, 0.1,  1.15],
+        [ 1.15, 0.1, -1.15],
+        [-1.15, 0.1, -1.15]
+      ];
+
+      motorPositions.forEach((pos) => {
+        const motorGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.2, 16);
+        const motor = new THREE.Mesh(motorGeo, motorMat);
+        motor.position.set(pos[0], pos[1], pos[2]);
+        drone3DGroup.add(motor);
+
+        // Cánh quạt 3 lá
+        const propGroup = new THREE.Group();
+        const bladeGeo = new THREE.BoxGeometry(1.2, 0.02, 0.14);
+        const blade1 = new THREE.Mesh(bladeGeo, propMat);
+        const blade2 = new THREE.Mesh(bladeGeo, propMat);
+        blade2.rotation.y = Math.PI / 2;
+        propGroup.add(blade1);
+        propGroup.add(blade2);
+        propGroup.position.set(pos[0], pos[1] + 0.15, pos[2]);
+
+        droneProps3D.push(propGroup);
+        drone3DGroup.add(propGroup);
+      });
+
+      drone3DGroup.position.y = 2.0; // Treo lơ lửng ban đầu
+      scene3D.add(drone3DGroup);
+    }
+
+    function build3DController() {
+      controller3DGroup = new THREE.Group();
+
+      // Vỏ hộp tay cầm công thái học (Ergonomic Shell)
+      const shellMat = new THREE.MeshStandardMaterial({
+        color: 0x1c1917,
+        roughness: 0.4,
+        metalness: 0.2
+      });
+      const shellGeo = new THREE.BoxGeometry(4.0, 1.2, 3.2);
+      const shell = new THREE.Mesh(shellGeo, shellMat);
+      shell.castShadow = true;
+      controller3DGroup.add(shell);
+
+      // Tay cầm 2 bên (Ergonomic Grips)
+      const gripGeo = new THREE.CylinderGeometry(0.5, 0.55, 3.0, 16);
+      const gripL = new THREE.Mesh(gripGeo, shellMat);
+      gripL.position.set(-2.0, -0.3, 0);
+      gripL.rotation.z = 0.25;
+      const gripR = new THREE.Mesh(gripGeo, shellMat);
+      gripR.position.set(2.0, -0.3, 0);
+      gripR.rotation.z = -0.25;
+      controller3DGroup.add(gripL);
+      controller3DGroup.add(gripR);
+
+      // Màn hình LCD phát sáng xanh ngọc
+      const lcdMat = new THREE.MeshStandardMaterial({
+        color: 0x052e16,
+        emissive: 0x10b981,
+        emissiveIntensity: 0.4
+      });
+      const lcdGeo = new THREE.BoxGeometry(2.0, 0.05, 1.2);
+      const lcd3D = new THREE.Mesh(lcdGeo, lcdMat);
+      lcd3D.position.set(0, 0.62, 0.5);
+      controller3DGroup.add(lcd3D);
+
+      // 2 Joystick 3D có thể gật gù theo ngón tay
+      const joyBaseMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.8 });
+      const joyGimbalMat = new THREE.MeshStandardMaterial({ color: 0xd97706, metalness: 0.9 });
+
+      function create3DJoyStick(posX, posZ) {
+        const jGroup = new THREE.Group();
+        const baseGeo = new THREE.CylinderGeometry(0.6, 0.65, 0.15, 24);
+        const base = new THREE.Mesh(baseGeo, joyBaseMat);
+        jGroup.add(base);
+
+        const stickGroup = new THREE.Group();
+        const stemGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.8, 12);
+        stemGeo.translate(0, 0.4, 0);
+        const stem = new THREE.Mesh(stemGeo, joyGimbalMat);
+        stickGroup.add(stem);
+
+        const capGeo = new THREE.CylinderGeometry(0.3, 0.25, 0.15, 16);
+        capGeo.translate(0, 0.8, 0);
+        const cap = new THREE.Mesh(capGeo, joyBaseMat);
+        stickGroup.add(cap);
+
+        jGroup.add(stickGroup);
+        jGroup.position.set(posX, 0.65, posZ);
+        return { group: jGroup, stick: stickGroup };
+      }
+
+      const joyL = create3DJoyStick(-1.2, -0.5);
+      const joyR = create3DJoyStick(1.2, -0.5);
+      joyLStick3D = joyL.stick;
+      joyRStick3D = joyR.stick;
+      controller3DGroup.add(joyL.group);
+      controller3DGroup.add(joyR.group);
+
+      // Ăng-ten 3D gập
+      const antMat = new THREE.MeshStandardMaterial({ color: 0x27272a, roughness: 0.5 });
+      const antGeo = new THREE.CylinderGeometry(0.08, 0.12, 2.5, 16);
+      antGeo.translate(0, 1.25, 0);
+      const ant = new THREE.Mesh(antGeo, antMat);
+      ant.position.set(0, 0.6, 1.6);
+      ant.rotation.x = 0.3;
+      controller3DGroup.add(ant);
+
+      controller3DGroup.position.y = 1.0;
+      scene3D.add(controller3DGroup);
+    }
+
+    function set3dSceneMode(mode) {
+      active3DMode = mode;
+      playBeep(2600 + mode * 200, 50);
+
+      const btnCar = document.getElementById('btn3dCar');
+      const btnDrone = document.getElementById('btn3dDrone');
+      const btnCase = document.getElementById('btn3dCase');
+
+      btnCar.className = mode === 0 ? "px-2.5 py-1 rounded-lg font-bold bg-amber-600 text-white shadow-sm transition-all text-[11px] flex items-center gap-1" : "px-2.5 py-1 rounded-lg font-bold bg-stone-800 text-stone-400 hover:text-white transition-all text-[11px] flex items-center gap-1";
+      btnDrone.className = mode === 1 ? "px-2.5 py-1 rounded-lg font-bold bg-blue-600 text-white shadow-sm transition-all text-[11px] flex items-center gap-1" : "px-2.5 py-1 rounded-lg font-bold bg-stone-800 text-stone-400 hover:text-white transition-all text-[11px] flex items-center gap-1";
+      btnCase.className = mode === 2 ? "px-2.5 py-1 rounded-lg font-bold bg-purple-600 text-white shadow-sm transition-all text-[11px] flex items-center gap-1" : "px-2.5 py-1 rounded-lg font-bold bg-stone-800 text-stone-400 hover:text-white transition-all text-[11px] flex items-center gap-1";
+
+      if (car3DGroup) car3DGroup.visible = (mode === 0);
+      if (drone3DGroup) drone3DGroup.visible = (mode === 1);
+      if (controller3DGroup) controller3DGroup.visible = (mode === 2);
+
+      // Điều chỉnh góc Camera mượt mà theo từng đối tượng
+      if (mode === 0) {
+        camera3D.position.set(0, 3.5, 6.5);
+      } else if (mode === 1) {
+        camera3D.position.set(0, 4.0, 7.5);
+      } else {
+        camera3D.position.set(0, 4.5, 6.0);
+      }
+      if (controls3D) controls3D.target.set(0, 1.0, 0);
+    }
+
+    function onWindowResize3D() {
+      const container = document.getElementById('threejsViewport');
+      if (!container || !renderer3D || !camera3D) return;
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      camera3D.aspect = w / h;
+      camera3D.updateProjectionMatrix();
+      renderer3D.setSize(w, h);
+    }
+
+    // --- VÒNG LẶP RENDER CHÍNH 60FPS CHO THREE.JS ---
+    function renderThreeJSLoop() {
+      requestAnimationFrame(renderThreeJSLoop);
+
+      if (controls3D) controls3D.update();
+
+      let isArmed = (swArm === 1 && !failsafeTriggered);
       let outThrottle = chThrottle;
-      let outSteer = chRoll; // Lái bánh xe
+      let outSteer = chRoll;
       let outPitch = chPitchAux;
 
       if (failsafeTriggered) {
@@ -1655,286 +2057,104 @@
         else { outThrottle = 1500; outSteer = 1500; }
       }
 
-      // Cập nhật thanh đo kênh
-      document.getElementById('valCh1').innerText = outSteer + 'us';
-      document.getElementById('barCh1').style.width = ((outSteer - 1000) / 1000 * 100) + '%';
-      document.getElementById('valCh2').innerText = outPitch + 'us';
-      document.getElementById('barCh2').style.width = ((outPitch - 1000) / 1000 * 100) + '%';
-      document.getElementById('valCh3').innerText = outThrottle + 'us';
-      document.getElementById('barCh3').style.width = ((outThrottle - 1000) / 1000 * 100) + '%';
-
-      let isArmed = (swArm === 1 && !failsafeTriggered);
-
-      if (activeModel === 1) {
-        // =====================================================================
-        // [1] MÔ PHỎNG VẬT LÝ XE RC CHẠY THẬT SỰ TRÊN ĐƯỜNG (DYNAMIC PHYSICS)
-        // =====================================================================
-        let throttleDelta = outThrottle - 1500; // -500 đến +500
-        let throttleRatio = isArmed ? (throttleDelta / 500) : 0; // -1 đến 1
-        
-        // Tính tốc độ xe km/h
+      // 1. CẬP NHẬT XE 3D (CAR MODE)
+      if (car3DGroup && car3DGroup.visible) {
+        let throttleDelta = outThrottle - 1500;
+        let throttleRatio = isArmed ? (throttleDelta / 500) : 0;
         let maxKmh = Math.round(75 * (knobPot / 100));
         let targetSpeedKmh = throttleRatio * maxKmh;
         currentCarSpeed += (targetSpeedKmh - currentCarSpeed) * 0.12;
 
-        let speedAbs = Math.abs(currentCarSpeed);
-        document.getElementById('speedKmh').innerText = `${Math.round(speedAbs)} km/h`;
+        document.getElementById('speedKmh').innerText = `${Math.round(Math.abs(currentCarSpeed))} km/h`;
 
-        // Trạng thái vận hành
-        const badge = document.getElementById('motionStatusBadge');
-        if (!isArmed) {
-          badge.innerText = "TRẠNG THÁI: XE ĐÃ KHÓA (DISARM)";
-          badge.className = "absolute bottom-2 left-2 bg-rose-950/80 backdrop-blur px-2.5 py-1 rounded text-[11px] font-mono text-rose-300 border border-rose-500/40";
-        } else if (currentCarSpeed > 1) {
-          badge.innerText = `TRẠNG THÁI: XE ĐANG CHẠY TIẾN (+${Math.round(speedAbs)} km/h)`;
-          badge.className = "absolute bottom-2 left-2 bg-emerald-950/80 backdrop-blur px-2.5 py-1 rounded text-[11px] font-mono text-emerald-300 border border-emerald-500/40 animate-pulse";
-        } else if (currentCarSpeed < -1) {
-          badge.innerText = `TRẠNG THÁI: XE ĐANG LÙI (-${Math.round(speedAbs)} km/h)`;
-          badge.className = "absolute bottom-2 left-2 bg-amber-950/80 backdrop-blur px-2.5 py-1 rounded text-[11px] font-mono text-amber-300 border border-amber-500/40";
-        } else {
-          badge.innerText = "TRẠNG THÁI: XE ĐỨNG YÊN (0 km/h)";
-          badge.className = "absolute bottom-2 left-2 bg-stone-900/80 backdrop-blur px-2.5 py-1 rounded text-[11px] font-mono text-stone-400 border border-stone-700";
-        }
-
-        // Cập nhật âm thanh động cơ
-        updateEngineSound(currentCarSpeed / 75.0);
-
-        // Cuộn mặt đường (Infinite Road Scrolling)
-        roadOffset = (roadOffset + currentCarSpeed * 0.6) % 60;
-        wheelRotation += currentCarSpeed * 0.08;
-
-        // VẼ MẶT ĐƯỜNG VÀ VẠCH KẺ CHẠY VÙ VÙ
-        ctx.fillStyle = '#1c1917';
-        ctx.fillRect(0, 165, canvas.width, 85);
-
-        // Vạch sơn đường di chuyển liên tục
-        ctx.fillStyle = '#f59e0b';
-        ctx.fillRect(0, 165, canvas.width, 3); // Lề đường
-
-        ctx.fillStyle = '#ffffff';
-        let dashW = 35;
-        let gapW = 25;
-        let totalW = dashW + gapW;
-        for (let x = -60 - (roadOffset); x < canvas.width + 60; x += totalW) {
-          ctx.fillRect(x, 210, dashW, 4);
-        }
-
-        // Tạo hạt bụi khói khi xe chạy
-        if (Math.abs(currentCarSpeed) > 3) {
-          particles.push({
-            x: cx - 65,
-            y: 195 + (Math.random() * 6 - 3),
-            vx: -currentCarSpeed * 0.15 + (Math.random() - 0.5),
-            vy: -Math.random() * 0.8 - 0.3,
-            radius: Math.random() * 3 + 2,
-            alpha: 0.6
-          });
-        }
-
-        // Vẽ và cập nhật hạt bụi
-        for (let i = particles.length - 1; i >= 0; i--) {
-          let p = particles[i];
-          p.x += p.vx;
-          p.y += p.vy;
-          p.radius += 0.15;
-          p.alpha -= 0.02;
-          if (p.alpha <= 0) {
-            particles.splice(i, 1);
-            continue;
-          }
-          ctx.fillStyle = `rgba(160, 160, 160, ${p.alpha})`;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-          ctx.fill();
-        }
-
-        // GÓC BẺ LÁI BÁNH TRƯỚC (STEERING)
-        let steerFrac = (outSteer - 1500) / 500;
-        let steerAngle = steerFrac * 0.55;
-
-        // VẼ XE ĐUA RC
-        ctx.save();
-        // Độ rung xe khi nổ máy
-        let idleShake = isArmed ? (Math.random() * 1.2 - 0.6) : 0;
-        ctx.translate(cx, cy + 50 + idleShake);
-
-        // Đổ bóng xe
-        ctx.fillStyle = 'rgba(0,0,0,0.45)';
-        ctx.beginPath();
-        ctx.ellipse(0, 22, 75, 12, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Thân xe thể thao
-        ctx.fillStyle = '#2563eb';
-        ctx.beginPath();
-        ctx.roundRect(-65, -25, 130, 38, 8);
-        ctx.fill();
-
-        // Nóc cabin xe
-        ctx.fillStyle = '#1d4ed8';
-        ctx.beginPath();
-        ctx.roundRect(-25, -42, 58, 20, 6);
-        ctx.fill();
-
-        // Kính chắn gió
-        ctx.fillStyle = '#93c5fd';
-        ctx.beginPath();
-        ctx.roundRect(-20, -40, 50, 16, 4);
-        ctx.fill();
-
-        // Cánh gió sau (Spoiler)
-        ctx.fillStyle = '#1e3a8a';
-        ctx.fillRect(-75, -42, 14, 30);
-
-        // ĐÈN PHA TRƯỚC CHIẾU SÁNG
-        if (isHeadlightOn) {
-          ctx.fillStyle = '#fef08a';
-          ctx.beginPath();
-          ctx.arc(66, -10, 6, 0, Math.PI * 2);
-          ctx.fill();
-
-          let grad = ctx.createRadialGradient(70, -10, 4, 180, -10, 90);
-          grad.addColorStop(0, 'rgba(254, 240, 138, 0.7)');
-          grad.addColorStop(1, 'rgba(254, 240, 138, 0)');
-          ctx.fillStyle = grad;
-          ctx.beginPath();
-          ctx.moveTo(66, -18);
-          ctx.lineTo(220, -55);
-          ctx.lineTo(220, 35);
-          ctx.lineTo(66, 0);
-          ctx.fill();
-        }
-
-        // ĐÈN PHANH SAU (SÁNG ĐỎ RỰC KHI THẮNG / LÙI)
-        if (throttleRatio < -0.05 || !isArmed) {
-          ctx.fillStyle = '#ef4444';
-          ctx.shadowColor = '#ef4444';
-          ctx.shadowBlur = 15;
-          ctx.fillRect(-68, -18, 5, 20);
-          ctx.shadowBlur = 0;
-        }
-
-        // HÀM VẼ BÁNH XE QUAY TÍT (SPINNING WHEEL WITH RIMS)
-        function drawWheel(x, y, angle, rot) {
-          ctx.save();
-          ctx.translate(x, y);
-          ctx.rotate(angle);
-
-          // Lốp cao su
-          ctx.fillStyle = '#111827';
-          ctx.beginPath();
-          ctx.arc(0, 0, 17, 0, Math.PI * 2);
-          ctx.fill();
-
-          // Vành lazang mạ bạc
-          ctx.fillStyle = '#9ca3af';
-          ctx.beginPath();
-          ctx.arc(0, 0, 11, 0, Math.PI * 2);
-          ctx.fill();
-
-          // Các nan hoa quay vùn vụt
-          ctx.strokeStyle = '#374151';
-          ctx.lineWidth = 2.5;
-          ctx.beginPath();
-          for (let a = 0; a < 4; a++) {
-            let rad = rot + a * (Math.PI / 2);
-            ctx.moveTo(0, 0);
-            ctx.lineTo(Math.cos(rad) * 11, Math.sin(rad) * 11);
-          }
-          ctx.stroke();
-
-          // Trục giữa
-          ctx.fillStyle = '#dc2626';
-          ctx.beginPath();
-          ctx.arc(0, 0, 3.5, 0, Math.PI * 2);
-          ctx.fill();
-
-          ctx.restore();
-        }
-
-        // Vẽ 2 bánh xe có quay và bẻ lái
-        drawWheel(45, 12, steerAngle, wheelRotation);  // Bánh trước có bẻ lái
-        drawWheel(-45, 12, 0, wheelRotation);          // Bánh sau truyền động
-
-        ctx.restore();
-
-      } else {
-        // =====================================================================
-        // [2] MÔ PHỎNG DRONE VỚI TÍNH NĂNG GIỮ ĐỘ CAO HOVER
-        // =====================================================================
-        updateEngineSound(0);
-        let throttleFrac = (outThrottle - 1000) / 1000;
-        let targetAlt = isArmed ? (throttleFrac * 75) : 0;
-        droneAlt += (targetAlt - droneAlt) * 0.1;
-
-        let rollTilt = ((outSteer - 1500) / 500) * 0.45;
-
-        // Vẽ mây trời và mặt đất 3D
-        ctx.fillStyle = '#0f172a';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Lưới sàn mặt đất
-        ctx.strokeStyle = '#1e293b';
-        ctx.lineWidth = 1;
-        for (let y = 180; y < canvas.height; y += 15) {
-          ctx.beginPath();
-          ctx.moveTo(0, y); ctx.lineTo(canvas.width, y);
-          ctx.stroke();
-        }
-
-        ctx.save();
-        ctx.translate(cx, cy - droneAlt + 20);
-        ctx.rotate(rollTilt);
-
-        // Đổ bóng drone
-        ctx.fillStyle = 'rgba(0,0,0,0.4)';
-        ctx.beginPath();
-        ctx.ellipse(0, droneAlt + 45, 50, 15, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 4 Càng Drone
-        ctx.lineWidth = 4;
-        ctx.strokeStyle = '#64748b';
-        ctx.beginPath();
-        ctx.moveTo(-50, -25); ctx.lineTo(50, 25);
-        ctx.moveTo(-50, 25);  ctx.lineTo(50, -25);
-        ctx.stroke();
-
-        ctx.fillStyle = '#1e293b';
-        ctx.fillRect(-22, -14, 44, 28);
-        ctx.fillStyle = isArmed ? '#10b981' : '#ef4444';
-        ctx.fillRect(-6, -6, 12, 12);
-
-        // Quạt quay tít
-        const propSpeed = isArmed ? (throttleFrac * 0.8 + 0.2) : 0;
-        const motorPts = [[-50, -25], [50, -25], [-50, 25], [50, 25]];
-        motorPts.forEach((pt, i) => {
-          ctx.fillStyle = '#475569';
-          ctx.beginPath();
-          ctx.arc(pt[0], pt[1], 7, 0, Math.PI * 2);
-          ctx.fill();
-
-          if (propSpeed > 0) {
-            ctx.strokeStyle = (i < 2) ? '#38bdf8' : '#fb923c';
-            ctx.lineWidth = 2.5;
-            ctx.beginPath();
-            let phase = performance.now() * 0.05 * propSpeed + i;
-            let pLen = 18;
-            ctx.moveTo(pt[0] - Math.cos(phase) * pLen, pt[1] - Math.sin(phase) * pLen);
-            ctx.lineTo(pt[0] + Math.cos(phase) * pLen, pt[1] + Math.sin(phase) * pLen);
-            ctx.stroke();
-          }
+        // Bẻ lái 2 bánh trước theo góc Joystick
+        let steerAngle = -((outSteer - 1500) / 500.0) * (Math.PI / 6); // Max 30 độ
+        frontWheels3D.forEach(w => {
+          w.rotation.y = steerAngle;
+          w.rotation.x += currentCarSpeed * 0.05;
+        });
+        rearWheels3D.forEach(w => {
+          w.rotation.x += currentCarSpeed * 0.05;
         });
 
-        ctx.restore();
+        // Mặt đường cuộn dưới xe
+        if (groundGrid) {
+          groundGrid.position.z = (groundGrid.position.z + currentCarSpeed * 0.02) % 2;
+        }
+
+        // Rung nhẹ thân xe khi nổ máy
+        if (isArmed && Math.abs(currentCarSpeed) > 0.5) {
+          car3DGroup.position.y = Math.sin(Date.now() * 0.03) * 0.02;
+        } else {
+          car3DGroup.position.y = 0;
+        }
+
+        updateEngineSound(currentCarSpeed / 75.0);
       }
 
-      updateFlagshipTelemetryUI();
-      requestAnimationFrame(renderLoop);
+      // 2. CẬP NHẬT DRONE 3D (DRONE MODE)
+      if (drone3DGroup && drone3DGroup.visible) {
+        let thrNorm = (outThrottle - 1000) / 1000.0; // 0..1
+        let rollNorm = (outSteer - 1500) / 500.0;    // -1..1
+        let pitchNorm = (outPitch - 1500) / 500.0;   // -1..1
+        let yawNorm = (chYawSteer - 1500) / 500.0;
+
+        if (isArmed) {
+          // Quay 4 cánh quạt tít mù
+          let propSpeed = 0.2 + thrNorm * 0.8;
+          droneProps3D.forEach((p, idx) => {
+            p.rotation.y += (idx % 2 === 0 ? propSpeed : -propSpeed);
+          });
+
+          // Bay lên cao theo độ ga
+          let targetAlt = 0.8 + thrNorm * 4.0;
+          drone3DGroup.position.y += (targetAlt - drone3DGroup.position.y) * 0.08;
+
+          // Nghiêng thân theo Roll / Pitch / Yaw
+          drone3DGroup.rotation.z = -rollNorm * 0.35;
+          drone3DGroup.rotation.x = pitchNorm * 0.35;
+          drone3DGroup.rotation.y += yawNorm * 0.03;
+        } else {
+          drone3DGroup.position.y += (0.25 - drone3DGroup.position.y) * 0.1;
+          drone3DGroup.rotation.set(0, 0, 0);
+        }
+      }
+
+      // 3. CẬP NHẬT TAY CẦM 3D (CONTROLLER CASE MODE)
+      if (controller3DGroup && controller3DGroup.visible) {
+        let joyLY_norm = (chThrottle - 1500) / 500.0;
+        let joyLX_norm = (chYawSteer - 1500) / 500.0;
+        let joyRY_norm = (chPitchAux - 1500) / 500.0;
+        let joyRX_norm = (chRoll - 1500) / 500.0;
+
+        if (joyLStick3D) {
+          joyLStick3D.rotation.x = -joyLY_norm * 0.35;
+          joyLStick3D.rotation.z = -joyLX_norm * 0.35;
+        }
+        if (joyRStick3D) {
+          joyRStick3D.rotation.x = -joyRY_norm * 0.35;
+          joyRStick3D.rotation.z = -joyRX_norm * 0.35;
+        }
+      }
+
+      // Cập nhật giao diện HUD Telemetry
+      if (typeof updateFlagshipTelemetryUI === 'function') {
+        updateFlagshipTelemetryUI();
+      }
+
+      renderer3D.render(scene3D, camera3D);
     }
 
-    updateLcdDisplay();
-    requestAnimationFrame(renderLoop);
+    // Khởi động Three.js khi trang web tải xong
+    window.addEventListener('DOMContentLoaded', () => {
+      initThreeJS();
+      renderThreeJSLoop();
+    });
+    // Hoặc chạy ngay nếu DOM đã sẵn sàng
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      initThreeJS();
+      renderThreeJSLoop();
+    }
   </script>
 </body>
 </html>
