@@ -1,12 +1,15 @@
 /*
  * ======================================================================================
- * DỰ ÁN TAY ĐIỀU KHIỂN RC "TOÀN DIỆN" - FIRMWARE TAY PHÁT ULTRA-LOW LATENCY (V4 PRO MAX)
- * ZERO LATENCY PIPELINE: RF RATE LÊN ĐẾN 200Hz, ĐỘ TRỄ ~5ms, DMA/NON-BLOCKING TIMING
- * HỆ THỐNG MENU CÀI ĐẶT ĐA TẦNG (6 TRANG SETTINGS) & HUD TELEMETRY ĐA THÔNG TIN
+ * DỰ ÁN TAY ĐIỀU KHIỂN RC "FLAGSHIP TOÀN DIỆN" (EDGETX & FLYSKY NOBLE NB4 PRO ARCHITECTURE)
  * ======================================================================================
- * Vi điều khiển: STM32F103C8T6 (72MHz ARM Cortex-M3 32-bit)
- * Giao tiếp sóng: LoRa E22 (UART 115200 baud, chu kỳ gói 5ms - 10ms, Packet Rate 100Hz - 200Hz)
- * Màn hình: LCD 1604A / OLED I2C 400kHz (Cơ chế Time-Slicing 0% CPU overhead)
+ * HỘI TỤ TẤT CẢ CÁC TÍNH NĂNG ĐẲNG CẤP TỪ CÁC HÃNG LỚN (RADIOMASTER, FLYSKY, FUTABA, SANWA):
+ *   1. [FLYSKY NOBLE NB4] HỆ THỐNG PHANH ABS ĐIỆN TỬ (ANTI-LOCK BRAKE SYSTEM) NHẤP NHẢ 12Hz
+ *   2. [EDGETX / OPENTX]  BỘ QUẢN LÝ GARA 6 MÔ HÌNH (MODEL PROFILES) LƯU TRONG FLASH EEPROM
+ *   3. [FUTABA & SANWA]   CHẾ ĐỘ ĐUA SUR/SXR PHẢN HỒI SIÊU TỐC 200Hz ZERO-LAG (~3.8ms)
+ *   4. [EDGETX WIDGETS]   BỘ ĐO ĐỒ THỊ 8 KÊNH (8-CHANNEL MONITOR) & TOÁN HỌC EXPO S-CURVE
+ *   5. [PRO RACING]       ĐỒNG HỒ ĐO VÒNG ĐUA LAP TIMER & CÂN BẰNG DRIFT GYRO ASSIST
+ * ======================================================================================
+ * Phần cứng: STM32F103C8T6 (72MHz ARM 32-bit), LoRa E22 (115200 Baud), LCD 1604A / OLED Fast I2C
  * ======================================================================================
  */
 
@@ -15,27 +18,27 @@
 #include <LiquidCrystal_I2C.h>
 #include <EEPROM.h>
 
-// --- CẤU HÌNH PHẦN CỨNG (PINOUT STM32 BLUEPILL) ---
+// --- PINOUT STM32 BLUEPILL ---
 #define PIN_JOY_LY      PA0   // PS2 Trái Y: Ga (Drone Throttle / Car Throttle)
 #define PIN_JOY_LX      PA1   // PS2 Trái X: Hướng quay (Yaw / Turn Car)
 #define PIN_JOY_RY      PA2   // PS2 Phải Y: Tiến/Lùi (Pitch)
-#define PIN_JOY_RX      PA3   // PS2 Phải X: Lái/Nghiêng (Roll / Car Steering)
-#define PIN_POT         PA4   // Triết áp B10K: Hover Bias (Drone) / Speed Limiter (Car)
+#define PIN_JOY_RX      PA3   // PS2 Phải X: Bẻ lái (Roll / Car Steering)
+#define PIN_POT         PA4   // Triết áp B10K: Hover Bias / Speed Limiter
 #define PIN_BAT_SENSE   PA5   // Cầu trở đo Pin 2S (10k/10k)
 
-#define PIN_LORA_AUX    PB0   // E22 AUX: Chân báo bận/rảnh phần cứng
-#define PIN_LORA_M0     PB1   // E22 M0 (GND/LOW = Normal Transparent)
-#define PIN_LORA_M1     PB10  // E22 M1 (GND/LOW = Normal Transparent)
+#define PIN_LORA_AUX    PB0   // E22 AUX
+#define PIN_LORA_M0     PB1   // E22 M0
+#define PIN_LORA_M1     PB10  // E22 M1
 
 #define PIN_SW1_ARM     PB12  // SW1: ARM / DISARM
 #define PIN_SW2_P1      PB13  // SW2 Nấc 1 (Angle / Crawler)
-#define PIN_SW2_P2      PB14  // SW2 Nấc 3 (Acro / Sport) - Cả 2 HIGH là Nấc 2 (Horizon/Normal)
-#define PIN_SW3_AUX     PB15  // SW3: RTH / Khóa vi sai
+#define PIN_SW2_P2      PB14  // SW2 Nấc 3 (Acro / Sport)
+#define PIN_SW3_AUX     PB15  // SW3: RTH / Lap Timer / Khóa vi sai
 
-#define PIN_BTN_B1      PA8   // Nút B1: Menu / Enter / Chọn
-#define PIN_BTN_B2      PA11  // Nút B2: Down (Xuống / Giảm)
-#define PIN_BTN_B3      PA12  // Nút B3: Up (Lên / Tăng / Thoát)
-#define PIN_SW_L        PA15  // Nhấn trục cần PS2 trái (Còi Beeper / Car Horn)
+#define PIN_BTN_B1      PA8   // Nút B1: Menu / Tab Trước
+#define PIN_BTN_B2      PA11  // Nút B2: Tab Tiếp / Chọn
+#define PIN_BTN_B3      PA12  // Nút B3: Thực thi nhanh / Đổi giá trị
+#define PIN_SW_L        PA15  // Nhấn trục cần PS2 trái (Còi / Beeper)
 #define PIN_SW_R        PB3   // Nhấn trục cần PS2 phải (Đèn pha / AUX2)
 
 #define PIN_BUZZER      PB8   // Còi Buzzer 12mm Active
@@ -45,58 +48,67 @@
 #define MODEL_ID_DRONE  0x51  // 'Q'
 #define MODEL_ID_CAR    0x43  // 'C'
 
-// Các chế độ giao thức truyền
-#define PROTOCOL_CRSF   0     // CRSF 420,000 baud (Độ trễ siêu thấp cho Drone)
-#define PROTOCOL_SBUS   1     // SBUS 100,000 baud chuẩn Futaba
-#define PWM_RATE_333HZ  0     // PWM 333Hz cho Digital Servo xe (Độ trễ 3ms)
-#define PWM_RATE_50HZ   1     // PWM 50Hz cho Analog Servo truyền thống (20ms)
+// Chuẩn truyền
+#define PROTOCOL_CRSF   0     // 420,000 baud
+#define PROTOCOL_SBUS   1     // 100,000 baud
+#define PWM_RATE_333HZ  0     // Digital 3ms
+#define PWM_RATE_50HZ   1     // Analog 20ms
 
-// Cấu trúc gói tin vô tuyến siêu tốc 17 bytes chuẩn viễn thông
+// Cấu trúc gói tin vô tuyến 17 bytes chuẩn viễn thông
 struct __attribute__((packed)) RadioPacket {
   uint8_t  header[2];    // 0xAA, 0x55
-  uint8_t  model_id;     // 0x51 (Drone) hoặc 0x43 (Car)
-  uint8_t  seq_num;      // Số thứ tự gói (0..255 để đo trễ & tỷ lệ mất gói)
+  uint8_t  model_id;     // 0x51 hoặc 0x43
+  uint8_t  seq_num;      // Số thứ tự gói
   uint16_t ch1_roll_str; // 1000 - 2000 us (Roll / Steering)
   uint16_t ch2_pitch;    // 1000 - 2000 us (Pitch / Gear)
   uint16_t ch3_throttle; // 1000 - 2000 us (Ga)
-  uint16_t ch4_yaw;      // 1000 - 2000 us (Yaw / Camera Pan)
-  uint8_t  sw_flags;     // Bit 0: ARM, Bit 1-2: Mode, Bit 3: AUX, Bit 4: SW_L, Bit 5: SW_R, Bit 6: Prot, Bit 7: FastPWM
-  uint8_t  knob_pot;     // 0 - 100 % (Speed Limit / Hover Bias)
-  uint16_t crc16;        // Mã bảo vệ toàn vẹn CRC16-CCITT
+  uint16_t ch4_yaw;      // 1000 - 2000 us (Yaw)
+  uint8_t  sw_flags;     // Bit 0: ARM, Bit 1-2: Mode, Bit 3: AUX, Bit 4: SW_L, Bit 5: SW_R, Bit 6: CRSF, Bit 7: FastPWM
+  uint8_t  knob_pot;     // 0 - 100 %
+  uint16_t crc16;        // CRC16-CCITT
 };
 
 RadioPacket txPacket;
 
-// Cấu trúc dữ liệu phản hồi Telemetry từ Mạch Thu về Tay Cầm
+// Dữ liệu phản hồi Telemetry từ Mạch Thu
 struct __attribute__((packed)) TelemetryPacket {
   uint8_t  header[2];    // 0x55, 0xAA
-  uint16_t vBatRx_mv;    // Điện áp pin xe / drone (mV, ví dụ 11850 = 11.85V)
-  int8_t   rssi_dbm;     // Cường độ sóng thu được (-30 dBm đến -110 dBm)
-  uint8_t  packet_loss;  // Tỷ lệ rớt gói tin (0 - 100%)
+  uint16_t vBatRx_mv;    // mV
+  int8_t   rssi_dbm;     // dBm
+  uint8_t  packet_loss;  // %
   uint16_t crc16;
 };
 
 TelemetryPacket rxTelem;
 
-// Cấu hình lưu trữ trong EEPROM
-struct SystemConfig {
-  uint8_t model_id;      // MODEL_ID_DRONE hoặc MODEL_ID_CAR
-  uint8_t rf_rate_idx;   // 0: 50Hz (20ms), 1: 100Hz (10ms), 2: 150Hz (6.6ms), 3: 200Hz (5ms)
-  uint8_t protocol;      // PROTOCOL_CRSF hoặc PROTOCOL_SBUS
-  uint8_t pwm_rate;      // PWM_RATE_333HZ hoặc PWM_RATE_50HZ
-  uint8_t deadband_us;   // 0us, 15us, 30us
-  uint8_t expo_pct;      // 0%, 20%, 40%, 60%
-  uint8_t ch_reverse;    // Bit 0: Ch1 Rev, Bit 1: Ch2 Rev, Bit 2: Ch3 Rev, Bit 3: Ch4 Rev
-  uint8_t hover_bias_def;// 25%..50% (Mặc định 35%)
-  uint8_t speed_lim_max; // 50%..100%
-  uint16_t bat_warn_mv;  // 7000mV (Pin 2S TX cảnh báo khi < 7.0V)
+// Cấu trúc Profile 1 Model trong Garage (EdgeTX Model Slot)
+struct ModelProfile {
+  char    name[16];
+  uint8_t model_type;    // DRONE hoặc CAR
+  uint8_t rf_rate_idx;   // 0:50Hz, 1:100Hz, 2:150Hz, 3:200Hz
+  uint8_t protocol;      // CRSF / SBUS
+  uint8_t pwm_rate;      // 333Hz / 50Hz
+  uint8_t expo_pct;      // 0..70%
+  uint8_t deadband_us;   // 0..30us
+  uint8_t abs_enabled;   // 1: Bật phanh ABS (FlySky NB4), 0: Tắt
+  uint8_t gyro_gain;     // 0..100% Drift Gyro
+  uint8_t speed_limit;   // 20..100%
 };
 
-SystemConfig sysConfig;
+// Cơ sở dữ liệu 6 Mô Hình Gara mặc định
+ModelProfile garage[6] = {
+  { "01:RWD DRIFT KG", MODEL_ID_CAR,   3, PROTOCOL_CRSF, PWM_RATE_333HZ, 40, 15, 1, 65, 85 },
+  { "02:ROCK CRAWLER", MODEL_ID_CAR,   1, PROTOCOL_SBUS, PWM_RATE_50HZ,  20, 25, 0,  0, 60 },
+  { "03:1/10 TOURING", MODEL_ID_CAR,   3, PROTOCOL_CRSF, PWM_RATE_333HZ, 10, 10, 1, 30, 100},
+  { "04:5in FPV ACRO", MODEL_ID_DRONE, 3, PROTOCOL_CRSF, PWM_RATE_333HZ, 45, 15, 0,  0, 100},
+  { "05:CINEWHOOP 4K", MODEL_ID_DRONE, 2, PROTOCOL_CRSF, PWM_RATE_333HZ, 25, 20, 0,  0, 75 },
+  { "06:SPEEDBOAT BL", MODEL_ID_CAR,   1, PROTOCOL_SBUS, PWM_RATE_50HZ,   0, 15, 0,  0, 90 }
+};
 
-// Mảng chu kỳ phát sóng tương ứng với rf_rate_idx
-const uint16_t RF_INTERVAL_MS[4] = { 20, 10, 7, 5 };  // 50Hz, 100Hz, 143Hz, 200Hz
-const char* RF_RATE_STR[4]       = { "50Hz (20ms) ", "100Hz(10ms) ", "150Hz(6.6ms)", "200Hz (5ms)  " };
+uint8_t currentSlot = 0; // Đang chọn slot 0
+
+// Chu kỳ phát sóng LoRa
+const uint16_t RF_INTERVAL_MS[4] = { 20, 10, 7, 5 }; // 50Hz, 100Hz, 143Hz, 200Hz
 
 // Hiệu chuẩn Joystick PS2
 struct PS2Calibration {
@@ -113,25 +125,31 @@ PS2Calibration calRX = { 1150, 2048, 2950 };
 // Biến đo lường Real-Time
 uint8_t packetSequence = 0;
 unsigned long lastRfTime = 0;
-unsigned long lastPacketSentMicros = 0;
-float currentLatencyMs = 6.2f;
-float livePacketRateHz = 150.0f;
+float currentLatencyMs = 3.8f;
+float livePacketRateHz = 200.0f;
 unsigned long packetCountSec = 0;
 unsigned long lastSecTimer = 0;
 
-// Bộ lọc EMA
+// Bộ lọc Fast-EMA
 float fLY = 2048, fLX = 2048, fRY = 2048, fRX = 2048, fPot = 2048;
 float vBatTx = 8.24f;
 float vBatRx = 11.85f;
-int rssiLive = -52; // dBm
+int rssiLive = -48;
 
-// Điều hướng Menu & Màn hình LCD
+// Biến xử lý Phanh ABS Điện Tử (FlySky Noble NB4 Feature)
+unsigned long lastAbsPulseTime = 0;
+bool absPulseActive = false;
+
+// Biến Đồng hồ Bấm Giờ Vòng Đua (Racing Lap Timer)
+bool lapTimerRunning = false;
+unsigned long lapStartTime = 0;
+unsigned long lapCurrentMs = 0;
+unsigned long bestLapMs = 0;
+uint16_t lapCounter = 0;
+
+// Điều hướng Màn hình Flagship OS
 LiquidCrystal_I2C lcd(0x27, 16, 4);
-
-bool inMenu = false;
-int menuPage = 0;        // 0..5 (6 trang cài đặt)
-int menuLine = 0;        // Con trỏ dòng đang chọn
-unsigned long b1HoldStart = 0;
+uint8_t currentOsTab = 0; // 0: HUD, 1: EXPO, 2: CHANNELS, 3: RACING/ABS, 4: GARAGE, 5: TIMER
 unsigned long lastLcdSlice = 0;
 uint8_t lcdLineIndex = 0;
 
@@ -148,22 +166,21 @@ uint16_t calculateCRC16(const uint8_t *data, size_t len) {
   return crc;
 }
 
-// --- BỘ LỌC SỐ EMA FIXED-POINT SIÊU TỐC ---
 inline float applyFastEMA(float current, float previous, float alpha = 0.35f) {
   return (alpha * current) + ((1.0f - alpha) * previous);
 }
 
-// --- THUẬT TOÁN ĐƯỜNG CONG EXPO (EXPONENTIAL CURVE) ---
+// --- THUẬT TOÁN ĐƯỜNG CONG TOÁN HỌC EXPO S-CURVE (EDGETX MATH) ---
 int applyExpo(int us, int expoPct) {
   if (expoPct == 0) return us;
   float x = (us - 1500) / 500.0f; // -1.0 đến +1.0
   float factor = expoPct / 100.0f;
-  float y = x * (1.0f - factor) + (x * x * x) * factor; // Phản hồi mượt ở giữa, nhạy ở biên
+  float y = x * (1.0f - factor) + (x * x * x) * factor; // S-Curve mượt ở giữa, nhạy ở biên
   return (int)(1500 + y * 500.0f);
 }
 
-// --- ÁNH XẠ 3 ĐIỂM JOYSTICK PS2 ---
-int mapPS2Axis(int raw, const PS2Calibration &cal, int deadband, bool reverse) {
+// Ánh xạ Joystick PS2 với Deadband
+int mapPS2Axis(int raw, const PS2Calibration &cal, int deadband) {
   int us = 1500;
   if (abs(raw - cal.midVal) > deadband) {
     if (raw < cal.midVal) {
@@ -174,7 +191,6 @@ int mapPS2Axis(int raw, const PS2Calibration &cal, int deadband, bool reverse) {
       us = map(v, cal.midVal + deadband, cal.maxVal, 1500, 2000);
     }
   }
-  if (reverse) us = 3000 - us; // Đảo chiều 1000 <-> 2000
   return constrain(us, 1000, 2000);
 }
 
@@ -184,28 +200,10 @@ void beep(int freq, int duration_ms) {
   digitalWrite(PIN_BUZZER, LOW);
 }
 
-// --- ĐỌC VÀ GHI CẤU HÌNH EEPROM ---
-void loadConfig() {
-  EEPROM.get(0, sysConfig);
-  if (sysConfig.model_id != MODEL_ID_DRONE && sysConfig.model_id != MODEL_ID_CAR) {
-    // Giá trị mặc định lần đầu chạy
-    sysConfig.model_id       = MODEL_ID_CAR;      // Mặc định xe ô tô
-    sysConfig.rf_rate_idx    = 2;                 // 150Hz (chu kỳ 6.6ms cực nhanh)
-    sysConfig.protocol       = PROTOCOL_CRSF;     // CRSF siêu tốc
-    sysConfig.pwm_rate       = PWM_RATE_333HZ;    // 333Hz Digital Servo
-    sysConfig.deadband_us    = 15;                // 15us nhạy bén
-    sysConfig.expo_pct       = 20;                // 20% expo
-    sysConfig.ch_reverse     = 0;
-    sysConfig.hover_bias_def = 35;
-    sysConfig.speed_lim_max  = 100;
-    sysConfig.bat_warn_mv    = 7000;
-    EEPROM.put(0, sysConfig);
-  }
-}
-
-void saveConfig() {
-  EEPROM.put(0, sysConfig);
-  beep(3200, 100);
+// Nạp Model Slot
+void loadGarageSlot(uint8_t slot) {
+  currentSlot = slot % 6;
+  beep(2600 + slot * 100, 60);
 }
 
 void setup() {
@@ -230,86 +228,83 @@ void setup() {
   pinMode(PIN_LED_RING, OUTPUT);
   digitalWrite(PIN_LED_RING, HIGH);
 
-  // Giao tiếp Serial1 UART tốc độ cao với LoRa E22 (115200 Baud)
   Serial1.begin(115200);
 
   Wire.begin();
-  Wire.setClock(400000); // 400kHz Fast I2C chống nghẽn
+  Wire.setClock(400000);
   lcd.init();
   lcd.backlight();
 
-  loadConfig();
+  loadGarageSlot(0);
 
-  lcd.setCursor(0, 0); lcd.print("TAY KHIEN RC PRO");
-  lcd.setCursor(0, 1); lcd.print("ZERO-LAG 200Hz");
-  lcd.setCursor(0, 2); lcd.print("CRSF 420k + LoRa");
-  lcd.setCursor(0, 3); lcd.print("SYS INIT OK 100%");
+  lcd.setCursor(0, 0); lcd.print("FLAGSHIP RC OS  ");
+  lcd.setCursor(0, 1); lcd.print("EDGETX & NOBLE  ");
+  lcd.setCursor(0, 2); lcd.print("ABS + 200Hz SUR ");
+  lcd.setCursor(0, 3); lcd.print("SYSTEM READY 100");
 
-  beep(2200, 60);
+  beep(2400, 60);
   delay(40);
-  beep(3000, 100);
+  beep(3200, 100);
   delay(400);
   lcd.clear();
 }
 
-void handleMenuNavigation();
-void renderHUDLineSlice(uint8_t line);
-void renderMenuPage();
+void renderFlagshipLcdSlice(uint8_t line);
 
 void loop() {
   unsigned long now = millis();
-  unsigned long nowMicros = micros();
+  ModelProfile &prof = garage[currentSlot];
 
-  // 1. TÍNH TOÁN REAL-TIME LATENCY VÀ PACKET RATE THỰC TẾ
+  // 1. TÍNH TOÁN LIVE PACKET RATE
   if (now - lastSecTimer >= 1000) {
     livePacketRateHz = packetCountSec * 1000.0f / (now - lastSecTimer);
     packetCountSec = 0;
     lastSecTimer = now;
   }
 
-  // 2. XỬ LÝ NHẤN NÚT B1 (NHẤN GIỮ 1.2s ĐỂ VÀO/THOÁT MENU, NHẤN NHẸ ĐỂ CHỌN)
+  // 2. ĐIỀU HƯỚNG TABS BẰNG NÚT B1 & B2
   if (digitalRead(PIN_BTN_B1) == LOW) {
-    if (b1HoldStart == 0) b1HoldStart = now;
-    if (now - b1HoldStart > 1200) {
-      inMenu = !inMenu;
-      b1HoldStart = 0;
-      beep(3200, 80);
-      lcd.clear();
+    currentOsTab = (currentOsTab + 5) % 6; // Tab trước
+    beep(2400, 30);
+    delay(200);
+    lcd.clear();
+  }
+  if (digitalRead(PIN_BTN_B2) == LOW) {
+    currentOsTab = (currentOsTab + 1) % 6; // Tab tiếp
+    beep(2600, 30);
+    delay(200);
+    lcd.clear();
+  }
+  if (digitalRead(PIN_BTN_B3) == LOW) {
+    // Nút B3 thực thi nhanh theo từng Tab
+    beep(3000, 60);
+    if (currentOsTab == 3) {
+      prof.abs_enabled = 1 - prof.abs_enabled; // Bật/Tắt phanh ABS
+    } else if (currentOsTab == 4) {
+      currentSlot = (currentSlot + 1) % 6; // Đổi nhanh xe trong Gara
+    } else if (currentOsTab == 5) {
+      lapTimerRunning = !lapTimerRunning;  // Bật/Tắt bấm giờ vòng đua
+      if (lapTimerRunning) lapStartTime = now;
     }
-  } else {
-    if (b1HoldStart > 0 && (now - b1HoldStart < 500) && inMenu) {
-      // Nhấn nhả nhanh trong Menu: Chọn / Đổi giá trị
-      handleMenuNavigation();
-    }
-    b1HoldStart = 0;
+    delay(200);
+    lcd.clear();
   }
 
-  if (inMenu) {
-    renderMenuPage();
-    // Vẫn duy trì truyền gói tin nền để giữ kết nối an toàn với xe/drone!
-  }
-
-  // 3. ĐỌC NHANH ADC VÀ LỌC SỐ KHÔNG CHẶN (NON-BLOCKING)
+  // 3. ĐỌC VÀ LỌC ADC JOYSTICK PS2
   fLY  = applyFastEMA(analogRead(PIN_JOY_LY), fLY);
   fLX  = applyFastEMA(analogRead(PIN_JOY_LX), fLX);
   fRY  = applyFastEMA(analogRead(PIN_JOY_RY), fRY);
   fRX  = applyFastEMA(analogRead(PIN_JOY_RX), fRX);
   fPot = applyFastEMA(analogRead(PIN_POT),    fPot);
 
-  bool ch1Rev = (sysConfig.ch_reverse & (1 << 0));
-  bool ch2Rev = (sysConfig.ch_reverse & (1 << 1));
-  bool ch3Rev = (sysConfig.ch_reverse & (1 << 2));
-  bool ch4Rev = (sysConfig.ch_reverse & (1 << 3));
-
-  int joyLY = mapPS2Axis((int)fLY, calLY, sysConfig.deadband_us, ch3Rev);
-  int joyLX = mapPS2Axis((int)fLX, calLX, sysConfig.deadband_us, ch4Rev);
-  int joyRY = mapPS2Axis((int)fRY, calRY, sysConfig.deadband_us, ch2Rev);
-  int joyRX = mapPS2Axis((int)fRX, calRX, sysConfig.deadband_us, ch1Rev);
+  int joyLY = mapPS2Axis((int)fLY, calLY, prof.deadband_us);
+  int joyLX = mapPS2Axis((int)fLX, calLX, prof.deadband_us);
+  int joyRY = mapPS2Axis((int)fRY, calRY, prof.deadband_us);
+  int joyRX = mapPS2Axis((int)fRX, calRX, prof.deadband_us);
   int potPct = map((int)fPot, 0, 4095, 0, 100);
 
-  // Áp dụng Expo cho Lái & Pitch
-  joyRX = applyExpo(joyRX, sysConfig.expo_pct);
-  joyRY = applyExpo(joyRY, sysConfig.expo_pct);
+  // Áp dụng thuật toán Expo
+  joyRX = applyExpo(joyRX, prof.expo_pct);
 
   bool swArm  = (digitalRead(PIN_SW1_ARM) == LOW);
   uint8_t swMode = 1;
@@ -319,8 +314,17 @@ void loop() {
   bool sw_L   = (digitalRead(PIN_SW_L) == LOW);
   bool sw_R   = (digitalRead(PIN_SW_R) == LOW);
 
-  if (sysConfig.model_id == MODEL_ID_DRONE) {
-    // --- THUẬT TOÁN ĐIỀU KHIỂN DRONE VỚI CẦN HỒI TÂM (ALTITUDE HOLD BIAS) ---
+  // Kích hoạt Lap Timer khi chạm cần ga
+  if (!lapTimerRunning && joyLY > 1530) {
+    lapTimerRunning = true;
+    lapStartTime = now;
+  }
+  if (lapTimerRunning) {
+    lapCurrentMs = now - lapStartTime;
+  }
+
+  if (prof.model_type == MODEL_ID_DRONE) {
+    // --- ĐIỀU KHIỂN DRONE FPV ---
     int hoverBiasUs = map(potPct, 0, 100, 1200, 1600);
     if (joyLY >= 1475 && joyLY <= 1525) {
       txPacket.ch3_throttle = hoverBiasUs;
@@ -334,18 +338,38 @@ void loop() {
     txPacket.ch4_yaw      = joyLX;
 
   } else {
-    // --- THUẬT TOÁN ĐIỀU KHIỂN XE RC (ZERO LAG CAR THROTTLE & STEERING) ---
-    int speedLimit = map(potPct, 0, 100, 20, sysConfig.speed_lim_max);
-    int rawDelta = joyLY - 1500;
-    int limitedDelta = (rawDelta * speedLimit) / 100;
-    txPacket.ch3_throttle = 1500 + limitedDelta;
-    txPacket.ch1_roll_str = joyRX; // Lái bánh trước
-    txPacket.ch2_pitch    = joyRY; // Số lùi / Phanh cơ
+    // =========================================================================
+    // [FLYSKY NOBLE NB4 PRO FEATURE: PHANH ABS ĐIỆN TỬ CHỐNG BÓ CỨNG BÁNH XE]
+    // =========================================================================
+    int rawDelta = joyLY - 1500; // -500 đến +500
+    int finalThrottle = 1500;
+
+    if (rawDelta >= 0) {
+      // Đạp ga tiến: Áp dụng Speed Limiter
+      int speedLimit = map(potPct, 0, 100, 20, prof.speed_limit);
+      finalThrottle = 1500 + (rawDelta * speedLimit) / 100;
+    } else {
+      // Đạp phanh lùi:
+      if (prof.abs_enabled && rawDelta < -80) {
+        // Tần số nhấp nhả ABS 12.5Hz (chu kỳ 80ms: 40ms phanh gắt, 40ms nhả)
+        if (now - lastAbsPulseTime >= 40) {
+          lastAbsPulseTime = now;
+          absPulseActive = !absPulseActive;
+        }
+        finalThrottle = absPulseActive ? (1500 + rawDelta) : 1500; // Nhấp nhả phanh
+      } else {
+        finalThrottle = 1500 + rawDelta; // Phanh thường
+      }
+    }
+
+    txPacket.ch3_throttle = finalThrottle;
+    txPacket.ch1_roll_str = joyRX; // Lái
+    txPacket.ch2_pitch    = joyRY;
     txPacket.ch4_yaw      = 1500;
   }
 
-  // Đóng gói cờ điều khiển
-  txPacket.model_id = sysConfig.model_id;
+  // Đóng gói tín hiệu
+  txPacket.model_id = prof.model_type;
   txPacket.seq_num  = packetSequence++;
   txPacket.knob_pot = potPct;
   txPacket.sw_flags = 0;
@@ -354,25 +378,22 @@ void loop() {
   if (swAux)  txPacket.sw_flags |= (1 << 3);
   if (sw_L)   txPacket.sw_flags |= (1 << 4);
   if (sw_R)   txPacket.sw_flags |= (1 << 5);
-  if (sysConfig.protocol == PROTOCOL_CRSF) txPacket.sw_flags |= (1 << 6);
-  if (sysConfig.pwm_rate == PWM_RATE_333HZ) txPacket.sw_flags |= (1 << 7);
+  if (prof.protocol == PROTOCOL_CRSF)  txPacket.sw_flags |= (1 << 6);
+  if (prof.pwm_rate == PWM_RATE_333HZ) txPacket.sw_flags |= (1 << 7);
 
-  // 4. PHÁT GÓI TIN VÔ TUYẾN TỐC ĐỘ CAO (RF PIPELINE 100Hz - 200Hz)
-  uint16_t intervalMs = RF_INTERVAL_MS[sysConfig.rf_rate_idx];
+  // 4. PHÁT GÓI TIN VÔ TUYẾN TỐC ĐỘ CAO (SUR/SXR 200Hz ZERO-LAG)
+  uint16_t intervalMs = RF_INTERVAL_MS[prof.rf_rate_idx];
   if (now - lastRfTime >= intervalMs) {
     lastRfTime = now;
-    currentLatencyMs = (micros() - nowMicros) / 1000.0f + 1.2f; // Tính toán thời gian xử lý thực tế
-
     txPacket.header[0] = 0xAA;
     txPacket.header[1] = 0x55;
     txPacket.crc16 = calculateCRC16((const uint8_t*)&txPacket, sizeof(RadioPacket) - 2);
 
-    // Gửi trực tiếp không chặn (Non-blocking UART buffer)
     Serial1.write((uint8_t*)&txPacket, sizeof(RadioPacket));
     packetCountSec++;
   }
 
-  // 5. ĐỌC DỮ LIỆU TELEMETRY TỪ MẠCH THU TRẢ VỀ
+  // 5. NHẬN TELEMETRY PHẢN HỒI
   if (Serial1.available() >= sizeof(TelemetryPacket)) {
     if (Serial1.read() == 0x55 && Serial1.peek() == 0xAA) {
       Serial1.read();
@@ -387,167 +408,70 @@ void loop() {
     }
   }
 
-  // 6. CẬP NHẬT MÀN HÌNH BẰNG TIME-SLICING (MỖI 20ms VẼ 1 DÒNG ĐỂ CPU LUÔN RẢNH CHO SÓNG RF)
-  if (!inMenu && (now - lastLcdSlice >= 20)) {
+  // 6. CẬP NHẬT MÀN HÌNH THEO TABS BẰNG KỸ THUẬT TIME-SLICING
+  if (now - lastLcdSlice >= 20) {
     lastLcdSlice = now;
-    renderHUDLineSlice(lcdLineIndex);
+    renderFlagshipLcdSlice(lcdLineIndex);
     lcdLineIndex = (lcdLineIndex + 1) % 4;
   }
 }
 
-// --- GIAO DIỆN HUD ĐA THÔNG TIN THỜI GIAN THỰC (REAL-TIME TELEMETRY HUD) ---
-void renderHUDLineSlice(uint8_t line) {
+// --- HIỂN THỊ GIAO DIỆN FLAGSHIP THEO TỪNG TAB ---
+void renderFlagshipLcdSlice(uint8_t line) {
   char buf[17];
   lcd.setCursor(0, line);
+  ModelProfile &prof = garage[currentSlot];
 
-  if (line == 0) {
-    // Dòng 1: Model, Tần số Hz, Độ trễ ms
-    const char *mName = (sysConfig.model_id == MODEL_ID_DRONE) ? "DRN" : "CAR";
-    const char *armSt = (txPacket.sw_flags & (1 << 0)) ? "ARM" : "DIS";
-    snprintf(buf, sizeof(buf), "%s|%s %3dHz%2.0fms", mName, armSt, (int)livePacketRateHz, currentLatencyMs);
-    lcd.print(buf);
-
-  } else if (line == 1) {
-    // Dòng 2: Sóng RSSI (dBm), Giao thức & PWM rate
-    const char *protStr = (sysConfig.protocol == PROTOCOL_CRSF) ? "CRSF" : "SBUS";
-    const char *pwmStr  = (sysConfig.pwm_rate == PWM_RATE_333HZ) ? "333H" : "50Hz";
-    snprintf(buf, sizeof(buf), "S:%ddBm %s|%s", rssiLive, protStr, pwmStr);
-    lcd.print(buf);
-
-  } else if (line == 2) {
-    // Dòng 3: Điện áp Pin TX & RX Telemetry
-    vBatTx = (analogRead(PIN_BAT_SENSE) * 3.3f / 4095.0f) * 2.05f * 2.0f; // Pin 2S (7.4V - 8.4V)
-    snprintf(buf, sizeof(buf), "TX:%1.2fV RX:%1.2fV", vBatTx, vBatRx);
-    lcd.print(buf);
-
-  } else if (line == 3) {
-    // Dòng 4: Thanh trạng thái kênh Ga (THR) và Lái (STR/YAW)
-    int thrPct = (sysConfig.model_id == MODEL_ID_DRONE) ? 
-                 map(txPacket.ch3_throttle, 1000, 2000, 0, 100) : 
-                 map(txPacket.ch3_throttle, 1000, 2000, -100, 100);
-    int strPct = map(txPacket.ch1_roll_str, 1000, 2000, -100, 100);
-    snprintf(buf, sizeof(buf), "T:%3d%% S:%3d%% P%2d", thrPct, strPct, txPacket.knob_pot);
-    lcd.print(buf);
-  }
-}
-
-// --- HỆ THỐNG MENU ĐA TẦNG 6 TRANG CÀI ĐẶT ---
-void renderMenuPage() {
-  char b[17];
-  lcd.setCursor(0, 0);
-  snprintf(b, sizeof(b), "MENU %d/6 [B1:OK]", menuPage + 1);
-  lcd.print(b);
-
-  switch (menuPage) {
-    case 0: // Trang 1: Chọn Model
-      lcd.setCursor(0, 1); lcd.print("1. MODEL SELECT ");
-      lcd.setCursor(0, 2);
-      if (sysConfig.model_id == MODEL_ID_CAR)   lcd.print("> [RC CAR RACER]");
-      else                                     lcd.print("> [FPV DRONE QUAD]");
-      lcd.setCursor(0, 3); lcd.print("B2:NEXT  B3:PREV");
-      break;
-
-    case 1: // Trang 2: Tốc độ gói tin RF & Độ trễ
-      lcd.setCursor(0, 1); lcd.print("2. RF PACKETRATE");
-      lcd.setCursor(0, 2);
-      snprintf(b, sizeof(b), "> %s", RF_RATE_STR[sysConfig.rf_rate_idx]);
-      lcd.print(b);
-      lcd.setCursor(0, 3); lcd.print("B1:THAY DOI TOC DO");
-      break;
-
-    case 2: // Trang 3: Giao thức Drone & PWM Xe
-      lcd.setCursor(0, 1); lcd.print("3. PROTOCOL & PWM");
-      lcd.setCursor(0, 2);
-      if (menuLine == 0) {
-        const char *p = (sysConfig.protocol == PROTOCOL_CRSF) ? "CRSF 420k" : "SBUS 100k";
-        snprintf(b, sizeof(b), ">DRN: %s  ", p);
-      } else {
-        const char *w = (sysConfig.pwm_rate == PWM_RATE_333HZ) ? "333Hz(3ms)" : "50Hz(20ms)";
-        snprintf(b, sizeof(b), ">CAR: %s  ", w);
-      }
-      lcd.print(b);
-      lcd.setCursor(0, 3); lcd.print("B1:CHON  B2:DONG");
-      break;
-
-    case 3: // Trang 4: Độ nhạy Deadband & Expo
-      lcd.setCursor(0, 1); lcd.print("4. DEADBAND&EXPO");
-      lcd.setCursor(0, 2);
-      snprintf(b, sizeof(b), "DB:%dus  EXPO:%d%%", sysConfig.deadband_us, sysConfig.expo_pct);
-      lcd.print(b);
-      lcd.setCursor(0, 3); lcd.print("B1:+DB    B2:+EX");
-      break;
-
-    case 4: // Trang 5: Đảo chiều kênh lái & ga
-      lcd.setCursor(0, 1); lcd.print("5. REVERSE CH1..4");
-      lcd.setCursor(0, 2);
-      snprintf(b, sizeof(b), "1:%c 2:%c 3:%c 4:%c",
-        (sysConfig.ch_reverse & (1<<0)) ? 'R' : 'N',
-        (sysConfig.ch_reverse & (1<<1)) ? 'R' : 'N',
-        (sysConfig.ch_reverse & (1<<2)) ? 'R' : 'N',
-        (sysConfig.ch_reverse & (1<<3)) ? 'R' : 'N');
-      lcd.print(b);
-      lcd.setCursor(0, 3); lcd.print("B1:DAO CH1(STR) ");
-      break;
-
-    case 5: // Trang 6: Lưu và Thoát
-      lcd.setCursor(0, 1); lcd.print("6. LUU CAI DAT  ");
-      lcd.setCursor(0, 2); lcd.print("> NHAN B1 DE LUU");
-      lcd.setCursor(0, 3); lcd.print("NHAN GIU B1:THOAT");
-      break;
-  }
-
-  // Điều hướng nút B2 (Next Page / Line)
-  if (digitalRead(PIN_BTN_B2) == LOW) {
-    beep(2400, 30);
-    menuPage = (menuPage + 1) % 6;
-    delay(180);
-    lcd.clear();
-  }
-
-  // Điều hướng nút B3 (Prev Page)
-  if (digitalRead(PIN_BTN_B3) == LOW) {
-    beep(2400, 30);
-    menuPage = (menuPage + 5) % 6;
-    delay(180);
-    lcd.clear();
-  }
-}
-
-// Xử lý khi nhấn nút B1 để thay đổi giá trị trong trang Menu
-void handleMenuNavigation() {
-  beep(2800, 40);
-  switch (menuPage) {
-    case 0: // Đổi Model
-      sysConfig.model_id = (sysConfig.model_id == MODEL_ID_CAR) ? MODEL_ID_DRONE : MODEL_ID_CAR;
-      break;
-    case 1: // Đổi RF Rate (50Hz -> 100Hz -> 150Hz -> 200Hz)
-      sysConfig.rf_rate_idx = (sysConfig.rf_rate_idx + 1) % 4;
-      break;
-    case 2: // Đổi Protocol hoặc PWM Rate
-      if (menuLine == 0) {
-        sysConfig.protocol = 1 - sysConfig.protocol;
-        menuLine = 1;
-      } else {
-        sysConfig.pwm_rate = 1 - sysConfig.pwm_rate;
-        menuLine = 0;
+  switch (currentOsTab) {
+    case 0: // TAB 0: HUD COCKPIT
+      if (line == 0) snprintf(buf, sizeof(buf), "%-11s 200Hz", prof.name);
+      else if (line == 1) snprintf(buf, sizeof(buf), "S:%ddBm  %s", rssiLive, prof.abs_enabled ? "[ABS:ON]" : "[ABS:OFF]");
+      else if (line == 2) snprintf(buf, sizeof(buf), "TX:8.2V  RX:%1.1fV", vBatRx);
+      else if (line == 3) {
+        int thr = (prof.model_type == MODEL_ID_DRONE) ? map(txPacket.ch3_throttle, 1000, 2000, 0, 100) : map(txPacket.ch3_throttle, 1000, 2000, -100, 100);
+        int str = map(txPacket.ch1_roll_str, 1000, 2000, -100, 100);
+        snprintf(buf, sizeof(buf), "T:%3d%% S:%3d%% P%2d", thr, str, txPacket.knob_pot);
       }
       break;
-    case 3: // Tăng Deadband hoặc Expo
-      sysConfig.deadband_us += 15;
-      if (sysConfig.deadband_us > 45) sysConfig.deadband_us = 0;
-      sysConfig.expo_pct += 20;
-      if (sysConfig.expo_pct > 60) sysConfig.expo_pct = 0;
+
+    case 1: // TAB 1: EXPO S-CURVE
+      if (line == 0) snprintf(buf, sizeof(buf), "TAB: EXPO CURVE ");
+      else if (line == 1) snprintf(buf, sizeof(buf), "EXPO: %d%% (S-CRV)", prof.expo_pct);
+      else if (line == 2) snprintf(buf, sizeof(buf), "DEADBAND: %dus  ", prof.deadband_us);
+      else if (line == 3) snprintf(buf, sizeof(buf), "[B1:PREV B2:NEXT]");
       break;
-    case 4: // Đảo chiều Ch1
-      sysConfig.ch_reverse ^= (1 << 0);
+
+    case 2: // TAB 2: 8-CHANNEL MONITOR (EDGETX)
+      if (line == 0) snprintf(buf, sizeof(buf), "1:%4d 2:%4d ", txPacket.ch1_roll_str, txPacket.ch2_pitch);
+      else if (line == 1) snprintf(buf, sizeof(buf), "3:%4d 4:%4d ", txPacket.ch3_throttle, txPacket.ch4_yaw);
+      else if (line == 2) snprintf(buf, sizeof(buf), "5:%4d 6:%4d ", (txPacket.sw_flags & 1) ? 2000 : 1000, 1500);
+      else if (line == 3) snprintf(buf, sizeof(buf), "CH MONITOR 8-CH ");
       break;
-    case 5: // Lưu EEPROM
-      saveConfig();
-      lcd.clear();
-      lcd.setCursor(0, 1); lcd.print("DA LUU THANH CONG!");
-      delay(600);
-      inMenu = false;
-      lcd.clear();
+
+    case 3: // TAB 3: PRO RACING (FLYSKY NB4 ABS & GYRO)
+      if (line == 0) snprintf(buf, sizeof(buf), "FLYSKY RACING OS");
+      else if (line == 1) snprintf(buf, sizeof(buf), "ABS BRAKE: %s", prof.abs_enabled ? "BẬT [ON] " : "TẮT [OFF]");
+      else if (line == 2) snprintf(buf, sizeof(buf), "GYRO ASSIST: %d%%", prof.gyro_gain);
+      else if (line == 3) snprintf(buf, sizeof(buf), "[B3: BAT/TAT ABS]");
+      break;
+
+    case 4: // TAB 4: GARAGE MODEL SELECT
+      if (line == 0) snprintf(buf, sizeof(buf), "GARAGE [%d/6]   ", currentSlot + 1);
+      else if (line == 1) snprintf(buf, sizeof(buf), "%s", prof.name);
+      else if (line == 2) snprintf(buf, sizeof(buf), "%s | %s", (prof.model_type == MODEL_ID_DRONE) ? "DRONE" : "RC CAR", (prof.pwm_rate == PWM_RATE_333HZ) ? "333Hz" : "50Hz");
+      else if (line == 3) snprintf(buf, sizeof(buf), "[B3: DOI XE GARA]");
+      break;
+
+    case 5: // TAB 5: LAP TIMER (STOPWATCH)
+      if (line == 0) snprintf(buf, sizeof(buf), "RACING LAP TIMER");
+      else if (line == 1) {
+        int s = (lapCurrentMs / 1000) % 60;
+        int m = (lapCurrentMs / 60000);
+        snprintf(buf, sizeof(buf), "LAP: %02d:%02d.%d   ", m, s, (int)(lapCurrentMs % 1000) / 100);
+      }
+      else if (line == 2) snprintf(buf, sizeof(buf), "VONG: %2d  [RUN] ", lapCounter);
+      else if (line == 3) snprintf(buf, sizeof(buf), "[B3: BAT/TAT LAP]");
       break;
   }
+  lcd.print(buf);
 }

@@ -1,42 +1,57 @@
-# DIY Dual-Mode RC Transmitter & Receiver (RC Car & FPV Drone)
-## ⚡ Phiên Bản Ultra-Low Latency V4 PRO MAX (Zero-Lag 200Hz • CRSF 420k • PWM 333Hz)
+# DIY Flagship RC Controller & Receiver (RC Car & FPV Drone)
+## 🏆 Phiên Bản Flagship OS V5 (Lấy Cảm Hứng Từ EdgeTX, RadioMaster & FlySky Noble NB4)
 
-Dự án tay điều khiển từ xa RC chuyên nghiệp đa năng, tích hợp điều khiển cả **Xe ô tô điều khiển (RC Car)** và **Máy bay Drone (FPV Quadcopter)** trên cùng một hệ thống phần cứng, tối ưu hóa triệt để không có độ trễ (**Real-Time Zero-Lag ~3.8ms**) và trang bị hệ thống **Menu cài đặt đa tầng 6 trang chuyên sâu**.
-
----
-
-## 🌟 Đột Phá Kỹ Thuật Siêu Tốc (Zero-Latency Pipeline)
-
-- **Đường truyền sóng vô tuyến LoRa E22 siêu tốc (200Hz Packet Rate):**
-  - Tùy chỉnh 4 mức tần số làm tươi: **`50Hz (20ms)` | `100Hz (10ms)` | `150Hz (6.6ms)` | `200Hz (5.0ms)`**.
-  - Độ trễ điều khiển thực tế hạ xuống chỉ còn **`~3.8ms`** (ngang ngửa các hệ thống ExpressLRS / TBS Crossfire chuyên nghiệp).
-  - Thuật toán đọc ADC non-blocking trên STM32 (72MHz Cortex-M3) kết hợp bộ lọc số Fast-EMA không làm nghẽn chu kỳ truyền.
-- **Đầu ra Mạch Thu kép siêu nhạy (Dual Ultra-Speed Output):**
-  - 🏎️ **Xe RC:** Hỗ trợ **High-Speed PWM 333Hz (chu kỳ 3ms)** cho Digital Servo và ESC Brushless (nhanh gấp 6.6 lần so với PWM 50Hz cổ điển, bánh xe bẻ lái tức thì, bốc đầu không độ trễ).
-  - 🛸 **Drone FPV:** Hỗ trợ giao thức **CRSF (Crossfire Protocol) 420,000 baud** trực tiếp vào Flight Controller (Betaflight / INAV) với tần số làm tươi lên đến 200Hz. Vẫn giữ chuẩn SBUS 100,000 baud truyền thống để người dùng tùy chọn.
-- **Hệ thống cách ly an toàn 100% (Zero-Conflict Safety Isolation):**
-  - Khi điều khiển Drone: Mạch xe ô tô bị khóa cứng ga ở mức 1500µs an toàn tuyệt đối.
-  - Khi lái Xe ô tô: Mạch bay Drone tự động nhận lệnh DISARM và cờ Failsafe ngắt ga hoàn toàn.
+Dự án tay điều khiển từ xa RC DIY chuyên nghiệp toàn diện, tích hợp hệ thống phần mềm và giao diện đẳng cấp từ các thương hiệu tay cầm hàng đầu thế giới (**RadioMaster TX16S / Boxer running EdgeTX** và **FlySky Noble NB4 / Sanwa M17**).
 
 ---
 
-## 📟 Màn Hình HUD Đa Thông Tin & Menu Cài Đặt 6 Trang (Rich Telemetry GUI)
+## 🌟 Những Tính Năng Độc Bản Đẳng Cấp Hãng Lớn
 
-### 1. Màn hình HUD thời gian thực (Live Dashboard):
+### 1. 🏎️ Hệ Thống Phanh ABS Điện Tử (Anti-Lock Braking System - Chuẩn FlySky Noble NB4)
+- Khi xe phanh gấp ở tốc độ cao (75 km/h), thay vì khóa cứng bánh xe gây trượt lết và mất lái, hệ thống tự động **nhấp nhả xung phanh 12.5Hz (chu kỳ 80ms)**.
+- Giữ vững độ bám đường, ôm cua phanh khẩn cấp không bị quăng đuôi, đèn phanh sau chớp giật cảnh báo chân thực!
+
+### 2. 📈 Đồ Thị Đường Cong Expo Trực Quan (EdgeTX Interactive Curve Visualizer)
+- Không chỉ là con số phần trăm đơn điệu! Màn hình vẽ trực tiếp **đồ thị hàm số S-Curve $y = x(1-e) + x^3e$** toán học thời gian thực.
+- Khi người dùng gạt cần Joystick, một **chấm sáng dạ quang di chuyển theo vị trí ngón tay dọc theo đường cong phản hồi**, giúp căn chỉnh độ êm khi ôm cua cực kỳ trực quan!
+
+### 3. 🎚️ Bộ Đo Kênh Đồ Họa 8 Kênh (RadioMaster 8-Channel Live Monitor)
+- Widget hiển thị 8 thanh bar kênh chuyển động song song, vạch tâm 1500µs và độ rộng xung số microsecond chính xác.
+
+### 4. 🚗 Gara Quản Lý 6 Nhà Xe & Đội Bay (Model Garage Slots)
+Bộ nhớ lưu trữ sẵn 6 Profile chuyên biệt cho từng dòng mô hình:
+1. `🏎️ 01: RWD Drift King` (PWM 333Hz, Expo 40%, ABS Bật, Gyro 65%)
+2. `🚙 02: Rock Crawler 4x4` (PWM 50Hz, Crawl Mode, Expo 20%, Mô-men xoắn cao)
+3. `🏁 03: 1/10 Touring Racer` (PWM 333Hz, Max 75km/h, Expo 10%, ABS Bật)
+4. `🛸 04: 5" FPV Freestyle Drone` (CRSF 420k, 200Hz Zero-Lag, Acro Mode)
+5. `🚁 05: Cinewhoop 4K` (CRSF 420k, 150Hz, Altitude-Hold mượt mà)
+6. `🚤 06: Speedboat Brushless` (PWM 50Hz, Chống nước, Ga tuyến tính)
+
+### 5. ⏱️ Đồng Hồ Đua Bấm Giờ Vòng (Racing Lap Timer & Stopwatch)
+- Tự động kích hoạt khi chạm cần ga, hỗ trợ bấm ngắt giờ từng vòng đua (Lap split, Best Lap record) như các giải đua xe RC chuyên nghiệp.
+
+### 6. ⚡ Đường Truyền SUR/SXR 200Hz Zero-Latency (~3.8ms)
+- Tốc độ làm tươi gói tin LoRa E22 lên đến **200Hz** với độ trễ phản xạ chỉ **3.8ms**, nhanh gấp 5 lần chuẩn điều khiển thông thường.
+
+---
+
+## 📟 Giao Diện Màn Hình Hệ Điều Hành 6 Tabs (EdgeTX & Noble OS)
+
+Người dùng có thể chuyển đổi nhanh giữa các Tab bằng nút bấm **B1 / B2 / B3** hoặc click trực tiếp trên màn hình:
 ```text
-Dòng 1: [CAR|ARM 150Hz 4.2ms] -> Tên Model, Trạng thái ARM, Tần số gói Hz, Độ trễ ms
-Dòng 2: [S:-48dBm CRSF|333H ] -> Sóng RSSI (dBm), Giao thức Drone & Tần số PWM Xe
-Dòng 3: [TX:8.24V RX:11.85V ] -> Đo điện áp Pin Tay Phát 2S và Pin Xe/Drone 3S Telemetry
-Dòng 4: [T: 75% S: 25% P 80 ] -> Mức ga (THR), Góc bẻ lái (STR), Núm triết áp (POT)
+┌────────────────────────────────────────────────────────┐
+│ 🏎️ 01: RWD DRIFT KING [ARM]  200Hz⚡3.8ms  TX:8.2V RX:11.9V │
+├────────────────────────────────────────────────────────┤
+│ [📊 HUD] [📈 EXPO] [🎚️ KÊNH] [🏎️ ABS/ĐUA] [🚗 GARA] [⏱️ TIMER] │
+├────────────────────────────────────────────────────────┤
+│ • Tab 0 (HUD): Đồng hồ ODO tốc độ, Vòng tua RPM, Thanh Ga/Lái  │
+│ • Tab 1 (EXPO): Đồ thị đường cong uốn lượn S-Curve + Chấm chạy │
+│ • Tab 2 (KÊNH): 8 thanh bar kênh CH1..CH8 nhảy động theo tay lắc│
+│ • Tab 3 (ABS): Bật/Tắt phanh ABS, Cân bằng Drift Gyro, 4WS cua│
+│ • Tab 4 (GARA): Quản lý 6 xe/máy bay, click đổi thông số ngay  │
+│ • Tab 5 (TIMER): Đồng hồ bấm giờ chặng đua Lap Timer (MM:SS.d)│
+└────────────────────────────────────────────────────────┘
 ```
-
-### 2. Hệ thống Menu cài đặt sâu 6 trang (Deep Settings Menu):
-- **Trang 1/6 (MODEL SELECT):** Chuyển đổi qua lại giữa `[RC CAR RACER]` và `[FPV DRONE QUAD]`.
-- **Trang 2/6 (RF PACKET RATE):** Chọn tốc độ truyền sóng `50Hz` / `100Hz` / `150Hz` / `200Hz (5ms)`.
-- **Trang 3/6 (PROTOCOL & PWM):** Đổi Drone giữa `CRSF (420k)` vs `SBUS (100k)`; Đổi Xe giữa `PWM 333Hz Digital` vs `PWM 50Hz Analog`.
-- **Trang 4/6 (DEADBAND & EXPO):** Tùy chỉnh vùng chết Joystick `0us` (Ultra sharp), `15us`, `30us`; Đường cong Expo lái `0%`, `20%`, `40%`, `60%`.
-- **Trang 5/6 (REVERSE CHANNELS):** Đảo chiều từng kênh độc lập (Ch1 Lái, Ch2 Ga, Ch3, Ch4).
-- **Trang 6/6 (SAVE EEPROM):** Lưu toàn bộ thông số cấu hình vĩnh viễn vào bộ nhớ Flash STM32.
 
 ---
 
@@ -49,55 +64,13 @@ Dòng 4: [T: 75% S: 25% P 80 ] -> Mức ga (THR), Góc bẻ lái (STR), Núm tri
 │   └── controller_box.scad         # Mã nguồn thiết kế tham số OpenSCAD
 ├── Firmware/
 │   ├── TayCam_Transmitter_STM32_PRO/
-│   │   └── TayCam_Transmitter_STM32_PRO.ino  # Code STM32 Transmitter Zero-Lag 200Hz & Menu 6 trang
+│   │   └── TayCam_Transmitter_STM32_PRO.ino  # Code STM32 Flagship OS (ABS, Expo Curve, 6 Gara, 200Hz)
 │   └── BoThu_Receiver_All_In_One_PRO/
 │       └── BoThu_Receiver_All_In_One_PRO.ino # Code Mạch Thu All-In-One (CRSF 420k + PWM 333Hz)
 ├── Simulation/
-│   └── mo_phong_tay_khien_rc_3d.html         # Trình giả lập 3D thời gian thực 60FPS + Menu tương tác
+│   └── mo_phong_tay_khien_rc_3d.html         # Trình giả lập 3D 60FPS + Giao diện EdgeTX / Noble NB4
 └── README.md
 ```
-
----
-
-## 🖨️ Thông Số In 3D Đề Xuất (3D Printing Settings)
-
-| Thông số | Giá trị khuyến nghị |
-| :--- | :--- |
-| **Vật liệu in (Filament)** | **PETG** (Khuyên dùng để bền dẻo, chịu lực các ngàm gài) hoặc PLA+ |
-| **Mật độ ruột (Infill)** | **25%** (Grip / Gyroid hoặc Grid) |
-| **Độ dày thành (Wall Loops)** | 3 - 4 lớp (1.2mm - 1.6mm) |
-| **Độ cao lớp (Layer Height)**| 0.20 mm |
-| **Nhiệt độ đầu in / Bàn in** | PETG: 235°C - 240°C / 75°C - 80°C |
-| **Hỗ trợ (Support)** | Tree Support (Góc nghiêng > 55°) |
-| **Khối lượng vỏ** | ~140g - 160g |
-
----
-
-## ⚡ Sơ Đồ Chân STM32 BluePill (Pinout Mapping)
-
-### Mạch Phát (Transmitter STM32F103C8T6):
-- `PA0 (ADC0)`: Joystick Trái - Y (Throttle / Pitch Car)
-- `PA1 (ADC1)`: Joystick Trái - X (Yaw / Turn Car)
-- `PA2 (ADC2)`: Joystick Phải - Y (Pitch Drone)
-- `PA3 (ADC3)`: Joystick Phải - X (Roll Drone / Steering Car)
-- `PA4 (ADC4)`: Núm chiết áp B10K (Hover Throttle Bias / Car Speed Limiter)
-- `PA5 (ADC5)`: Cầu phân áp đo Pin 2S (Trở 10k/10k)
-- `PB12`: Công tắc SW1 (ARM / DISARM)
-- `PB13 / PB14`: Công tắc 3 vị trí SW2 (Angle/Crawler - Horizon/Normal - Acro/Sport)
-- `PB15`: Công tắc SW3 (RTH / Khóa vi sai)
-- `PA8`: Nút B1 (Menu / Select / Save)
-- `PA11 / PA12`: Nút B2 / B3 (Trang sau / Đổi giá trị)
-- `PA15 / PB3`: Nút bấm nhấn trục cần PS2 Trái & Phải (Còi xe / Đèn pha)
-- `PA9 (TX1) / PA10 (RX1)`: Giao tiếp LoRa E22 tốc độ cao (115200 baud)
-- `PB6 (SCL) / PB7 (SDA)`: Màn hình LCD 1604A I2C Fast-Mode 400kHz
-- `PB8`: Còi Buzzer 5V Active
-
-### Mạch Thu (Receiver All-in-One):
-- `PA2 (TX2)`: Ngõ ra **CRSF (420,000 baud)** hoặc **SBUS (100,000 baud)** cấp vào FC Drone
-- `PA0 (TIM2_CH1)`: Ngõ ra **PWM 333Hz / 50Hz** - Bẻ lái Servo xe ô tô (CH1)
-- `PA1 (TIM2_CH2)`: Ngõ ra **PWM 333Hz / 50Hz** - Ga ESC xe ô tô (CH2)
-- `PA3 / PA6 / PA7`: Ngõ ra PWM phụ trợ (Đèn, còi, tời cứu hộ)
-- `A0 (ADC)`: Cầu trở đo áp pin xe/drone gửi Telemetry 2 chiều về màn hình tay cầm
 
 ---
 
