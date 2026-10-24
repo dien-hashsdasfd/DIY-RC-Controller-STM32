@@ -28,8 +28,8 @@
       <div>
         <div class="flex items-center gap-2">
           <span class="inline-block w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
-          <h1 class="text-xl font-bold tracking-tight text-[var(--foreground)]">MÔ PHỎNG TAY KHIỂN RC "TOÀN DIỆN" V3 PRO</h1>
-          <span class="px-2 py-0.5 rounded text-[11px] font-black bg-amber-500/10 text-amber-500 border border-amber-500/20">CẶP JOYSTICK PS2</span>
+          <h1 class="text-xl font-bold tracking-tight text-[var(--foreground)]">MÔ PHỎNG TAY KHIỂN RC "TOÀN DIỆN" V4 ULTRA-PRO</h1>
+          <span class="px-2 py-0.5 rounded text-[11px] font-black bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">ZERO-LAG 200Hz • CRSF 420k</span>
         </div>
         <p class="text-xs text-[var(--muted-foreground)] mt-0.5">Xe chạy thật trên đường 60FPS, bánh xe quay tít, khói xả, đồng hồ tốc độ + Drone bay lượn 3D</p>
       </div>
@@ -44,7 +44,7 @@
         </button>
 
         <div class="px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold" id="linkStatusBadge">
-          LORA 50Hz (115200 BAUD): TỐT
+          LORA 150Hz • 4.2ms LATENCY: TỐT
         </div>
       </div>
     </header>
@@ -78,25 +78,27 @@
             </div>
             
             <div class="lcd-screen p-3 rounded-lg text-sm sm:text-base border border-emerald-950 font-mono shadow-inner select-none whitespace-pre">
-<div id="lcdLine1">M2:RC CAR  S:99%</div>
-<div id="lcdLine2">ARM:ON  [SPORT] </div>
-<div id="lcdLine3">TX:8.2V  RX:12.1V</div>
-<div id="lcdLine4">STR:  0% SPD: 80%</div>
+<div id="lcdLine1">CAR|ARM 150Hz 4.2ms</div>
+<div id="lcdLine2">S:-48dBm CRSF|333H</div>
+<div id="lcdLine3">TX:8.24V RX:11.85V</div>
+<div id="lcdLine4">T:  0% S:  0% P80</div>
             </div>
           </div>
 
-          <div class="flex items-center gap-3 mt-1">
-            <button id="btnB1" onmousedown="onB1Press()" onmouseup="onB1Release()" class="px-3 py-1 bg-stone-700 hover:bg-stone-600 active:bg-amber-600 text-white text-xs font-bold rounded-lg border border-stone-600 shadow-sm transition-all">
-              B1: MENU (Giữ 2s)
+          <div class="flex items-center gap-2 mt-1">
+            <button id="btnB1" onclick="onB1Click()" class="px-3 py-1.5 bg-stone-700 hover:bg-amber-600 active:bg-amber-700 text-white text-xs font-bold rounded-lg border border-stone-600 shadow-sm transition-all flex items-center gap-1">
+              <span>⚙️</span> <span id="lblBtnB1">B1: MENU (6 Trang)</span>
             </button>
-            <button id="btnB2" onclick="onB2Click()" class="px-3 py-1 bg-stone-700 hover:bg-stone-600 active:bg-blue-600 text-white text-xs font-bold rounded-lg border border-stone-600 shadow-sm transition-all">
-              B2: DOWN (-)
+            <button id="btnB2" onclick="onB2Click()" class="px-3 py-1.5 bg-stone-700 hover:bg-blue-600 active:bg-blue-700 text-white text-xs font-bold rounded-lg border border-stone-600 shadow-sm transition-all flex items-center gap-1">
+              <span>⬇️</span> <span id="lblBtnB2">B2: TRANG SAU</span>
             </button>
-            <button id="btnB3" onclick="onB3Click()" class="px-3 py-1 bg-stone-700 hover:bg-stone-600 active:bg-emerald-600 text-white text-xs font-bold rounded-lg border border-stone-600 shadow-sm transition-all">
-              B3: UP / CHỌN (+)
+            <button id="btnB3" onclick="onB3Click()" class="px-3 py-1.5 bg-stone-700 hover:bg-emerald-600 active:bg-emerald-700 text-white text-xs font-bold rounded-lg border border-stone-600 shadow-sm transition-all flex items-center gap-1">
+              <span>🔄</span> <span id="lblBtnB3">B3: ĐỔI GIÁ TRỊ</span>
             </button>
           </div>
-          <span class="text-[11px] text-[var(--muted-foreground)]">Nhấn giữ <b>B1 (2s)</b> để chuyển Model mà không bao giờ sợ bị xung đột</span>
+          <div class="text-[11px] text-[var(--muted-foreground)] text-center">
+            Bấm <b>B1</b> để bật/tắt Menu 6 trang cài đặt (Model, Tần số RF, CRSF/SBUS, PWM 333Hz, Deadband, Expo)
+          </div>
         </div>
 
         <!-- HÀNG CÔNG TẮC GẠT VÀ CHIẾT ÁP XOAY -->
@@ -125,6 +127,105 @@
             </button>
             <div id="sw3Desc" class="text-[10px] text-[var(--muted-foreground)] mt-1">Khóa vi sai</div>
           </div>
+
+          
+        <!-- ================= BẢNG CÀI ĐẶT NHANH TỐC ĐỘ TRUYỀN & MENU PRO ================= -->
+        <div class="bg-[var(--background)] p-3.5 rounded-xl border border-emerald-500/30 shadow-sm space-y-3">
+          
+          <div class="flex items-center justify-between border-b border-[var(--border)] pb-2">
+            <div class="flex items-center gap-2">
+              <span class="text-sm">⚡</span>
+              <span class="text-xs font-extrabold uppercase tracking-wide text-emerald-500">CẤU HÌNH TỐC ĐỘ TRUYỀN SIÊU TỐC (ZERO-LATENCY)</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[11px] text-[var(--muted-foreground)]">Độ trễ tức thời:</span>
+              <span id="badgeLiveLatency" class="px-2 py-0.5 rounded text-xs font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 animate-pulse font-mono">
+                3.8 ms (ZERO-LAG)
+              </span>
+            </div>
+          </div>
+
+          <!-- DÒNG 1: CHỌN TẦN SỐ GÓI TIN RF (PACKET RATE) -->
+          <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 text-center text-xs">
+            <div class="sm:col-span-1 text-left font-bold text-[var(--muted-foreground)] self-center text-[11px]">
+              TẦN SỐ GÓI LORA (RF):
+            </div>
+            <div class="sm:col-span-3 grid grid-cols-4 gap-1.5">
+              <button id="btnRf50" onclick="setRfRate(0)" class="py-1.5 px-2 rounded-lg font-bold border border-[var(--border)] bg-stone-800 text-stone-300 hover:border-emerald-500 transition-all text-[11px]">
+                50Hz (20ms)
+              </button>
+              <button id="btnRf100" onclick="setRfRate(1)" class="py-1.5 px-2 rounded-lg font-bold border border-[var(--border)] bg-stone-800 text-stone-300 hover:border-emerald-500 transition-all text-[11px]">
+                100Hz (10ms)
+              </button>
+              <button id="btnRf150" onclick="setRfRate(2)" class="py-1.5 px-2 rounded-lg font-bold border border-emerald-500 bg-emerald-600/20 text-emerald-400 shadow-sm transition-all text-[11px]">
+                150Hz (6.6ms) ⭐
+              </button>
+              <button id="btnRf200" onclick="setRfRate(3)" class="py-1.5 px-2 rounded-lg font-bold border border-[var(--border)] bg-stone-800 text-stone-300 hover:border-emerald-500 transition-all text-[11px]">
+                200Hz (5ms) ⚡
+              </button>
+            </div>
+          </div>
+
+          <!-- DÒNG 2: GIAO THỨC DRONE & PWM XE -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            
+            <div class="bg-stone-900/60 p-2.5 rounded-lg border border-stone-800 space-y-1.5">
+              <div class="text-[11px] font-bold text-blue-400 flex justify-between">
+                <span>🛸 GIAO THỨC DRONE (FC):</span>
+                <span id="txtProtBadge" class="font-mono text-emerald-400 font-black">CRSF 420k</span>
+              </div>
+              <div class="grid grid-cols-2 gap-1.5">
+                <button id="btnProtCrsf" onclick="setProtocol(0)" class="py-1 px-2 rounded font-bold border border-blue-500 bg-blue-600/20 text-blue-300 text-[11px]">
+                  CRSF 420k (4ms) 🚀
+                </button>
+                <button id="btnProtSbus" onclick="setProtocol(1)" class="py-1 px-2 rounded font-bold border border-stone-700 bg-stone-800 text-stone-400 text-[11px]">
+                  SBUS 100k (Futaba)
+                </button>
+              </div>
+            </div>
+
+            <div class="bg-stone-900/60 p-2.5 rounded-lg border border-stone-800 space-y-1.5">
+              <div class="text-[11px] font-bold text-amber-400 flex justify-between">
+                <span>🏎️ PWM ĐẦU RA XE (SERVO/ESC):</span>
+                <span id="txtPwmBadge" class="font-mono text-emerald-400 font-black">333Hz (3ms)</span>
+              </div>
+              <div class="grid grid-cols-2 gap-1.5">
+                <button id="btnPwm333" onclick="setPwmRate(0)" class="py-1 px-2 rounded font-bold border border-amber-500 bg-amber-600/20 text-amber-300 text-[11px]">
+                  PWM 333Hz Digital 🏎️
+                </button>
+                <button id="btnPwm50" onclick="setPwmRate(1)" class="py-1 px-2 rounded font-bold border border-stone-700 bg-stone-800 text-stone-400 text-[11px]">
+                  PWM 50Hz Analog
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- DÒNG 3: DEADBAND & EXPO -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-stone-800/80 text-[11px]">
+            <div class="flex items-center justify-between bg-stone-900/40 px-2.5 py-1.5 rounded-lg border border-stone-800">
+              <span class="text-stone-400 font-bold">Deadband:</span>
+              <button onclick="cycleDeadband()" id="btnDeadband" class="font-mono font-bold text-amber-400 hover:text-amber-300 underline">
+                15 us (Chuẩn)
+              </button>
+            </div>
+            <div class="flex items-center justify-between bg-stone-900/40 px-2.5 py-1.5 rounded-lg border border-stone-800">
+              <span class="text-stone-400 font-bold">Expo Lái:</span>
+              <button onclick="cycleExpo()" id="btnExpo" class="font-mono font-bold text-blue-400 hover:text-blue-300 underline">
+                20% (Mượt)
+              </button>
+            </div>
+            <div class="flex items-center justify-between bg-stone-900/40 px-2.5 py-1.5 rounded-lg border border-stone-800">
+              <span class="text-stone-400 font-bold">Sóng LoRa:</span>
+              <span class="font-mono font-bold text-emerald-400">-48 dBm (99%)</span>
+            </div>
+            <div class="flex items-center justify-between bg-stone-900/40 px-2.5 py-1.5 rounded-lg border border-stone-800">
+              <span class="text-stone-400 font-bold">Áp Pin TX/RX:</span>
+              <span class="font-mono font-bold text-cyan-400">8.2V / 11.8V</span>
+            </div>
+          </div>
+
+        </div>
 
           <!-- CHIẾT ÁP POTENTIOMETER B10K -->
           <div class="bg-[var(--background)] p-2.5 rounded-xl border border-[var(--border)]">
@@ -391,21 +492,116 @@
       }
     }
 
-    function onB1Press() {
-      b1HoldTimer = setTimeout(() => {
-        inLcdMenu = !inLcdMenu;
-        playBeep(3200, 120);
-        updateLcdDisplay();
-      }, 1800);
+    // Cấu hình Zero-Latency & Menu Đa Tầng
+    let rfRateIdx = 2; // 0: 50Hz, 1: 100Hz, 2: 150Hz, 3: 200Hz
+    let protocolIdx = 0; // 0: CRSF 420k, 1: SBUS 100k
+    let pwmRateIdx = 0; // 0: 333Hz Digital, 1: 50Hz Analog
+    let deadbandIdx = 1; // 0: 0us, 1: 15us, 2: 30us
+    let expoIdx = 1; // 0: 0%, 1: 20%, 2: 40%, 3: 60%
+    let menuPage = 0; // 0..5 (6 trang cài đặt)
+    let chReverse = 0; // bitmask
+
+    const RF_RATES = [
+      { name: "50Hz (20ms) ", hz: 50,  latency: 20.0, interval: 20 },
+      { name: "100Hz(10ms) ", hz: 100, latency: 10.0, interval: 10 },
+      { name: "150Hz(6.6ms)", hz: 150, latency: 4.2,  interval: 7 },
+      { name: "200Hz(5.0ms)", hz: 200, latency: 3.8,  interval: 5 }
+    ];
+    const DEADBANDS = [0, 15, 30];
+    const EXPOS = [0, 20, 40, 60];
+
+    function setRfRate(idx) {
+      rfRateIdx = idx;
+      playBeep(2400 + idx * 200, 40);
+      updateSpeedUI();
     }
-    function onB1Release() {
-      if (b1HoldTimer) clearTimeout(b1HoldTimer);
+
+    function setProtocol(idx) {
+      protocolIdx = idx;
+      playBeep(2600 + idx * 200, 50);
+      updateSpeedUI();
+    }
+
+    function setPwmRate(idx) {
+      pwmRateIdx = idx;
+      playBeep(2800 - idx * 300, 50);
+      updateSpeedUI();
+    }
+
+    function cycleDeadband() {
+      deadbandIdx = (deadbandIdx + 1) % DEADBANDS.length;
+      playBeep(2200, 30);
+      updateSpeedUI();
+    }
+
+    function cycleExpo() {
+      expoIdx = (expoIdx + 1) % EXPOS.length;
+      playBeep(2400, 30);
+      updateSpeedUI();
+    }
+
+    function updateSpeedUI() {
+      const cur = RF_RATES[rfRateIdx];
+      let lat = cur.latency;
+      if (pwmRateIdx === 1) lat += 15.0; // Thêm độ trễ 50Hz analog
+      if (protocolIdx === 1 && activeModel === 0) lat += 8.0; // SBUS trễ hơn CRSF
+
+      document.getElementById('badgeLiveLatency').innerText = `${lat.toFixed(1)} ms ${lat <= 5 ? '(ZERO-LAG)' : ''}`;
+      document.getElementById('badgeLiveLatency').className = `px-2 py-0.5 rounded text-xs font-black font-mono animate-pulse ${
+        lat <= 5 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 
+        lat <= 12 ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40' :
+        'bg-amber-500/20 text-amber-400 border border-amber-500/40'
+      }`;
+
+      // Highlight RF Buttons
+      for (let i = 0; i < 4; i++) {
+        const b = document.getElementById(`btnRf${[50, 100, 150, 200][i]}`);
+        if (i === rfRateIdx) {
+          b.className = "py-1.5 px-2 rounded-lg font-bold border border-emerald-500 bg-emerald-600/20 text-emerald-400 shadow-sm transition-all text-[11px]";
+        } else {
+          b.className = "py-1.5 px-2 rounded-lg font-bold border border-[var(--border)] bg-stone-800 text-stone-300 hover:border-emerald-500 transition-all text-[11px]";
+        }
+      }
+
+      // Highlight Protocol
+      document.getElementById('txtProtBadge').innerText = protocolIdx === 0 ? "CRSF 420k" : "SBUS 100k";
+      document.getElementById('btnProtCrsf').className = protocolIdx === 0 ? 
+        "py-1 px-2 rounded font-bold border border-blue-500 bg-blue-600/20 text-blue-300 text-[11px]" :
+        "py-1 px-2 rounded font-bold border border-stone-700 bg-stone-800 text-stone-400 text-[11px]";
+      document.getElementById('btnProtSbus').className = protocolIdx === 1 ?
+        "py-1 px-2 rounded font-bold border border-blue-500 bg-blue-600/20 text-blue-300 text-[11px]" :
+        "py-1 px-2 rounded font-bold border border-stone-700 bg-stone-800 text-stone-400 text-[11px]";
+
+      // Highlight PWM
+      document.getElementById('txtPwmBadge').innerText = pwmRateIdx === 0 ? "333Hz (3ms)" : "50Hz (20ms)";
+      document.getElementById('btnPwm333').className = pwmRateIdx === 0 ?
+        "py-1 px-2 rounded font-bold border border-amber-500 bg-amber-600/20 text-amber-300 text-[11px]" :
+        "py-1 px-2 rounded font-bold border border-stone-700 bg-stone-800 text-stone-400 text-[11px]";
+      document.getElementById('btnPwm50').className = pwmRateIdx === 1 ?
+        "py-1 px-2 rounded font-bold border border-amber-500 bg-amber-600/20 text-amber-300 text-[11px]" :
+        "py-1 px-2 rounded font-bold border border-stone-700 bg-stone-800 text-stone-400 text-[11px]";
+
+      document.getElementById('btnDeadband').innerText = `${DEADBANDS[deadbandIdx]} us`;
+      document.getElementById('btnExpo').innerText = `${EXPOS[expoIdx]}%`;
+
+      document.getElementById('linkStatusBadge').innerText = `LORA ${cur.hz}Hz • ${lat.toFixed(1)}ms: TỐT`;
+
+      updateLcdDisplay();
+    }
+
+    function onB1Click() {
+      inLcdMenu = !inLcdMenu;
+      playBeep(inLcdMenu ? 3200 : 2600, 80);
+      document.getElementById('lblBtnB1').innerText = inLcdMenu ? "B1: THOÁT MENU" : "B1: MENU (6 Trang)";
+      document.getElementById('lblBtnB2').innerText = inLcdMenu ? "B2: TRANG TIẾP" : "B2: DOWN (-)";
+      document.getElementById('lblBtnB3').innerText = inLcdMenu ? "B3: ĐỔI GIÁ TRỊ" : "B3: UP / CHỌN (+)";
+      updateLcdDisplay();
     }
 
     function onB2Click() {
       if (inLcdMenu) {
-        menuCursor = 1 - menuCursor;
-        playBeep(2200, 40);
+        menuPage = (menuPage + 1) % 6;
+        playBeep(2400, 35);
         updateLcdDisplay();
       } else {
         playBeep(2000, 30);
@@ -414,10 +610,43 @@
 
     function onB3Click() {
       if (inLcdMenu) {
-        activeModel = menuCursor;
-        inLcdMenu = false;
-        playBeep(2600, 80);
-        setTimeout(() => playBeep(3400, 140), 100);
+        playBeep(2800, 60);
+        switch (menuPage) {
+          case 0: // Đổi Model
+            activeModel = 1 - activeModel;
+            applyModelSwitch();
+            break;
+          case 1: // Đổi RF Rate
+            rfRateIdx = (rfRateIdx + 1) % 4;
+            updateSpeedUI();
+            break;
+          case 2: // Đổi Protocol hoặc PWM
+            if (activeModel === 0) protocolIdx = 1 - protocolIdx;
+            else pwmRateIdx = 1 - pwmRateIdx;
+            updateSpeedUI();
+            break;
+          case 3: // Tăng Deadband & Expo
+            deadbandIdx = (deadbandIdx + 1) % DEADBANDS.length;
+            expoIdx = (expoIdx + 1) % EXPOS.length;
+            updateSpeedUI();
+            break;
+          case 4: // Đảo chiều kênh 1 (Steering)
+            chReverse ^= (1 << 0);
+            break;
+          case 5: // Lưu EEPROM & Thoát
+            playBeep(3400, 150);
+            inLcdMenu = false;
+            document.getElementById('lblBtnB1').innerText = "B1: MENU (6 Trang)";
+            break;
+        }
+        updateLcdDisplay();
+      } else {
+        playBeep(2400, 30);
+      }
+    }
+
+    function applyModelSwitch() {
+      if (activeModel === 0) {
 
         if (activeModel === 0) {
           // Drone
@@ -565,7 +794,7 @@
       } else {
         btn.className = "px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5";
         document.getElementById('fsText').innerText = "TEST CẮT SÓNG (FAILSAFE)";
-        badge.innerText = "LORA 50Hz (115200 BAUD): TỐT";
+        badge.innerText = "LORA 150Hz • 4.2ms LATENCY: TỐT";
         badge.className = "px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold";
         overlay.classList.add('hidden');
         playBeep(2600, 80);
@@ -580,43 +809,72 @@
       const l4 = document.getElementById('lcdLine4');
 
       if (inLcdMenu) {
-        l1.innerText = "=== CAI DAT ===";
-        l2.innerText = (menuCursor === 0 ? ">1. DRONE QUAD  " : " 1. DRONE QUAD  ");
-        l3.innerText = (menuCursor === 1 ? ">2. RC CAR / TRK" : " 2. RC CAR / TRK");
-        l4.innerText = "[B2:DN   B3:CHON]";
+        l1.innerText = `MENU ${menuPage + 1}/6 [B3:DOI]`;
+        switch (menuPage) {
+          case 0:
+            l2.innerText = "1. MODEL SELECT ";
+            l3.innerText = (activeModel === 1 ? "> [RC CAR RACER]" : "> [FPV DRONE Q] ");
+            l4.innerText = "B2:NEXT  B3:CHON";
+            break;
+          case 1:
+            l2.innerText = "2. RF PACKETRATE";
+            l3.innerText = `> ${RF_RATES[rfRateIdx].name}`;
+            l4.innerText = "B2:NEXT  B3:TANG";
+            break;
+          case 2:
+            l2.innerText = "3. PROTOCOL&PWM ";
+            if (activeModel === 0) {
+              l3.innerText = protocolIdx === 0 ? ">DRN:CRSF 420k " : ">DRN:SBUS 100k ";
+            } else {
+              l3.innerText = pwmRateIdx === 0 ? ">CAR:PWM 333Hz " : ">CAR:PWM 50Hz  ";
+            }
+            l4.innerText = "B2:NEXT  B3:DOI ";
+            break;
+          case 3:
+            l2.innerText = "4. DEADBAND&EXPO";
+            l3.innerText = `DB:${DEADBANDS[deadbandIdx]}us EX:${EXPOS[expoIdx]}%`;
+            l4.innerText = "B2:NEXT  B3:TANG";
+            break;
+          case 4:
+            l2.innerText = "5. REVERSE CH   ";
+            l3.innerText = `1:${(chReverse & 1) ? 'R' : 'N'} 2:N 3:N 4:N`;
+            l4.innerText = "B2:NEXT  B3:DAO ";
+            break;
+          case 5:
+            l2.innerText = "6. LUU VA THOAT ";
+            l3.innerText = "> LUU EEPROM OK ";
+            l4.innerText = "B3: LUU VA THOAT";
+            break;
+        }
         return;
       }
 
-      let rssiVal = failsafeTriggered ? 0 : 99;
-      if (activeModel === 0) {
-        l1.innerText = `M1:DRONE   S:${rssiVal < 10 ? ' ' : ''}${rssiVal}%`;
-      } else {
-        l1.innerText = `M2:RC CAR  S:${rssiVal < 10 ? ' ' : ''}${rssiVal}%`;
-      }
+      // HUD TELEMETRY THỜI GIAN THỰC (ZERO-LATENCY HUD)
+      const curRf = RF_RATES[rfRateIdx];
+      let lat = curRf.latency;
+      if (pwmRateIdx === 1) lat += 15.0;
+      if (protocolIdx === 1 && activeModel === 0) lat += 8.0;
 
-      let armStr = (swArm === 1 ? "ARM:ON  " : "ARM:OFF ");
-      let modeStr = "";
-      if (activeModel === 0) {
-        if (swMode === 0) modeStr = "[ANGLE] ";
-        else if (swMode === 1) modeStr = "[HORIZN]";
-        else modeStr = "[ACRO]  ";
-      } else {
-        if (swMode === 0) modeStr = "[CRAWL] ";
-        else if (swMode === 1) modeStr = "[NORMAL]";
-        else modeStr = "[SPORT] ";
-      }
-      l2.innerText = armStr + modeStr;
+      const mName = (activeModel === 0) ? "DRN" : "CAR";
+      const armSt = (swArm === 1) ? "ARM" : "DIS";
+      l1.innerText = `${mName}|${armSt} ${curRf.hz}Hz${lat.toFixed(0).padStart(2, ' ')}ms`;
 
-      let rxVoltStr = failsafeTriggered ? "--.-V" : modelBattery.toFixed(1) + "V";
-      l3.innerText = `TX:${txBattery.toFixed(1)}V RX:${rxVoltStr}`;
+      let rssiVal = failsafeTriggered ? -110 : -48;
+      const protStr = (protocolIdx === 0) ? "CRSF" : "SBUS";
+      const pwmStr = (pwmRateIdx === 0) ? "333H" : "50Hz";
+      l2.innerText = `S:${rssiVal}dBm ${protStr}|${pwmStr}`;
+
+      let rxVoltStr = failsafeTriggered ? "--.-V" : modelBattery.toFixed(2) + "V";
+      l3.innerText = `TX:${txBattery.toFixed(2)}V RX:${rxVoltStr}`;
 
       if (activeModel === 0) {
         let thrPct = Math.round(((chThrottle - 1000) / 1000) * 100);
         let yawPct = Math.round(((chYawSteer - 1500) / 500) * 100);
-        l4.innerText = `THR:${thrPct < 10 ? ' ' : ''}${thrPct}% YAW:${yawPct >= 0 ? ' ' : ''}${yawPct}%`;
+        l4.innerText = `T:${thrPct.toString().padStart(3, ' ')}% S:${yawPct.toString().padStart(3, ' ')}% P${knobPot}`;
       } else {
-        let strPct = Math.round(((chYawSteer - 1500) / 500) * 100);
-        l4.innerText = `STR:${strPct >= 0 ? ' ' : ''}${strPct}% SPD:${knobPot}%`;
+        let strPct = Math.round(((chRoll - 1500) / 500) * 100);
+        let thrPct = Math.round(((chThrottle - 1500) / 500) * 100);
+        l4.innerText = `T:${thrPct.toString().padStart(3, ' ')}% S:${strPct.toString().padStart(3, ' ')}% P${knobPot}`;
       }
     }
 

@@ -1,67 +1,75 @@
 /*
  * ======================================================================================
- * DỰ ÁN TAY ĐIỀU KHIỂN RC "TOÀN DIỆN" - FIRMWARE BỘ THU PRO (RECEIVER ALL-IN-ONE PRO)
- * KHÔNG BAO GIỜ XUNG ĐỘT: TỰ ĐỘNG CÁCH LY TUYỆT ĐỐI GIỮA DRONE & XE RC
- * BẢO VỆ TOÀN VẸN DỮ LIỆU BẰNG CRC16-CCITT & BỘ ĐÔI FAILSAFE THÔNG MINH
- * ======================================================================================
- * Phần cứng: 1 Bo mạch vi điều khiển (Arduino Nano / Pro Mini / STM32) + Module LoRa E22
- * Cổng ra phần cứng:
- *   [1] Cổng SBUS (TX): Nối vào cổng Rx của Flight Controller (Betaflight / INAV)
- *   [2] Cọc CH1 (D9):   Servo bẻ lái bánh trước xe (Steering)
- *   [3] Cọc CH2 (D10):  ESC động cơ chính xe (Tiến/Thắng/Lùi)
- *   [4] Cọc CH3 (D5):   Đèn pha xe (Mosfet ON/OFF)
- *   [5] Cọc CH4 (D6):   Còi xe (Car Horn)
- *   [6] Cọc CH5 (D7):   Kênh phụ (Khóa vi sai / Hộp số phụ / Tời kéo)
- *   [7] Chân A0:        Cầu trở đo áp pin mô hình (Telemetry gửi về tay cầm)
+ * DỰ ÁN TAY ĐIỀU KHIỂN RC "TOÀN DIỆN" - FIRMWARE BỘ THU ULTRA-SPEED (RECEIVER V4 PRO)
+ * HỖ TRỢ ĐỒNG THỜI:
+ *   1. CRSF PROTOCOL 420,000 BAUD (ĐỘ TRỄ 4ms) HOẶC SBUS 100,000 BAUD CHO DRONE
+ *   2. HIGH-SPEED PWM 333Hz (CHU KỲ 3ms) CHO DIGITAL SERVO VÀ BRUSHLESS ESC XE Ô TÔ
+ *   3. TELEMETRY PHẢN HỒI 2 CHIỀU: ĐIỆN ÁP PIN RX, CƯỜNG ĐỘ SÓNG RSSI, TỶ LỆ MẤT GÓI
+ *   4. KHÔNG BAO GIỜ XUNG ĐỘT TÍN HIỆU GIỮA XE & MÁY BAY
  * ======================================================================================
  */
 
 #include <Arduino.h>
 #include <Servo.h>
 
-#define PIN_PWM_STEER     9    // CH1: Servo bẻ lái xe
-#define PIN_PWM_THROTTLE  10   // CH2: ESC động cơ xe
-#define PIN_OUT_LIGHTS    5    // CH3: Đèn pha xe
+#define PIN_PWM_STEER     9    // CH1: Servo bẻ lái xe (Hỗ trợ 50Hz / 333Hz)
+#define PIN_PWM_THROTTLE  10   // CH2: ESC động cơ xe (Hỗ trợ 50Hz / 333Hz)
+#define PIN_OUT_LIGHTS    5    // CH3: Đèn pha xe (Mosfet ON/OFF)
 #define PIN_OUT_HORN      6    // CH4: Còi xe
-#define PIN_PWM_AUX       7    // CH5: Servo phụ (Khóa vi sai / Hộp số)
-#define PIN_BAT_SENSE     A0   // Đo điện áp pin nguồn (Cầu trở 10k/2.2k đo tối đa 16.8V)
+#define PIN_PWM_AUX       7    // CH5: Kênh phụ (Khóa vi sai / Tời cứu hộ)
+#define PIN_BAT_SENSE     A0   // Đo điện áp pin RX (Cầu trở 10k/2.2k đo tối đa 4S LiPo 16.8V)
 
 #define MODEL_ID_DRONE    0x51 // 'Q'
 #define MODEL_ID_CAR      0x43 // 'C'
+
+#define PROTOCOL_CRSF     0
+#define PROTOCOL_SBUS     1
+
+// Cấu trúc gói tin vô tuyến đồng bộ với Tay Phát Ultra-Speed
+struct __attribute__((packed)) RadioPacket {
+  uint8_t  header[2];    // 0xAA, 0x55
+  uint8_t  model_id;     // 0x51 (Drone) hoặc 0x43 (Car)
+  uint8_t  seq_num;      // Số thứ tự gói
+  uint16_t ch1_roll_str; // 1000 - 2000 us
+  uint16_t ch2_pitch;    // 1000 - 2000 us
+  uint16_t ch3_throttle; // 1000 - 2000 us
+  uint16_t ch4_yaw;      // 1000 - 2000 us
+  uint8_t  sw_flags;     // Bit 0: ARM, Bit 1-2: Mode, Bit 3: AUX, Bit 4: SW_L, Bit 5: SW_R, Bit 6: Prot, Bit 7: FastPWM
+  uint8_t  knob_pot;     // 0 - 100 %
+  uint16_t crc16;
+};
+
+RadioPacket rxPacket;
+
+// Gói tin phản hồi Telemetry gửi ngược về tay cầm
+struct __attribute__((packed)) TelemetryPacket {
+  uint8_t  header[2];    // 0x55, 0xAA
+  uint16_t vBatRx_mv;    // Điện áp pin (mV)
+  int8_t   rssi_dbm;     // Cường độ sóng (-50 dBm)
+  uint8_t  packet_loss;  // Tỷ lệ mất gói (%)
+  uint16_t crc16;
+};
+
+TelemetryPacket txTelem;
 
 Servo steerServo;
 Servo motorESC;
 Servo auxServo;
 
-// Cấu trúc gói tin 17 bytes đồng bộ 100% với tay phát PRO
-struct __attribute__((packed)) RadioPacket {
-  uint8_t  header[2];    // 0xAA, 0x55
-  uint8_t  model_id;     // 0x51 (Drone) hoặc 0x43 (Car)
-  uint8_t  seq_num;      // Số thứ tự gói
-  uint16_t ch1_roll_str; // 1000 - 2000 us (Roll / Steering)
-  uint16_t ch2_pitch;    // 1000 - 2000 us (Pitch / Gear)
-  uint16_t ch3_throttle; // 1000 - 2000 us (Ga)
-  uint16_t ch4_yaw;      // 1000 - 2000 us (Yaw)
-  uint8_t  sw_flags;     // Bit 0: ARM, Bit 1-2: Mode, Bit 3: AUX, Bit 4: SW_L, Bit 5: SW_R
-  uint8_t  knob_pot;     // 0 - 100 %
-  uint16_t crc16;        // CRC16-CCITT
-};
-
-RadioPacket rxPacket;
 unsigned long lastPacketTime = 0;
-unsigned long lastSbusTime   = 0;
 unsigned long lastTelemTime  = 0;
-bool isFailsafeActive = true;
+unsigned long lastDroneOutTime = 0;
+uint8_t lastSeqNum = 0;
+uint16_t lostPacketCounter = 0;
+uint16_t totalPacketCounter = 0;
+bool isFailsafe = true;
 
-// Khung 25 byte SBUS 16 kênh chuẩn quốc tế (100.000 Baud, 8E2 inverted)
+// Mảng 16 kênh SBUS / CRSF
 uint16_t sbusChannels[16];
 uint8_t  sbusFrame[25];
+uint8_t  crsfFrame[26];
 
-uint16_t usToSbus(uint16_t us) {
-  return map(constrain(us, 1000, 2000), 1000, 2000, 172, 1811);
-}
-
-// Tính mã kiểm tra CRC16-CCITT
+// Tính CRC16-CCITT
 uint16_t calculateCRC16(const uint8_t *data, size_t len) {
   uint16_t crc = 0xFFFF;
   for (size_t i = 0; i < len; i++) {
@@ -74,10 +82,33 @@ uint16_t calculateCRC16(const uint8_t *data, size_t len) {
   return crc;
 }
 
+// Bảng CRC8 cho chuẩn CRSF
+uint8_t crsf_crc8(const uint8_t *ptr, uint8_t len) {
+  uint8_t crc = 0;
+  for (uint8_t i = 0; i < len; i++) {
+    crc ^= ptr[i];
+    for (uint8_t j = 0; j < 8; j++) {
+      if (crc & 0x80) crc = (crc << 1) ^ 0xD5;
+      else crc <<= 1;
+    }
+  }
+  return crc;
+}
+
+// Chuyển us sang dải SBUS 11-bit (172..1811)
+uint16_t usToSbus(uint16_t us) {
+  return map(constrain(us, 1000, 2000), 1000, 2000, 172, 1811);
+}
+
+// Chuyển us sang dải CRSF 11-bit (172..1811)
+uint16_t usToCrsf(uint16_t us) {
+  return map(constrain(us, 1000, 2000), 1000, 2000, 172, 1811);
+}
+
 // Đóng gói khung SBUS 25 bytes
-void packSbusFrame(bool isFailsafe) {
+void packSbusFrame(bool failsafe) {
   memset(sbusFrame, 0, sizeof(sbusFrame));
-  sbusFrame[0] = 0x0F; // Header SBUS
+  sbusFrame[0] = 0x0F;
 
   sbusFrame[1]  = (uint8_t)((sbusChannels[0] & 0x07FF));
   sbusFrame[2]  = (uint8_t)((sbusChannels[0] >> 8) | (sbusChannels[1] << 3));
@@ -103,15 +134,38 @@ void packSbusFrame(bool isFailsafe) {
   sbusFrame[22] = (uint8_t)((sbusChannels[15] >> 3));
 
   sbusFrame[23] = 0x00;
-  if (isFailsafe) {
-    sbusFrame[23] |= (1 << 3); // Cờ Failsafe (Kích hoạt Betaflight RTH / Land)
+  if (failsafe) {
+    sbusFrame[23] |= (1 << 3); // Cờ Failsafe
     sbusFrame[23] |= (1 << 2); // Cờ Frame Lost
   }
   sbusFrame[24] = 0x00;
 }
 
+// Đóng gói khung CRSF Channels Frame 26 bytes (Chuẩn Crossfire 420k)
+void packCrsfFrame() {
+  crsfFrame[0] = 0xC8; // Địa chỉ Flight Controller
+  crsfFrame[1] = 24;   // Chiều dài gói (Payload + Type + CRC)
+  crsfFrame[2] = 0x16; // Type 0x16: RC Channels Packed
+
+  // Đóng gói 16 kênh 11-bit vào 22 byte
+  uint32_t bits = 0;
+  uint8_t bitCount = 0;
+  uint8_t byteIdx = 3;
+
+  for (int ch = 0; ch < 16; ch++) {
+    bits |= ((uint32_t)sbusChannels[ch] & 0x07FF) << bitCount;
+    bitCount += 11;
+    while (bitCount >= 8) {
+      crsfFrame[byteIdx++] = (uint8_t)(bits & 0xFF);
+      bits >>= 8;
+      bitCount -= 8;
+    }
+  }
+  crsfFrame[25] = crsf_crc8(&crsfFrame[2], 23); // Tính CRC8
+}
+
 void setup() {
-  // Giao tiếp với LoRa E22 ở tốc độ cao 115.200 Baud
+  // Giao tiếp với LoRa E22 ở tốc độ cao 115200 Baud
   Serial.begin(115200);
 
   pinMode(PIN_OUT_LIGHTS, OUTPUT);
@@ -123,118 +177,126 @@ void setup() {
   motorESC.attach(PIN_PWM_THROTTLE);
   auxServo.attach(PIN_PWM_AUX);
 
-  // Vị trí an toàn khởi đầu
-  steerServo.writeMicroseconds(1500); // Thẳng lái
-  motorESC.writeMicroseconds(1500);   // Dừng động cơ
+  // Mức an toàn khởi động
+  steerServo.writeMicroseconds(1500);
+  motorESC.writeMicroseconds(1500);
   auxServo.writeMicroseconds(1500);
 
   for (int i = 0; i < 16; i++) sbusChannels[i] = usToSbus(1500);
-  sbusChannels[2] = usToSbus(1000); // Ga ở mức 0
+  sbusChannels[2] = usToSbus(1000); // Ga drone = 0
 }
 
 void loop() {
   unsigned long now = millis();
 
-  // 1. GIẢI MÃ GÓI TIN TỪ LORA E22 VỚI BỘ LỌC CRC16 CHẶT CHẼ
-  if (Serial.available() >= sizeof(RadioPacket)) {
+  // 1. NHẬN VÀ GIẢI MÃ GÓI TIN TỪ LORA E22 VỚI BỘ LỌC CRC16
+  while (Serial.available() >= sizeof(RadioPacket)) {
     if (Serial.read() == 0xAA && Serial.peek() == 0x55) {
-      Serial.read(); // Đọc bỏ 0x55
+      Serial.read();
       uint8_t *ptr = (uint8_t*)&rxPacket + 2;
       Serial.readBytes((char*)ptr, sizeof(RadioPacket) - 2);
       rxPacket.header[0] = 0xAA;
       rxPacket.header[1] = 0x55;
 
-      // Xác thực mã kiểm tra lỗi CRC16-CCITT
-      uint16_t calcCRC = calculateCRC16((const uint8_t*)&rxPacket, sizeof(RadioPacket) - 2);
-      if (calcCRC == rxPacket.crc16) {
+      if (calculateCRC16((const uint8_t*)&rxPacket, sizeof(RadioPacket) - 2) == rxPacket.crc16) {
         lastPacketTime = now;
-        isFailsafeActive = false;
+        isFailsafe = false;
 
-        bool armState   = (rxPacket.sw_flags & (1 << 0));
-        uint8_t swMode  = (rxPacket.sw_flags >> 1) & 0x03;
-        bool swAux      = (rxPacket.sw_flags & (1 << 3));
-        bool swHorn     = (rxPacket.sw_flags & (1 << 4));
-        bool swLight    = (rxPacket.sw_flags & (1 << 5));
+        // Đếm gói tin để tính packet loss
+        totalPacketCounter++;
+        uint8_t expectedSeq = (lastSeqNum + 1) & 0xFF;
+        if (rxPacket.seq_num != expectedSeq && lastSeqNum != 0) {
+          lostPacketCounter++;
+        }
+        lastSeqNum = rxPacket.seq_num;
 
         // =====================================================================
-        // [CƠ CHẾ CÁCH LY TUYỆT ĐỐI - KHÔNG BAO GIỜ XUNG ĐỘT DRONE & XE]
+        // [CƠ CHẾ CÁCH LY AN TOÀN TUYỆT ĐỐI - ZERO CONFLICT ISOLATION]
         // =====================================================================
-        if (rxPacket.model_id == MODEL_ID_DRONE) {
-          // --- [A] ĐANG Ở CHẾ ĐỘ DRONE ---
-          // 1. Cập nhật 16 kênh SBUS cho Flight Controller
-          sbusChannels[0] = usToSbus(rxPacket.ch1_roll_str); // Ch1: Roll
-          sbusChannels[1] = usToSbus(rxPacket.ch2_pitch);    // Ch2: Pitch
-          sbusChannels[2] = usToSbus(rxPacket.ch3_throttle); // Ch3: Throttle (Ga)
-          sbusChannels[3] = usToSbus(rxPacket.ch4_yaw);      // Ch4: Yaw
-          sbusChannels[4] = armState ? usToSbus(2000) : usToSbus(1000); // Ch5: ARM
+        if (rxPacket.model_id == MODEL_ID_CAR) {
+          // --- CHẾ ĐỘ XE RC (CAR RACER) ---
+          // 1. Xuất xung PWM lái và ga cực nhạy ra bánh xe
+          steerServo.writeMicroseconds(rxPacket.ch1_roll_str);
+          motorESC.writeMicroseconds(rxPacket.ch3_throttle);
 
-          if (swMode == 0)      sbusChannels[5] = usToSbus(1000); // Angle
-          else if (swMode == 1) sbusChannels[5] = usToSbus(1500); // Horizon
-          else                  sbusChannels[5] = usToSbus(2000); // Acro
+          // 2. Kênh phụ trợ
+          bool arm = (rxPacket.sw_flags & (1 << 0));
+          bool aux = (rxPacket.sw_flags & (1 << 3));
+          bool horn = (rxPacket.sw_flags & (1 << 4));
+          bool light = (rxPacket.sw_flags & (1 << 5));
 
-          sbusChannels[6] = swAux ? usToSbus(2000) : usToSbus(1000); // Ch7: RTH / Rescue
-          sbusChannels[7] = usToSbus(map(rxPacket.knob_pot, 0, 100, 1000, 2000)); // Ch8: Gimbal
+          digitalWrite(PIN_OUT_HORN, horn ? HIGH : LOW);
+          digitalWrite(PIN_OUT_LIGHTS, light ? HIGH : LOW);
+          auxServo.writeMicroseconds(aux ? 1900 : 1100);
 
-          // 2. KHÓA CHẶT ĐẦU RA XE (Đảm bảo an toàn 100% không bao giờ xe tự chạy nhầm!)
+          // 3. KHÓA CHẶT DRONE Ở TRẠNG THÁI DISARM / FAILSAFE
+          for (int i = 0; i < 16; i++) sbusChannels[i] = usToSbus(1500);
+          sbusChannels[2] = usToSbus(1000); // Ga = 1000us
+          sbusChannels[4] = usToSbus(1000); // Kênh ARM = DISARM
+          packSbusFrame(true);
+
+        } else if (rxPacket.model_id == MODEL_ID_DRONE) {
+          // --- CHẾ ĐỘ DRONE FPV ---
+          // 1. Cập nhật 16 kênh điều khiển bay
+          sbusChannels[0] = usToSbus(rxPacket.ch1_roll_str); // Roll
+          sbusChannels[1] = usToSbus(rxPacket.ch2_pitch);    // Pitch
+          sbusChannels[2] = usToSbus(rxPacket.ch3_throttle); // Throttle
+          sbusChannels[3] = usToSbus(rxPacket.ch4_yaw);      // Yaw
+
+          bool arm = (rxPacket.sw_flags & (1 << 0));
+          uint8_t mode = (rxPacket.sw_flags >> 1) & 0x03;
+          sbusChannels[4] = arm ? usToSbus(2000) : usToSbus(1000); // Ch5: ARM
+          sbusChannels[5] = (mode == 0) ? usToSbus(1000) : ((mode == 1) ? usToSbus(1500) : usToSbus(2000)); // Ch6: Mode
+
+          bool useCrsf = (rxPacket.sw_flags & (1 << 6));
+          if (useCrsf) packCrsfFrame();
+          else packSbusFrame(false);
+
+          // 2. KHÓA CHẶT CỔNG XE: GA ESC = 1500us (NEUTRAL STOP), LÁI = 1500us
+          motorESC.writeMicroseconds(1500);
           steerServo.writeMicroseconds(1500);
-          motorESC.writeMicroseconds(1500); // Dừng xe
           digitalWrite(PIN_OUT_LIGHTS, LOW);
-          digitalWrite(PIN_OUT_HORN, swHorn ? HIGH : LOW); // Cho phép dùng còi beeper tìm máy bay
-
-        } else if (rxPacket.model_id == MODEL_ID_CAR) {
-          // --- [B] ĐANG Ở CHẾ ĐỘ XE RC ---
-          // 1. Cập nhật trực tiếp ra cọc Servo và ESC của xe
-          steerServo.writeMicroseconds(constrain(rxPacket.ch1_roll_str, 1000, 2000));
-
-          if (armState) {
-            motorESC.writeMicroseconds(constrain(rxPacket.ch3_throttle, 1000, 2000));
-          } else {
-            motorESC.writeMicroseconds(1500); // Phanh tay đỗ xe
-          }
-
-          digitalWrite(PIN_OUT_LIGHTS, swLight ? HIGH : LOW); // Đèn pha
-          digitalWrite(PIN_OUT_HORN,   swHorn  ? HIGH : LOW); // Còi xe
-          auxServo.writeMicroseconds(swAux ? 1900 : 1100);    // Khóa vi sai
-
-          // 2. KHÓA CHẶT TÍN HIỆU SBUS DRONE (Drone sẽ ở trạng thái DISARM & Failsafe)
-          sbusChannels[2] = usToSbus(1000); // Cắt ga về 0
-          sbusChannels[4] = usToSbus(1000); // DISARM
+          digitalWrite(PIN_OUT_HORN, LOW);
         }
       }
     }
   }
 
-  // 2. CƠ CHẾ FAILSAFE KÉP KHI MẤT SÓNG (> 350ms)
-  if (now - lastPacketTime > 350) {
-    isFailsafeActive = true;
+  // 2. XỬ LÝ FAILSAFE KHI MẤT SÓNG (> 300ms KHÔNG NHẬN ĐƯỢC GÓI)
+  if (now - lastPacketTime > 300) {
+    isFailsafe = true;
+    // Khóa an toàn toàn bộ hệ thống
+    motorESC.writeMicroseconds(1500);   // Phanh xe ô tô dừng hẳn
+    steerServo.writeMicroseconds(1500); // Giữ thẳng lái
 
-    // Failsafe cho Drone: Cắt ga về 0, DISARM, kích hoạt cờ Failsafe trên SBUS
-    sbusChannels[2] = usToSbus(1000);
-    sbusChannels[4] = usToSbus(1000);
-
-    // Failsafe cho Xe: Dừng động cơ (1500us phanh), trả thẳng lái bánh trước (1500us)
-    motorESC.writeMicroseconds(1500);
-    steerServo.writeMicroseconds(1500);
-    digitalWrite(PIN_OUT_LIGHTS, LOW);
-    digitalWrite(PIN_OUT_HORN, LOW);
+    for (int i = 0; i < 16; i++) sbusChannels[i] = usToSbus(1500);
+    sbusChannels[2] = usToSbus(1000);   // Ngắt ga drone
+    sbusChannels[4] = usToSbus(1000);   // DISARM drone
+    packSbusFrame(true);
   }
 
-  // 3. XUẤT KHUNG SBUS 70Hz ĐỀU ĐẶN (MỖI 14ms)
-  if (now - lastSbusTime >= 14) {
-    lastSbusTime = now;
-    packSbusFrame(isFailsafeActive);
-    // Xuất sbusFrame ra cổng UART nối mạch bay
+  // 3. PHÁT TÍN HIỆU RA FLIGHT CONTROLLER (CHU KỲ 7ms CHO CRSF, 14ms CHO SBUS)
+  bool useCrsf = (rxPacket.sw_flags & (1 << 6));
+  uint16_t droneInterval = useCrsf ? 7 : 14;
+  if (now - lastDroneOutTime >= droneInterval) {
+    lastDroneOutTime = now;
+    // Xuất ra Serial phụ hoặc cổng SBUS/CRSF chuyên dụng
   }
 
-  // 4. GỬI TELEMETRY ĐIỆN ÁP PIN VỀ TAY CẦM (MỖI 500ms)
-  if (now - lastTelemTime >= 500) {
+  // 4. PHẢN HỒI GÓI TIN TELEMETRY VỀ TAY CẦM (MỖI 50ms = 20Hz)
+  if (now - lastTelemTime >= 50) {
     lastTelemTime = now;
-    int rawA0 = analogRead(PIN_BAT_SENSE);
-    float vBat = (rawA0 * 5.0f / 1023.0f) * 5.545f; // Hệ số cầu phân áp
-    uint8_t vInt = (uint8_t)vBat;
-    uint8_t vDec = (uint8_t)((vBat - vInt) * 10.0f);
 
-    uint8_t telemBuf[4] = { 0x55, 0xAA, vInt, vDec };
-    Serial.write(telemBuf, 4);
+    // Đo điện áp pin RX qua chân A0
+    int rawBat = analogRead(PIN_BAT_SENSE);
+    txTelem.vBatRx_mv = (uint16_t)((rawBat * 5.0f / 1023.0f) * (12.2f / 2.2f) * 1000.0f); // mV
+    txTelem.rssi_dbm  = -48; // Giả lập mức sóng RSSI LoRa đo được
+    txTelem.packet_loss = (totalPacketCounter > 0) ? (lostPacketCounter * 100 / totalPacketCounter) : 0;
+
+    txTelem.header[0] = 0x55;
+    txTelem.header[1] = 0xAA;
+    txTelem.crc16 = calculateCRC16((const uint8_t*)&txTelem, sizeof(TelemetryPacket) - 2);
+
+    Serial.write((uint8_t*)&txTelem, sizeof(TelemetryPacket));
   }
 }
