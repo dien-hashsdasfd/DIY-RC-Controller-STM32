@@ -18,6 +18,29 @@
       touch-action: none;
       user-select: none;
     }
+  
+    /* CHỦ ĐỀ MÀN HÌNH LCD 1604A THỰC TẾ */
+    .lcd-blue-theme {
+      background-color: #002b80 !important;
+      color: #ffffff !important;
+      text-shadow: 0 0 4px #60a5fa, 0 0 1px #ffffff;
+      box-shadow: inset 0 0 12px rgba(0, 20, 60, 0.8), 0 0 15px rgba(37, 99, 235, 0.25);
+    }
+    .lcd-yellow-theme {
+      background-color: #84cc16 !important;
+      color: #142900 !important;
+      text-shadow: none !important;
+      box-shadow: inset 0 0 12px rgba(50, 80, 0, 0.6), 0 0 15px rgba(132, 204, 22, 0.25);
+    }
+    .lcd-line {
+      font-family: 'Courier New', Courier, monospace, Consolas;
+      margin: 0;
+      padding: 0;
+      height: 20px;
+      line-height: 20px;
+      display: block;
+    }
+
   </style>
   <!-- THREE.JS WEBGL 3D ENGINE & ORBIT CONTROLS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -72,60 +95,76 @@
           </div>
         </div>
 
-        <!-- ================= MÀN HÌNH LCD 1604A CHUẨN 16 CỘT X 4 DÒNG ================= -->
+        <!-- ================= MÔ PHỎNG PHẦN CỨNG MODULE LCD 1604A CHUẨN THỰC TẾ ================= -->
         <div class="flex flex-col items-center gap-2">
           
-          <div class="w-full max-w-md bg-stone-900 p-3 sm:p-4 rounded-2xl border-4 border-stone-800 shadow-2xl relative">
+          <!-- BO MẠCH PCB VÀ KHUNG KIM LOẠI MÀN HÌNH 1604A THỰC TẾ -->
+          <div class="bg-[#1e293b] p-3 rounded-2xl border-4 border-stone-800 shadow-2xl relative select-none" style="width: 100%; max-width: 440px;">
             
-            <!-- HEADER THÔNG TIN PHẦN CỨNG LCD 1604A -->
-            <div class="text-[11px] font-bold text-stone-400 mb-1.5 flex justify-between px-1 font-mono">
-              <span class="flex items-center gap-1.5">
-                <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span>LCD 1604A I2C 400kHz (16x4)</span>
+            <!-- 4 LỖ ỐC KIM LOẠI Ở 4 GÓC PCB -->
+            <div class="flex justify-between items-center px-1 mb-1.5 text-[10px] font-mono text-stone-400">
+              <span class="flex items-center gap-1">
+                <span class="inline-block w-2.5 h-2.5 rounded-full bg-stone-700 border border-stone-500 shadow-inner"></span>
+                <span class="font-bold text-stone-300">MODULE LCD 1604A (16x4 CHARACTERS)</span>
               </span>
-              <span class="text-amber-400" id="lcdPageIndicator">TRANG 1/7 [HUD]</span>
+              <div class="flex items-center gap-2">
+                <button onclick="toggleLcdColorTheme()" id="btnThemeToggle" class="px-2 py-0.5 rounded text-[10px] font-bold bg-stone-800 text-stone-300 border border-stone-700 hover:text-white transition-all">
+                  🎨 ĐỔI MÀU NỀN
+                </button>
+                <span class="inline-block w-2.5 h-2.5 rounded-full bg-stone-700 border border-stone-500 shadow-inner"></span>
+              </div>
             </div>
 
-            <!-- MẶT MÀN HÌNH TINH THỂ LỎNG LCD 1604A (PHÔNG CHỮ MA TRẬN ĐÚNG 16 KÝ TỰ X 4 DÒNG) -->
-            <div class="bg-[#022c22] p-3.5 rounded-xl border-2 border-emerald-950 font-mono shadow-inner select-none overflow-hidden relative" style="box-shadow: inset 0 0 15px rgba(0,0,0,0.8), 0 0 10px rgba(16, 185, 129, 0.15);">
+            <!-- KHUNG VIỀN KIM LOẠI ĐEN CỦA MÀN HÌNH (METAL BEZEL) -->
+            <div class="bg-black p-2 rounded-xl border-2 border-stone-700 shadow-inner flex flex-col items-center">
               
-              <!-- 4 DÒNG CHỮ ĐÚNG 16 KÝ TỰ / DÒNG -->
-              <div class="space-y-1 text-emerald-300 font-bold tracking-widest text-sm sm:text-base whitespace-pre leading-relaxed font-mono" style="text-shadow: 0 0 6px rgba(52, 211, 153, 0.7);">
-                <div id="lcd1604_l1">CAR|ARM 200H 3.8m</div>
-                <div id="lcd1604_l2">S:-48dB TX8.2R119</div>
-                <div id="lcd1604_l3">T:[====|====]1500</div>
-                <div id="lcd1604_l4">S:[====|====]1500</div>
+              <!-- KÍNH HIỂN THỊ LCD 1604A: KÍCH THƯỚC CHUẨN RỘNG 360px X CAO 96px (TỶ LỆ ~3.7:1) -->
+              <div id="lcd1604Glass" class="lcd-blue-theme rounded-md border-2 border-black/60 shadow-inner overflow-hidden select-none relative" 
+                   style="width: 360px; max-width: 100%; height: 96px; padding: 6px 12px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-around;">
+                
+                <!-- 4 DÒNG CHỮ GỌN GÀNG, SÁT NHAU CHUẨN XÁC LCD TINH THỂ LỎNG -->
+                <div id="lcd1604_l1" class="lcd-line font-mono font-bold tracking-[2px] text-[15px] leading-tight whitespace-pre">CAR|ARM 200H 3.8m</div>
+                <div id="lcd1604_l2" class="lcd-line font-mono font-bold tracking-[2px] text-[15px] leading-tight whitespace-pre">S:-48dB TX8.2R12V</div>
+                <div id="lcd1604_l3" class="lcd-line font-mono font-bold tracking-[2px] text-[15px] leading-tight whitespace-pre">T:[====|====]1500</div>
+                <div id="lcd1604_l4" class="lcd-line font-mono font-bold tracking-[2px] text-[15px] leading-tight whitespace-pre">S:[====|====]1500</div>
+
               </div>
 
             </div>
 
-            <!-- THANH CHỌN TRANG NHANH CỦA MÀN HÌNH 1604 -->
-            <div class="grid grid-cols-7 gap-1 mt-2 font-mono text-[10px] text-center font-bold">
-              <button onclick="setLcdPage(0)" id="pageBtn0" class="py-1 px-0.5 rounded bg-emerald-600 text-white shadow">HUD</button>
-              <button onclick="setLcdPage(1)" id="pageBtn1" class="py-1 px-0.5 rounded bg-stone-800 text-stone-400 hover:text-white">MDL</button>
-              <button onclick="setLcdPage(2)" id="pageBtn2" class="py-1 px-0.5 rounded bg-stone-800 text-stone-400 hover:text-white">EXPO</button>
-              <button onclick="setLcdPage(3)" id="pageBtn3" class="py-1 px-0.5 rounded bg-stone-800 text-stone-400 hover:text-white">ABS</button>
-              <button onclick="setLcdPage(4)" id="pageBtn4" class="py-1 px-0.5 rounded bg-stone-800 text-stone-400 hover:text-white">KÊNH</button>
-              <button onclick="setLcdPage(5)" id="pageBtn5" class="py-1 px-0.5 rounded bg-stone-800 text-stone-400 hover:text-white">TIME</button>
-              <button onclick="setLcdPage(6)" id="pageBtn6" class="py-1 px-0.5 rounded bg-stone-800 text-stone-400 hover:text-white">LƯU</button>
+            <!-- CHÂN HÀNG KIM I2C VÀ THANH CHỌN TRANG MENU -->
+            <div class="flex items-center justify-between mt-2 px-1 text-[10px] font-mono">
+              <span class="text-stone-400">I2C: <b class="text-emerald-400">0x27 (PCF8574)</b></span>
+              <span class="text-amber-400 font-bold" id="lcdPageIndicator">TRANG 1/7 [HUD]</span>
+            </div>
+
+            <!-- THANH NÚT CHỌN TRANG 1604A -->
+            <div class="grid grid-cols-7 gap-1 mt-1.5 font-mono text-[10px] text-center font-bold">
+              <button onclick="setLcdPage(0)" id="pageBtn0" class="py-1 rounded bg-emerald-600 text-white shadow">HUD</button>
+              <button onclick="setLcdPage(1)" id="pageBtn1" class="py-1 rounded bg-stone-800 text-stone-400 hover:text-white">1.MDL</button>
+              <button onclick="setLcdPage(2)" id="pageBtn2" class="py-1 rounded bg-stone-800 text-stone-400 hover:text-white">2.EXPO</button>
+              <button onclick="setLcdPage(3)" id="pageBtn3" class="py-1 rounded bg-stone-800 text-stone-400 hover:text-white">3.ABS</button>
+              <button onclick="setLcdPage(4)" id="pageBtn4" class="py-1 rounded bg-stone-800 text-stone-400 hover:text-white">4.KÊNH</button>
+              <button onclick="setLcdPage(5)" id="pageBtn5" class="py-1 rounded bg-stone-800 text-stone-400 hover:text-white">5.TIME</button>
+              <button onclick="setLcdPage(6)" id="pageBtn6" class="py-1 rounded bg-stone-800 text-stone-400 hover:text-white">6.LƯU</button>
             </div>
 
           </div>
 
-          <!-- 3 NÚT BẤM VẬT LÝ B1, B2, B3 (CHUẨN TAY CẦM) -->
+          <!-- 3 NÚT BẤM VẬT LÝ B1, B2, B3 -->
           <div class="flex items-center gap-2 mt-1">
             <button onclick="onB1Press1604()" class="px-3.5 py-1.5 bg-stone-800 hover:bg-stone-700 active:bg-cyan-600 text-white text-xs font-bold rounded-lg border border-stone-700 transition-all flex items-center gap-1 shadow-sm">
-              <span>◀️</span> <span id="lblBtnB1">B1: TRANG TRƯỚC</span>
+              <span>◀️</span> <span>B1: TRANG TRƯỚC</span>
             </button>
             <button onclick="onB2Press1604()" class="px-3.5 py-1.5 bg-stone-800 hover:bg-stone-700 active:bg-cyan-600 text-white text-xs font-bold rounded-lg border border-stone-700 transition-all flex items-center gap-1 shadow-sm">
-              <span>▶️</span> <span id="lblBtnB2">B2: TRANG TIẾP</span>
+              <span>▶️</span> <span>B2: TRANG TIẾP</span>
             </button>
             <button onclick="onB3Press1604()" class="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1">
-              <span>🔄</span> <span id="lblBtnB3">B3: ĐỔI GIÁ TRỊ</span>
+              <span>🔄</span> <span>B3: ĐỔI GIÁ TRỊ</span>
             </button>
           </div>
           <div class="text-[11px] text-[var(--muted-foreground)] text-center">
-            Màn hình <b>LCD 1604A (16 cột x 4 dòng)</b>: Dùng <b>B1/B2</b> để lật 7 trang menu, <b>B3</b> để đổi thông số!
+            Kích thước thực tế: Màn hình chữ nhật nằm ngang (360x96px), 4 dòng chữ nằm gọn gàng!
           </div>
         </div>
 
@@ -1358,6 +1397,22 @@
     let absBrakeOn = true;
     let driftGyroVal = 65; // %
     let steerSpeedVal = 100; // %
+
+    
+    let lcdThemeIdx = 0; // 0: Xanh Dương LED, 1: Vàng Chanh Đen
+    function toggleLcdColorTheme() {
+      lcdThemeIdx = 1 - lcdThemeIdx;
+      playBeep(2600, 40);
+      const glass = document.getElementById('lcd1604Glass');
+      const btn = document.getElementById('btnThemeToggle');
+      if (lcdThemeIdx === 0) {
+        glass.className = "lcd-blue-theme rounded-md border-2 border-black/60 shadow-inner overflow-hidden select-none relative";
+        btn.innerText = "🎨 MÀU: XANH DƯƠNG";
+      } else {
+        glass.className = "lcd-yellow-theme rounded-md border-2 border-black/60 shadow-inner overflow-hidden select-none relative";
+        btn.innerText = "🎨 MÀU: VÀNG CHANH";
+      }
+    }
 
     function setLcdPage(page) {
       lcd1604Page = page;
