@@ -1,0 +1,15 @@
+# Compiler build files
+build/
+*.bin
+*.hex
+*.elf
+*.o
+
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Python cache
+__pycache__/
+*.py[cod]
