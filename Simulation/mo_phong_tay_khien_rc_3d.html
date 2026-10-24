@@ -154,13 +154,13 @@
           <!-- 3 NÚT BẤM VẬT LÝ B1, B2, B3 -->
           <div class="flex items-center gap-2 mt-1">
             <button onclick="onB1Press1604()" class="px-3.5 py-1.5 bg-stone-800 hover:bg-stone-700 active:bg-cyan-600 text-white text-xs font-bold rounded-lg border border-stone-700 transition-all flex items-center gap-1 shadow-sm">
-              <span>◀️</span> <span>B1: TRANG TRƯỚC</span>
+              <span>◀️</span> <span id="lblBtnB1">B1: TRANG TRƯỚC</span>
             </button>
             <button onclick="onB2Press1604()" class="px-3.5 py-1.5 bg-stone-800 hover:bg-stone-700 active:bg-cyan-600 text-white text-xs font-bold rounded-lg border border-stone-700 transition-all flex items-center gap-1 shadow-sm">
-              <span>▶️</span> <span>B2: TRANG TIẾP</span>
+              <span>▶️</span> <span id="lblBtnB2">B2: TRANG TIẾP</span>
             </button>
             <button onclick="onB3Press1604()" class="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1">
-              <span>🔄</span> <span>B3: ĐỔI GIÁ TRỊ</span>
+              <span>🔄</span> <span id="lblBtnB3">B3: ĐỔI GIÁ TRỊ</span>
             </button>
           </div>
           <div class="text-[11px] text-[var(--muted-foreground)] text-center">
@@ -642,48 +642,49 @@
     function updateSpeedUI() {
       const cur = RF_RATES[rfRateIdx];
       let lat = cur.latency;
-      if (pwmRateIdx === 1) lat += 15.0; // Thêm độ trễ 50Hz analog
-      if (protocolIdx === 1 && activeModel === 0) lat += 8.0; // SBUS trễ hơn CRSF
+      if (pwmRateIdx === 1) lat += 15.0;
+      if (protocolIdx === 1 && activeModel === 0) lat += 8.0;
 
-      document.getElementById('badgeLiveLatency').innerText = `${lat.toFixed(1)} ms ${lat <= 5 ? '(ZERO-LAG)' : ''}`;
-      document.getElementById('badgeLiveLatency').className = `px-2 py-0.5 rounded text-xs font-black font-mono animate-pulse ${
-        lat <= 5 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 
-        lat <= 12 ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40' :
-        'bg-amber-500/20 text-amber-400 border border-amber-500/40'
-      }`;
+      const badgeLat = document.getElementById('badgeLiveLatency');
+      if (badgeLat) {
+        badgeLat.innerText = `${lat.toFixed(1)} ms ${lat <= 5 ? '(ZERO-LAG)' : ''}`;
+        badgeLat.className = `px-2 py-0.5 rounded text-xs font-black font-mono animate-pulse ${
+          lat <= 5 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 
+          lat <= 12 ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40' :
+          'bg-amber-500/20 text-amber-400 border border-amber-500/40'
+        }`;
+      }
 
-      // Highlight RF Buttons
       for (let i = 0; i < 4; i++) {
         const b = document.getElementById(`btnRf${[50, 100, 150, 200][i]}`);
-        if (i === rfRateIdx) {
-          b.className = "py-1.5 px-2 rounded-lg font-bold border border-emerald-500 bg-emerald-600/20 text-emerald-400 shadow-sm transition-all text-[11px]";
-        } else {
-          b.className = "py-1.5 px-2 rounded-lg font-bold border border-[var(--border)] bg-stone-800 text-stone-300 hover:border-emerald-500 transition-all text-[11px]";
+        if (b) {
+          b.className = (i === rfRateIdx) ?
+            "py-1.5 px-2 rounded-lg font-bold border border-emerald-500 bg-emerald-600/20 text-emerald-400 shadow-sm transition-all text-[11px]" :
+            "py-1.5 px-2 rounded-lg font-bold border border-[var(--border)] bg-stone-800 text-stone-300 hover:border-emerald-500 transition-all text-[11px]";
         }
       }
 
-      // Highlight Protocol
-      document.getElementById('txtProtBadge').innerText = protocolIdx === 0 ? "CRSF 420k" : "SBUS 100k";
-      document.getElementById('btnProtCrsf').className = protocolIdx === 0 ? 
-        "py-1 px-2 rounded font-bold border border-blue-500 bg-blue-600/20 text-blue-300 text-[11px]" :
-        "py-1 px-2 rounded font-bold border border-stone-700 bg-stone-800 text-stone-400 text-[11px]";
-      document.getElementById('btnProtSbus').className = protocolIdx === 1 ?
-        "py-1 px-2 rounded font-bold border border-blue-500 bg-blue-600/20 text-blue-300 text-[11px]" :
-        "py-1 px-2 rounded font-bold border border-stone-700 bg-stone-800 text-stone-400 text-[11px]";
+      const txtProt = document.getElementById('txtProtBadge');
+      if (txtProt) txtProt.innerText = protocolIdx === 0 ? "CRSF 420k" : "SBUS 100k";
+      const btnCrsf = document.getElementById('btnProtCrsf');
+      if (btnCrsf) btnCrsf.className = protocolIdx === 0 ? "py-1 px-2 rounded font-bold border border-blue-500 bg-blue-600/20 text-blue-300 text-[11px]" : "py-1 px-2 rounded font-bold border border-stone-700 bg-stone-800 text-stone-400 text-[11px]";
+      const btnSbus = document.getElementById('btnProtSbus');
+      if (btnSbus) btnSbus.className = protocolIdx === 1 ? "py-1 px-2 rounded font-bold border border-blue-500 bg-blue-600/20 text-blue-300 text-[11px]" : "py-1 px-2 rounded font-bold border border-stone-700 bg-stone-800 text-stone-400 text-[11px]";
 
-      // Highlight PWM
-      document.getElementById('txtPwmBadge').innerText = pwmRateIdx === 0 ? "333Hz (3ms)" : "50Hz (20ms)";
-      document.getElementById('btnPwm333').className = pwmRateIdx === 0 ?
-        "py-1 px-2 rounded font-bold border border-amber-500 bg-amber-600/20 text-amber-300 text-[11px]" :
-        "py-1 px-2 rounded font-bold border border-stone-700 bg-stone-800 text-stone-400 text-[11px]";
-      document.getElementById('btnPwm50').className = pwmRateIdx === 1 ?
-        "py-1 px-2 rounded font-bold border border-amber-500 bg-amber-600/20 text-amber-300 text-[11px]" :
-        "py-1 px-2 rounded font-bold border border-stone-700 bg-stone-800 text-stone-400 text-[11px]";
+      const txtPwm = document.getElementById('txtPwmBadge');
+      if (txtPwm) txtPwm.innerText = pwmRateIdx === 0 ? "333Hz (3ms)" : "50Hz (20ms)";
+      const btnPwm3 = document.getElementById('btnPwm333');
+      if (btnPwm3) btnPwm3.className = pwmRateIdx === 0 ? "py-1 px-2 rounded font-bold border border-amber-500 bg-amber-600/20 text-amber-300 text-[11px]" : "py-1 px-2 rounded font-bold border border-stone-700 bg-stone-800 text-stone-400 text-[11px]";
+      const btnPwm5 = document.getElementById('btnPwm50');
+      if (btnPwm5) btnPwm5.className = pwmRateIdx === 1 ? "py-1 px-2 rounded font-bold border border-amber-500 bg-amber-600/20 text-amber-300 text-[11px]" : "py-1 px-2 rounded font-bold border border-stone-700 bg-stone-800 text-stone-400 text-[11px]";
 
-      document.getElementById('btnDeadband').innerText = `${DEADBANDS[deadbandIdx]} us`;
-      document.getElementById('btnExpo').innerText = `${EXPOS[expoIdx]}%`;
+      const btnDb = document.getElementById('btnDeadband');
+      if (btnDb) btnDb.innerText = `${DEADBANDS[deadbandIdx]} us`;
+      const btnEx = document.getElementById('btnExpo');
+      if (btnEx) btnEx.innerText = `${EXPOS[expoIdx]}%`;
 
-      document.getElementById('linkStatusBadge').innerText = `LORA ${cur.hz}Hz • ${lat.toFixed(1)}ms: TỐT`;
+      const linkSt = document.getElementById('linkStatusBadge');
+      if (linkSt) linkSt.innerText = `LORA ${cur.hz}Hz • ${lat.toFixed(1)}ms: TỐT`;
 
       updateLcdDisplay();
     }
@@ -691,9 +692,12 @@
     function onB1Click() {
       inLcdMenu = !inLcdMenu;
       playBeep(inLcdMenu ? 3200 : 2600, 80);
-      document.getElementById('lblBtnB1').innerText = inLcdMenu ? "B1: THOÁT MENU" : "B1: MENU (6 Trang)";
-      document.getElementById('lblBtnB2').innerText = inLcdMenu ? "B2: TRANG TIẾP" : "B2: DOWN (-)";
-      document.getElementById('lblBtnB3').innerText = inLcdMenu ? "B3: ĐỔI GIÁ TRỊ" : "B3: UP / CHỌN (+)";
+      const b1 = document.getElementById('lblBtnB1');
+      if (b1) b1.innerText = inLcdMenu ? "B1: THOÁT MENU" : "B1: MENU (6 Trang)";
+      const b2 = document.getElementById('lblBtnB2');
+      if (b2) b2.innerText = inLcdMenu ? "B2: TRANG TIẾP" : "B2: DOWN (-)";
+      const b3 = document.getElementById('lblBtnB3');
+      if (b3) b3.innerText = inLcdMenu ? "B3: ĐỔI GIÁ TRỊ" : "B3: UP / CHỌN (+)";
       updateLcdDisplay();
     }
 
@@ -735,7 +739,7 @@
           case 5: // Lưu EEPROM & Thoát
             playBeep(3400, 150);
             inLcdMenu = false;
-            document.getElementById('lblBtnB1').innerText = "B1: MENU (6 Trang)";
+            const b1e = document.getElementById('lblBtnB1'); if (b1e) b1e.innerText = 'B1: MENU';
             break;
         }
         updateLcdDisplay();
@@ -902,80 +906,217 @@
     }
 
     function updateLcdDisplay() {
-      const l1 = document.getElementById('lcdLine1');
-      const l2 = document.getElementById('lcdLine2');
-      const l3 = document.getElementById('lcdLine3');
-      const l4 = document.getElementById('lcdLine4');
-
-      if (inLcdMenu) {
-        l1.innerText = `MENU ${menuPage + 1}/6 [B3:DOI]`;
-        switch (menuPage) {
-          case 0:
-            l2.innerText = "1. MODEL SELECT ";
-            l3.innerText = (activeModel === 1 ? "> [RC CAR RACER]" : "> [FPV DRONE Q] ");
-            l4.innerText = "B2:NEXT  B3:CHON";
-            break;
-          case 1:
-            l2.innerText = "2. RF PACKETRATE";
-            l3.innerText = `> ${RF_RATES[rfRateIdx].name}`;
-            l4.innerText = "B2:NEXT  B3:TANG";
-            break;
-          case 2:
-            l2.innerText = "3. PROTOCOL&PWM ";
-            if (activeModel === 0) {
-              l3.innerText = protocolIdx === 0 ? ">DRN:CRSF 420k " : ">DRN:SBUS 100k ";
-            } else {
-              l3.innerText = pwmRateIdx === 0 ? ">CAR:PWM 333Hz " : ">CAR:PWM 50Hz  ";
-            }
-            l4.innerText = "B2:NEXT  B3:DOI ";
-            break;
-          case 3:
-            l2.innerText = "4. DEADBAND&EXPO";
-            l3.innerText = `DB:${DEADBANDS[deadbandIdx]}us EX:${EXPOS[expoIdx]}%`;
-            l4.innerText = "B2:NEXT  B3:TANG";
-            break;
-          case 4:
-            l2.innerText = "5. REVERSE CH   ";
-            l3.innerText = `1:${(chReverse & 1) ? 'R' : 'N'} 2:N 3:N 4:N`;
-            l4.innerText = "B2:NEXT  B3:DAO ";
-            break;
-          case 5:
-            l2.innerText = "6. LUU VA THOAT ";
-            l3.innerText = "> LUU EEPROM OK ";
-            l4.innerText = "B3: LUU VA THOAT";
-            break;
-        }
-        return;
-      }
-
-      // HUD TELEMETRY THỜI GIAN THỰC (ZERO-LATENCY HUD)
-      const curRf = RF_RATES[rfRateIdx];
-      let lat = curRf.latency;
-      if (pwmRateIdx === 1) lat += 15.0;
-      if (protocolIdx === 1 && activeModel === 0) lat += 8.0;
-
-      const mName = (activeModel === 0) ? "DRN" : "CAR";
-      const armSt = (swArm === 1) ? "ARM" : "DIS";
-      l1.innerText = `${mName}|${armSt} ${curRf.hz}Hz${lat.toFixed(0).padStart(2, ' ')}ms`;
-
-      let rssiVal = failsafeTriggered ? -110 : -48;
-      const protStr = (protocolIdx === 0) ? "CRSF" : "SBUS";
-      const pwmStr = (pwmRateIdx === 0) ? "333H" : "50Hz";
-      l2.innerText = `S:${rssiVal}dBm ${protStr}|${pwmStr}`;
-
-      let rxVoltStr = failsafeTriggered ? "--.-V" : modelBattery.toFixed(2) + "V";
-      l3.innerText = `TX:${txBattery.toFixed(2)}V RX:${rxVoltStr}`;
-
-      if (activeModel === 0) {
-        let thrPct = Math.round(((chThrottle - 1000) / 1000) * 100);
-        let yawPct = Math.round(((chYawSteer - 1500) / 500) * 100);
-        l4.innerText = `T:${thrPct.toString().padStart(3, ' ')}% S:${yawPct.toString().padStart(3, ' ')}% P${knobPot}`;
-      } else {
-        let strPct = Math.round(((chRoll - 1500) / 500) * 100);
-        let thrPct = Math.round(((chThrottle - 1500) / 500) * 100);
-        l4.innerText = `T:${thrPct.toString().padStart(3, ' ')}% S:${strPct.toString().padStart(3, ' ')}% P${knobPot}`;
+      if (typeof updateLcd1604Display === 'function') {
+        updateLcd1604Display();
       }
     }
+
+    
+    // =========================================================================
+    // HỆ THỐNG ĐIỀU KHIỂN & GIAO DIỆN MÀN HÌNH LCD 1604A THỰC TẾ
+    // =========================================================================
+    let lcd1604Page = 0; // 0: HUD, 1: MODEL & RF, 2: EXPO, 3: ABS, 4: KÊNH, 5: TIMER, 6: LƯU
+    let lcdThemeIdx = 0; // 0: Xanh dương, 1: Vàng chanh
+    let lapTimerActive = false;
+    let lapStartMs = 0;
+    let lapElapsedMs = 0;
+    let lapBestTimeMs = 0;
+    let lapCountNum = 0;
+
+    let expoValue = 35;
+    let deadbandValue = 15;
+    let absBrakeOn = true;
+    let driftGyroVal = 65;
+    let steerSpeedVal = 100;
+
+    function toggleLcdColorTheme() {
+      lcdThemeIdx = 1 - lcdThemeIdx;
+      playBeep(2600, 40);
+      const glass = document.getElementById('lcd1604Glass');
+      const btn = document.getElementById('btnThemeToggle');
+      if (glass) {
+        if (lcdThemeIdx === 0) {
+          glass.className = "lcd-blue-theme rounded-md border-2 border-black/60 shadow-inner overflow-hidden select-none relative";
+          if (btn) btn.innerText = "🎨 MÀU: XANH DƯƠNG";
+        } else {
+          glass.className = "lcd-yellow-theme rounded-md border-2 border-black/60 shadow-inner overflow-hidden select-none relative";
+          if (btn) btn.innerText = "🎨 MÀU: VÀNG CHANH";
+        }
+      }
+    }
+
+    function setLcdPage(page) {
+      lcd1604Page = page;
+      playBeep(2400 + page * 100, 35);
+      for (let i = 0; i < 7; i++) {
+        const btn = document.getElementById(`pageBtn${i}`);
+        if (btn) {
+          if (i === page) {
+            btn.className = "py-1 rounded bg-emerald-600 text-white shadow font-black";
+          } else {
+            btn.className = "py-1 rounded bg-stone-800 text-stone-400 hover:text-white";
+          }
+        }
+      }
+      const pageNames = ["[HUD]", "[1.MDL]", "[2.EXPO]", "[3.ABS]", "[4.KÊNH]", "[5.TIME]", "[6.LƯU]"];
+      const ind = document.getElementById('lcdPageIndicator');
+      if (ind) ind.innerText = `TRANG ${page + 1}/7 ${pageNames[page]}`;
+      updateLcd1604Display();
+    }
+
+    function onB1Press1604() {
+      setLcdPage((lcd1604Page + 6) % 7);
+    }
+
+    function onB2Press1604() {
+      setLcdPage((lcd1604Page + 1) % 7);
+    }
+
+    function onB3Press1604() {
+      playBeep(3000, 50);
+      switch (lcd1604Page) {
+        case 0: // HUD: Bật/tắt ABS nhanh
+          absBrakeOn = !absBrakeOn;
+          break;
+        case 1: // Model: Đổi xe <-> drone
+          activeModel = 1 - activeModel;
+          applyModelSwitch();
+          break;
+        case 2: // Expo: Tăng 15%
+          expoValue = (expoValue + 15) % 70;
+          break;
+        case 3: // ABS: Bật/Tắt
+          absBrakeOn = !absBrakeOn;
+          break;
+        case 4: // Kênh
+          break;
+        case 5: // Lap timer: Bắt đầu / Bấm lap
+          if (!lapTimerActive) {
+            lapTimerActive = true;
+            lapStartMs = Date.now() - lapElapsedMs;
+          } else {
+            lapCountNum++;
+            if (lapBestTimeMs === 0 || lapElapsedMs < lapBestTimeMs) lapBestTimeMs = lapElapsedMs;
+            lapElapsedMs = 0;
+            lapStartMs = Date.now();
+          }
+          break;
+        case 6: // Lưu EEPROM
+          playBeep(3400, 150);
+          break;
+      }
+      updateLcd1604Display();
+    }
+
+    function makeLcdBar(us, minUs = 1000, maxUs = 2000, width = 8) {
+      let norm = (us - 1500) / 500.0;
+      let half = Math.floor(width / 2);
+      let chars = new Array(width).fill(' ');
+      let center = half;
+
+      if (Math.abs(norm) < 0.08) {
+        chars[center] = '|';
+      } else if (norm > 0) {
+        let fill = Math.min(half, Math.round(norm * half));
+        for (let i = 0; i < fill; i++) chars[center + 1 + i] = '=';
+        chars[center] = '|';
+      } else {
+        let fill = Math.min(half, Math.round(-norm * half));
+        for (let i = 0; i < fill; i++) chars[center - 1 - i] = '=';
+        chars[center] = '|';
+      }
+      return '[' + chars.join('') + ']';
+    }
+
+    function updateLcd1604Display() {
+      const l1 = document.getElementById('lcd1604_l1');
+      const l2 = document.getElementById('lcd1604_l2');
+      const l3 = document.getElementById('lcd1604_l3');
+      const l4 = document.getElementById('lcd1604_l4');
+      if (!l1 || !l2 || !l3 || !l4) return;
+
+      const pad16 = (s) => (s + '                ').substring(0, 16);
+
+      switch (lcd1604Page) {
+        case 0: { // TRANG 1: HUD COCKPIT
+          const mStr = (activeModel === 0) ? "DRN" : "CAR";
+          const aStr = (swArm === 1) ? "ARM" : "DIS";
+          l1.innerText = pad16(`${mStr}|${aStr} 200H 3.8m`);
+
+          let rVal = failsafeTriggered ? "-110" : "-48";
+          let rxV = failsafeTriggered ? "--" : modelBattery.toFixed(0);
+          l2.innerText = pad16(`S:${rVal}d TX8.2R${rxV}V`);
+
+          let barT = makeLcdBar(chThrottle, 1000, 2000, 8);
+          l3.innerText = pad16(`T:${barT}${chThrottle.toString().padStart(4, ' ')}`);
+
+          let barS = makeLcdBar(chRoll, 1000, 2000, 8);
+          l4.innerText = pad16(`S:${barS}${chRoll.toString().padStart(4, ' ')}`);
+          break;
+        }
+
+        case 1: { // TRANG 2: MODEL & RF
+          l1.innerText = pad16("1.MDL & RF [B3] ");
+          l2.innerText = pad16(`MDL: [${activeModel === 1 ? 'RC CAR RAC' : 'FPV DRONE'}]`);
+          l3.innerText = pad16("RF:  [200Hz  5ms]");
+          l4.innerText = pad16(`PROT:[${activeModel === 0 ? 'CRSF 420k' : 'PWM 333Hz'}]`);
+          break;
+        }
+
+        case 2: { // TRANG 3: EXPO & DEADBAND
+          l1.innerText = pad16("2.EXPO & DB [B3]");
+          l2.innerText = pad16(`EXPO STR: [ ${expoValue}%]`);
+          l3.innerText = pad16(`DEADBAND: [ ${deadbandValue}u]`);
+          l4.innerText = pad16(`SPEEDLIM: [ ${knobPot}%]`);
+          break;
+        }
+
+        case 3: { // TRANG 4: RACING ABS
+          l1.innerText = pad16("3.RACING & ABS  ");
+          l2.innerText = pad16(`ABS BRAKE:[ ${absBrakeOn ? 'ON ' : 'OFF'}]`);
+          l3.innerText = pad16(`DRIFTGYRO:[ ${driftGyroVal}%]`);
+          l4.innerText = pad16(`STEERSPD:[ ${steerSpeedVal}%]`);
+          break;
+        }
+
+        case 4: { // TRANG 5: 8-CHANNEL MONITOR
+          l1.innerText = pad16(`1:${chRoll}  2:${chPitchAux}`);
+          l2.innerText = pad16(`3:${chThrottle}  4:${chYawSteer}`);
+          l3.innerText = pad16(`5:${swArm ? 2000 : 1000}  6:${swMode === 0 ? 1000 : (swMode === 1 ? 1500 : 2000)}`);
+          l4.innerText = pad16(`7:${absBrakeOn ? 2000 : 1000}  8:${swAux ? 2000 : 1000}`);
+          break;
+        }
+
+        case 5: { // TRANG 6: LAP TIMER
+          if (lapTimerActive) {
+            lapElapsedMs = Date.now() - lapStartMs;
+          }
+          let s = Math.floor((lapElapsedMs / 1000) % 60);
+          let m = Math.floor(lapElapsedMs / 60000);
+          let d = Math.floor((lapElapsedMs % 1000) / 100);
+          let timeStr = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${d}`;
+
+          l1.innerText = pad16("5.RACING TIMER  ");
+          l2.innerText = pad16(`TIME: ${timeStr}`);
+          l3.innerText = pad16(`LAP:  ${lapCountNum}  [RUN]`);
+          l4.innerText = pad16("[B3: BAM LAP/BAT]");
+          break;
+        }
+
+        case 6: { // TRANG 7: LƯU EEPROM
+          l1.innerText = pad16("6.LUU CAI DAT   ");
+          l2.innerText = pad16("NHAN B3 DE LUU  ");
+          l3.innerText = pad16("FLASH: SAN SANG ");
+          l4.innerText = pad16("B1:THOAT B3:SAVE");
+          break;
+        }
+      }
+    }
+
+    function updateLcdDisplay() {
+      updateLcd1604Display();
+    }
+
 
     // --- SETUP JOYSTICK PS2 VỚI LÒ XO TỰ HỒI VỀ TÂM (0, 0) ---
     function setupJoystick(boxId, knobId, onMove, onEnd) {
@@ -1132,502 +1273,11 @@
 
     
     // =========================================================================
-    // HỆ ĐIỀU HÀNH FLAGSHIP EDGETX & FLYSKY NOBLE NB4 PRO UI ENGINE
-    // =========================================================================
+    // HỆ ĐIỀU HÀNH LCD 1604A ENGINE
     let currentOsTab = 0;
     let absBrakeEnabled = true;
-    let absPulseState = false;
-    let absTimer = null;
     let driftGyroGain = 65;
     let steerSpeedLimit = 100;
-    let current4wsMode = 0; // 0: 2WS, 1: 4WS Crab, 2: 4WS Counter
-    let selectedModelIdx = 0;
-
-    // Lap Timer State
-    let lapTimerRunning = false;
-    let lapStartTime = 0;
-    let lapInterval = null;
-    let lapCurrentMs = 0;
-    let bestLapMs = 0;
-    let lapCounter = 0;
-
-    // Garage Model Database
-    const GARAGE_MODELS = [
-      { name: "01: RWD DRIFT KING", icon: "🏎️", type: 1, rf: 3, pwm: 0, expo: 40, db: 15, abs: true, gyro: 65 },
-      { name: "02: ROCK CRAWLER 4x4", icon: "🚙", type: 1, rf: 1, pwm: 1, expo: 20, db: 25, abs: false, gyro: 0 },
-      { name: "03: 1/10 TOURING RACER", icon: "🏁", type: 1, rf: 3, pwm: 0, expo: 10, db: 10, abs: true, gyro: 30 },
-      { name: "04: 5" FPV FREESTYLE", icon: "🛸", type: 0, rf: 3, prot: 0, expo: 45, db: 15, abs: false, gyro: 0 },
-      { name: "05: CINEWHOOP 4K", icon: "🚁", type: 0, rf: 2, prot: 0, expo: 25, db: 20, abs: false, gyro: 0 },
-      { name: "06: SPEEDBOAT BRUSHLESS", icon: "🚤", type: 1, rf: 1, pwm: 1, expo: 0, db: 15, abs: false, gyro: 0 }
-    ];
-
-    function switchOsTab(tabIdx) {
-      currentOsTab = tabIdx;
-      playBeep(2600 + tabIdx * 150, 40);
-      for (let i = 0; i < 6; i++) {
-        const btn = document.getElementById(`tabBtn${i}`);
-        const content = document.getElementById(`tabContent${i}`);
-        if (i === tabIdx) {
-          btn.className = "py-1 px-1 rounded-lg bg-emerald-600 text-white shadow transition-all font-black";
-          content.classList.remove('hidden');
-        } else {
-          btn.className = "py-1 px-1 rounded-lg hover:bg-stone-800 text-stone-400 transition-all";
-          content.classList.add('hidden');
-        }
-      }
-      if (tabIdx === 1) renderExpoCurveCanvas();
-    }
-
-    function toggleAbsBrake() {
-      absBrakeEnabled = !absBrakeEnabled;
-      playBeep(absBrakeEnabled ? 3000 : 1800, 60);
-      const btn = document.getElementById('btnAbsToggle');
-      const badge = document.getElementById('hudAbsStatus');
-      if (absBrakeEnabled) {
-        btn.innerText = "BẬT (ON)";
-        btn.className = "px-2 py-0.5 rounded text-[10px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
-        badge.innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span>ABS ACTIVE</span>`;
-      } else {
-        btn.innerText = "TẮT (OFF)";
-        btn.className = "px-2 py-0.5 rounded text-[10px] font-black bg-stone-700 text-stone-400 border border-stone-600";
-        badge.innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-stone-600"></span><span>ABS OFF</span>`;
-      }
-    }
-
-    function onGyroChange(val) {
-      driftGyroGain = parseInt(val);
-      document.getElementById('txtGyroVal').innerText = `${driftGyroGain}%`;
-    }
-
-    function onSteerSpeedChange(val) {
-      steerSpeedLimit = parseInt(val);
-      document.getElementById('txtSteerSpeed').innerText = `${steerSpeedLimit}%`;
-    }
-
-    function cycle4wsMode() {
-      current4wsMode = (current4wsMode + 1) % 3;
-      playBeep(2400 + current4wsMode * 200, 50);
-      const names = ["2WS (Bánh Trước)", "4WS Cùng Chiều (Bò Cua)", "4WS Ngược Chiều (Cua Gắt)"];
-      document.getElementById('btn4wsMode').innerText = names[current4wsMode];
-    }
-
-    function selectGarageModel(slot) {
-      selectedModelIdx = slot;
-      const m = GARAGE_MODELS[slot];
-      playBeep(2800, 80);
-      setTimeout(() => playBeep(3400, 120), 90);
-
-      document.getElementById('osModelIcon').innerText = m.icon;
-      document.getElementById('osModelName').innerText = m.name;
-
-      for (let i = 0; i < 6; i++) {
-        const slotEl = document.getElementById(`garageSlot${i}`);
-        if (i === slot) {
-          slotEl.className = "p-1.5 rounded-lg border border-emerald-500/50 bg-emerald-500/10 text-left flex items-center gap-2 shadow-sm";
-        } else {
-          slotEl.className = "p-1.5 rounded-lg border border-stone-800 bg-stone-900/60 text-left flex items-center gap-2 hover:border-stone-700";
-        }
-      }
-
-      // Nạp cấu hình xe/drone
-      activeModel = m.type;
-      applyModelSwitch();
-
-      if (m.rf !== undefined) setRfRate(m.rf);
-      if (m.pwm !== undefined) setPwmRate(m.pwm);
-      if (m.prot !== undefined) setProtocol(m.prot);
-      if (m.expo !== undefined) onExpoSliderChange(m.expo);
-      if (m.db !== undefined) onDbSliderChange(m.db);
-      if (m.abs !== undefined) {
-        absBrakeEnabled = m.abs;
-        toggleAbsBrake();
-        toggleAbsBrake();
-      }
-      switchOsTab(0); // Quay về HUD
-    }
-
-    function onB3Action() {
-      playBeep(3200, 70);
-      if (currentOsTab === 3) toggleAbsBrake();
-      else if (currentOsTab === 5) {
-        if (!lapTimerRunning) startLapTimer();
-        else recordLapSplit();
-      } else {
-        switchOsTab(1); // Mở Expo graph
-      }
-    }
-
-    // --- VẼ ĐỒ THỊ ĐƯỜNG CONG EXPO THỜI GIAN THỰC (EDGETX GRAPH) ---
-    function renderExpoCurveCanvas() {
-      const cvs = document.getElementById('expoCurveCanvas');
-      if (!cvs) return;
-      const c = cvs.getContext('2d');
-      const w = cvs.width;
-      const h = cvs.height;
-      c.clearRect(0, 0, w, h);
-
-      // Lưới tọa độ
-      c.strokeStyle = "#1e293b";
-      c.lineWidth = 1;
-      c.beginPath();
-      c.moveTo(0, h/2); c.lineTo(w, h/2);
-      c.moveTo(w/2, 0); c.lineTo(w/2, h);
-      c.stroke();
-
-      // Đường chéo tham chiếu 0% Expo (tuyến tính)
-      c.strokeStyle = "#334155";
-      c.setLineDash([3, 3]);
-      c.beginPath();
-      c.moveTo(10, h - 10);
-      c.lineTo(w - 10, 10);
-      c.stroke();
-      c.setLineDash([]);
-
-      // Vẽ đường cong Expo uốn lượn S-Curve
-      const expoVal = parseInt(document.getElementById('lblExpoVal').innerText) / 100.0;
-      c.strokeStyle = "#06b6d4";
-      c.lineWidth = 2.5;
-      c.beginPath();
-
-      for (let px = 0; px <= w - 20; px++) {
-        let normX = (px / (w - 20)) * 2.0 - 1.0; // -1.0 đến +1.0
-        let normY = normX * (1.0 - expoVal) + (normX * normX * normX) * expoVal;
-        let py = (h/2) - normY * (h/2 - 10);
-        if (px === 0) c.moveTo(px + 10, py);
-        else c.lineTo(px + 10, py);
-      }
-      c.stroke();
-
-      // Điểm chấm tròn vàng chạy dọc theo cần Joystick thật
-      let currentInputX = ((chRoll - 1500) / 500.0);
-      let currentOutY = currentInputX * (1.0 - expoVal) + Math.pow(currentInputX, 3) * expoVal;
-      let dotPx = (currentInputX + 1.0) / 2.0 * (w - 20) + 10;
-      let dotPy = (h/2) - currentOutY * (h/2 - 10);
-
-      c.fillStyle = "#f59e0b";
-      c.shadowColor = "#f59e0b";
-      c.shadowBlur = 8;
-      c.beginPath();
-      c.arc(dotPx, dotPy, 5, 0, Math.PI * 2);
-      c.fill();
-      c.shadowBlur = 0;
-    }
-
-    function onExpoSliderChange(val) {
-      document.getElementById('lblExpoVal').innerText = val + "%";
-      renderExpoCurveCanvas();
-    }
-
-    function onDbSliderChange(val) {
-      document.getElementById('lblDbVal').innerText = val + "us";
-    }
-
-    // --- BỘ ĐẾM GIỜ LAP TIMER XE ĐUA ---
-    function formatTimeMs(ms) {
-      let m = Math.floor(ms / 60000);
-      let s = Math.floor((ms % 60000) / 1000);
-      let d = Math.floor((ms % 1000) / 100);
-      return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${d}`;
-    }
-
-    function startLapTimer() {
-      if (lapTimerRunning) return;
-      lapTimerRunning = true;
-      lapStartTime = Date.now() - lapCurrentMs;
-      document.getElementById('btnLapStart').innerText = "⏸️ TẠM DỪNG";
-      document.getElementById('btnLapStart').className = "px-3 py-1 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold";
-      document.getElementById('lapStatus').innerText = "ĐANG CHẠY LAP";
-      playBeep(2800, 60);
-
-      lapInterval = setInterval(() => {
-        lapCurrentMs = Date.now() - lapStartTime;
-        document.getElementById('lapCurrentTimer').innerText = formatTimeMs(lapCurrentMs);
-      }, 50);
-    }
-
-    function recordLapSplit() {
-      if (!lapTimerRunning) return;
-      lapCounter++;
-      if (bestLapMs === 0 || lapCurrentMs < bestLapMs) {
-        bestLapMs = lapCurrentMs;
-        document.getElementById('lapBestTime').innerText = formatTimeMs(bestLapMs);
-        playBeep(3400, 150);
-      } else {
-        playBeep(2600, 80);
-      }
-      document.getElementById('lapCount').innerText = lapCounter;
-      lapCurrentMs = 0;
-      lapStartTime = Date.now();
-    }
-
-    function resetLapTimer() {
-      lapTimerRunning = false;
-      if (lapInterval) clearInterval(lapInterval);
-      lapCurrentMs = 0;
-      bestLapMs = 0;
-      lapCounter = 0;
-      document.getElementById('lapCurrentTimer').innerText = "00:00.0";
-      document.getElementById('lapBestTime').innerText = "--:--.-";
-      document.getElementById('lapCount').innerText = "0";
-      document.getElementById('btnLapStart').innerText = "▶️ BẮT ĐẦU VÒNG";
-      document.getElementById('btnLapStart').className = "px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold";
-      document.getElementById('lapStatus').innerText = "SẴN SÀNG";
-      playBeep(1800, 60);
-    }
-
-    // --- CẬP NHẬT GIAO DIỆN HỆ ĐIỀU HÀNH THỜI GIAN THỰC (60FPS) ---
-    
-    // =========================================================================
-    // HỆ THỐNG MENU & HUD CHUYÊN BIỆT CHO MÀN HÌNH LCD 1604A (16 CỘT X 4 DÒNG)
-    // =========================================================================
-    let lcd1604Page = 0; // 0: HUD, 1: MODEL & RF, 2: EXPO & DB, 3: RACING ABS, 4: CHANNELS, 5: LAP TIMER, 6: LƯU
-    let lapTimerActive = false;
-    let lapStartMs = 0;
-    let lapElapsedMs = 0;
-    let lapBestTimeMs = 0;
-    let lapCountNum = 0;
-
-    // Các thông số cấu hình
-    let currentModelName = "RC CAR";
-    let rfRateStr = "200Hz 5ms";
-    let protName = "CRSF 420k";
-    let expoValue = 35; // %
-    let deadbandValue = 15; // us
-    let speedLimitVal = 85; // %
-    let absBrakeOn = true;
-    let driftGyroVal = 65; // %
-    let steerSpeedVal = 100; // %
-
-    
-    let lcdThemeIdx = 0; // 0: Xanh Dương LED, 1: Vàng Chanh Đen
-    function toggleLcdColorTheme() {
-      lcdThemeIdx = 1 - lcdThemeIdx;
-      playBeep(2600, 40);
-      const glass = document.getElementById('lcd1604Glass');
-      const btn = document.getElementById('btnThemeToggle');
-      if (lcdThemeIdx === 0) {
-        glass.className = "lcd-blue-theme rounded-md border-2 border-black/60 shadow-inner overflow-hidden select-none relative";
-        btn.innerText = "🎨 MÀU: XANH DƯƠNG";
-      } else {
-        glass.className = "lcd-yellow-theme rounded-md border-2 border-black/60 shadow-inner overflow-hidden select-none relative";
-        btn.innerText = "🎨 MÀU: VÀNG CHANH";
-      }
-    }
-
-    function setLcdPage(page) {
-      lcd1604Page = page;
-      playBeep(2400 + page * 100, 35);
-      for (let i = 0; i < 7; i++) {
-        const btn = document.getElementById(`pageBtn${i}`);
-        if (btn) {
-          if (i === page) {
-            btn.className = "py-1 px-0.5 rounded bg-emerald-600 text-white shadow font-black";
-          } else {
-            btn.className = "py-1 px-0.5 rounded bg-stone-800 text-stone-400 hover:text-white";
-          }
-        }
-      }
-      const pageNames = ["[HUD]", "[1.MDL]", "[2.EXPO]", "[3.ABS]", "[4.KÊNH]", "[5.TIME]", "[6.LƯU]"];
-      document.getElementById('lcdPageIndicator').innerText = `TRANG ${page + 1}/7 ${pageNames[page]}`;
-      updateLcd1604Display();
-    }
-
-    function onB1Press1604() {
-      setLcdPage((lcd1604Page + 6) % 7);
-    }
-
-    function onB2Press1604() {
-      setLcdPage((lcd1604Page + 1) % 7);
-    }
-
-    function onB3Press1604() {
-      playBeep(3000, 50);
-      switch (lcd1604Page) {
-        case 0: // HUD: Bật/tắt ABS nhanh
-          absBrakeOn = !absBrakeOn;
-          break;
-        case 1: // Model & RF: Đổi Model
-          activeModel = 1 - activeModel;
-          applyModelSwitch();
-          break;
-        case 2: // Expo: Tăng 10%
-          expoValue = (expoValue + 15) % 70;
-          break;
-        case 3: // ABS: Bật/Tắt
-          absBrakeOn = !absBrakeOn;
-          break;
-        case 4: // Kênh: Xem
-          break;
-        case 5: // Lap timer: Bắt đầu / Bấm lap
-          if (!lapTimerActive) {
-            lapTimerActive = true;
-            lapStartMs = Date.now() - lapElapsedMs;
-          } else {
-            lapCountNum++;
-            if (lapBestTimeMs === 0 || lapElapsedMs < lapBestTimeMs) lapBestTimeMs = lapElapsedMs;
-            lapElapsedMs = 0;
-            lapStartMs = Date.now();
-          }
-          break;
-        case 6: // Lưu EEPROM
-          playBeep(3400, 150);
-          break;
-      }
-      updateLcd1604Display();
-    }
-
-    // Hàm tạo thanh đo ký tự ngang chuẩn 1604: e.g. "[====|    ]"
-    function makeLcdBar(us, minUs = 1000, maxUs = 2000, width = 8) {
-      let norm = (us - 1500) / 500.0; // -1.0 đến +1.0
-      let half = Math.floor(width / 2);
-      let chars = new Array(width).fill(' ');
-      let center = half;
-
-      if (Math.abs(norm) < 0.08) {
-        chars[center] = '|';
-      } else if (norm > 0) {
-        let fill = Math.min(half, Math.round(norm * half));
-        for (let i = 0; i < fill; i++) chars[center + 1 + i] = '=';
-        chars[center] = '|';
-      } else {
-        let fill = Math.min(half, Math.round(-norm * half));
-        for (let i = 0; i < fill; i++) chars[center - 1 - i] = '=';
-        chars[center] = '|';
-      }
-      return '[' + chars.join('') + ']';
-    }
-
-    // Cập nhật đúng chuẩn 16 ký tự x 4 dòng
-    function updateLcd1604Display() {
-      const l1 = document.getElementById('lcd1604_l1');
-      const l2 = document.getElementById('lcd1604_l2');
-      const l3 = document.getElementById('lcd1604_l3');
-      const l4 = document.getElementById('lcd1604_l4');
-      if (!l1 || !l2 || !l3 || !l4) return;
-
-      const pad16 = (s) => s.padEnd(16, ' ').substring(0, 16);
-
-      switch (lcd1604Page) {
-        case 0: { // TRANG 1: HUD COCKPIT
-          const mStr = (activeModel === 0) ? "DRN" : "CAR";
-          const aStr = (swArm === 1) ? "ARM" : "DIS";
-          l1.innerText = pad16(`${mStr}|${aStr} 200H 3.8m`);
-
-          let rVal = failsafeTriggered ? "-110" : "-48";
-          let rxV = failsafeTriggered ? "--" : modelBattery.toFixed(0);
-          l2.innerText = pad16(`S:${rVal}d TX8.2R${rxV}`);
-
-          // Thanh đo Ga và Lái
-          let barT = makeLcdBar(chThrottle, 1000, 2000, 8);
-          l3.innerText = pad16(`T:${barT}${chThrottle.toString().padStart(4, ' ')}`);
-
-          let barS = makeLcdBar(chRoll, 1000, 2000, 8);
-          l4.innerText = pad16(`S:${barS}${chRoll.toString().padStart(4, ' ')}`);
-          break;
-        }
-
-        case 1: { // TRANG 2: MODEL & SÓNG RF
-          l1.innerText = pad16("1.MDL & RF [B3] ");
-          l2.innerText = pad16(`MDL: [${activeModel === 1 ? 'RC CAR RAC' : 'FPV DRONE'}]`);
-          l3.innerText = pad16("RF:  [200Hz  5ms]");
-          l4.innerText = pad16(`PROT:[${activeModel === 0 ? 'CRSF 420k' : 'PWM 333Hz'}]`);
-          break;
-        }
-
-        case 2: { // TRANG 3: EXPO & DEADBAND
-          l1.innerText = pad16("2.EXPO & DB [B3]");
-          l2.innerText = pad16(`EXPO STR: [ ${expoValue}%]`);
-          l3.innerText = pad16(`DEADBAND: [ ${deadbandValue}u]`);
-          l4.innerText = pad16(`SPEEDLIM: [ ${knobPot}%]`);
-          break;
-        }
-
-        case 3: { // TRANG 4: RACING & ABS
-          l1.innerText = pad16("3.RACING & ABS  ");
-          l2.innerText = pad16(`ABS BRAKE:[ ${absBrakeOn ? 'ON ' : 'OFF'}]`);
-          l3.innerText = pad16(`DRIFTGYRO:[ ${driftGyroVal}%]`);
-          l4.innerText = pad16(`STEERSPD:[ ${steerSpeedVal}%]`);
-          break;
-        }
-
-        case 4: { // TRANG 5: 8-CHANNEL MONITOR
-          l1.innerText = pad16(`1:${chRoll}  2:${chPitchAux}`);
-          l2.innerText = pad16(`3:${chThrottle}  4:${chYawSteer}`);
-          l3.innerText = pad16(`5:${swArm ? 2000 : 1000}  6:${swMode === 0 ? 1000 : (swMode === 1 ? 1500 : 2000)}`);
-          l4.innerText = pad16(`7:${absBrakeOn ? 2000 : 1000}  8:${swAux ? 2000 : 1000}`);
-          break;
-        }
-
-        case 5: { // TRANG 6: LAP TIMER
-          if (lapTimerActive) {
-            lapElapsedMs = Date.now() - lapStartMs;
-          }
-          let s = Math.floor((lapElapsedMs / 1000) % 60);
-          let m = Math.floor(lapElapsedMs / 60000);
-          let d = Math.floor((lapElapsedMs % 1000) / 100);
-          let timeStr = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${d}`;
-
-          l1.innerText = pad16("5.RACING TIMER  ");
-          l2.innerText = pad16(`TIME: ${timeStr}`);
-          l3.innerText = pad16(`LAP: ${lapCountNum} [RUN]`);
-          l4.innerText = pad16("[B3: BAM LAP/BAT]");
-          break;
-        }
-
-        case 6: { // TRANG 7: LƯU EEPROM
-          l1.innerText = pad16("6.LUU CAI DAT   ");
-          l2.innerText = pad16("NHAN B3 DE LUU  ");
-          l3.innerText = pad16("FLASH: SAN SANG ");
-          l4.innerText = pad16("B1:THOAT B3:SAVE");
-          break;
-        }
-      }
-    }
-
-    function updateFlagshipTelemetryUI() {
-      updateLcd1604Display();
-      // 1. Cập nhật HUD Cockpit
-      const odoEl = document.getElementById('hudOdoSpeed');
-      const rpmEl = document.getElementById('hudMotorRpm');
-      if (odoEl) odoEl.innerHTML = `${Math.round(currentCarSpeed)} <span class="text-xs font-normal">km/h</span>`;
-      if (rpmEl) rpmEl.innerHTML = `${Math.round(currentCarSpeed * 380)} <span class="text-xs font-normal">RPM</span>`;
-
-      // Cập nhật thanh đo HUD
-      let thrPercent = Math.min(100, Math.max(0, ((chThrottle - 1000) / 1000) * 100));
-      let strPercent = Math.min(100, Math.max(0, ((chRoll - 1000) / 1000) * 100));
-      const barThr = document.getElementById('hudBarThr');
-      const barStr = document.getElementById('hudBarStr');
-      if (barThr) barThr.style.width = `${thrPercent}%`;
-      if (barStr) barStr.style.width = `${strPercent}%`;
-      const txtThr = document.getElementById('hudTxtThr');
-      const txtStr = document.getElementById('hudTxtStr');
-      if (txtThr) txtThr.innerText = `${chThrottle}us`;
-      if (txtStr) txtStr.innerText = `${chRoll}us`;
-
-      // 2. Cập nhật 8-Channel Monitor
-      if (currentOsTab === 2) {
-        const setChan = (num, us) => {
-          let p = Math.min(100, Math.max(0, ((us - 1000) / 1000) * 100));
-          const b = document.getElementById(`barCh${num}`);
-          const t = document.getElementById(`txtCh${num}`);
-          if (b) b.style.width = `${p}%`;
-          if (t) t.innerText = us;
-        };
-        setChan(1, chRoll);
-        setChan(2, chPitchAux);
-        setChan(3, chThrottle);
-        setChan(4, chYawSteer);
-        setChan(5, swArm ? 2000 : 1000);
-        setChan(6, swMode === 0 ? 1000 : (swMode === 1 ? 1500 : 2000));
-        setChan(7, absBrakeEnabled ? 2000 : 1000);
-        setChan(8, swAux ? 2000 : 1000);
-      }
-
-      // 3. Cập nhật Expo dot
-      if (currentOsTab === 1) {
-        renderExpoCurveCanvas();
-      }
-    }
 
     // =========================================================================
     // TRUE 3D WEBGL ENGINE (THREE.JS PERSPECTIVE SCENE & 360° ORBIT CONTROLS)
@@ -1980,11 +1630,11 @@
 
       // Điều chỉnh góc Camera mượt mà theo từng đối tượng
       if (mode === 0) {
-        camera3D.position.set(0, 3.5, 6.5);
+        if (camera3D) camera3D.position.set(0, 3.5, 6.5);
       } else if (mode === 1) {
-        camera3D.position.set(0, 4.0, 7.5);
+        if (camera3D) camera3D.position.set(0, 4.0, 7.5);
       } else {
-        camera3D.position.set(0, 4.5, 6.0);
+        if (camera3D) camera3D.position.set(0, 4.5, 6.0);
       }
       if (controls3D) controls3D.target.set(0, 1.0, 0);
     }
