@@ -264,13 +264,13 @@ void loop() {
 
   // 2. ĐIỀU HƯỚNG TABS BẰNG NÚT B1 & B2
   if (digitalRead(PIN_BTN_B1) == LOW) {
-    currentOsTab = (currentOsTab + 5) % 6; // Tab trước
+    currentOsTab = (currentOsTab + 6) % 7; // Tab trước
     beep(2400, 30);
     delay(200);
     lcd.clear();
   }
   if (digitalRead(PIN_BTN_B2) == LOW) {
-    currentOsTab = (currentOsTab + 1) % 6; // Tab tiếp
+    currentOsTab = (currentOsTab + 1) % 7; // Tab tiếp
     beep(2600, 30);
     delay(200);
     lcd.clear();
@@ -416,62 +416,98 @@ void loop() {
   }
 }
 
-// --- HIỂN THỊ GIAO DIỆN FLAGSHIP THEO TỪNG TAB ---
+// Tạo thanh đo ký tự ngang chuẩn 1604: e.g. "[====|    ]"
+void makeLcdTextBar(int us, char *outBar, int width = 8) {
+  int half = width / 2;
+  int center = half;
+  for (int i = 0; i < width; i++) outBar[i] = ' ';
+  outBar[width] = '\0';
+
+  float norm = (us - 1500) / 500.0f;
+  if (abs(us - 1500) < 40) {
+    outBar[center] = '|';
+  } else if (norm > 0) {
+    int fill = min(half, (int)(norm * half + 0.5f));
+    for (int i = 0; i < fill; i++) outBar[center + 1 + i] = '=';
+    outBar[center] = '|';
+  } else {
+    int fill = min(half, (int)(-norm * half + 0.5f));
+    for (int i = 0; i < fill; i++) outBar[center - 1 - i] = '=';
+    outBar[center] = '|';
+  }
+}
+
+// --- HIỂN THỊ CHUYÊN BIỆT CHO MÀN HÌNH LCD 1604A (16 CỘT X 4 DÒNG) ---
 void renderFlagshipLcdSlice(uint8_t line) {
   char buf[17];
   lcd.setCursor(0, line);
   ModelProfile &prof = garage[currentSlot];
 
   switch (currentOsTab) {
-    case 0: // TAB 0: HUD COCKPIT
-      if (line == 0) snprintf(buf, sizeof(buf), "%-11s 200Hz", prof.name);
-      else if (line == 1) snprintf(buf, sizeof(buf), "S:%ddBm  %s", rssiLive, prof.abs_enabled ? "[ABS:ON]" : "[ABS:OFF]");
-      else if (line == 2) snprintf(buf, sizeof(buf), "TX:8.2V  RX:%1.1fV", vBatRx);
-      else if (line == 3) {
-        int thr = (prof.model_type == MODEL_ID_DRONE) ? map(txPacket.ch3_throttle, 1000, 2000, 0, 100) : map(txPacket.ch3_throttle, 1000, 2000, -100, 100);
-        int str = map(txPacket.ch1_roll_str, 1000, 2000, -100, 100);
-        snprintf(buf, sizeof(buf), "T:%3d%% S:%3d%% P%2d", thr, str, txPacket.knob_pot);
+    case 0: // TRANG 1: HUD TELEMETRY CHÍNH
+      if (line == 0) {
+        const char *m = (prof.model_type == MODEL_ID_DRONE) ? "DRN" : "CAR";
+        const char *a = (txPacket.sw_flags & 1) ? "ARM" : "DIS";
+        snprintf(buf, sizeof(buf), "%s|%s 200H 3.8m", m, a);
+      } else if (line == 1) {
+        snprintf(buf, sizeof(buf), "S:%3ddB TX%1.1fR%2.0f", rssiLive, vBatTx, vBatRx);
+      } else if (line == 2) {
+        char tBar[10];
+        makeLcdTextBar(txPacket.ch3_throttle, tBar, 8);
+        snprintf(buf, sizeof(buf), "T:[%s]%4d", tBar, txPacket.ch3_throttle);
+      } else if (line == 3) {
+        char sBar[10];
+        makeLcdTextBar(txPacket.ch1_roll_str, sBar, 8);
+        snprintf(buf, sizeof(buf), "S:[%s]%4d", sBar, txPacket.ch1_roll_str);
       }
       break;
 
-    case 1: // TAB 1: EXPO S-CURVE
-      if (line == 0) snprintf(buf, sizeof(buf), "TAB: EXPO CURVE ");
-      else if (line == 1) snprintf(buf, sizeof(buf), "EXPO: %d%% (S-CRV)", prof.expo_pct);
-      else if (line == 2) snprintf(buf, sizeof(buf), "DEADBAND: %dus  ", prof.deadband_us);
-      else if (line == 3) snprintf(buf, sizeof(buf), "[B1:PREV B2:NEXT]");
+    case 1: // TRANG 2: MODEL & TỐC ĐỘ RF
+      if (line == 0)      snprintf(buf, sizeof(buf), "1.MDL & RF [B3] ");
+      else if (line == 1) snprintf(buf, sizeof(buf), "MDL: [%-10s]", (prof.model_type == MODEL_ID_DRONE) ? "FPV DRONE" : "RC CAR RAC");
+      else if (line == 2) snprintf(buf, sizeof(buf), "RF:  [200Hz  5ms]");
+      else if (line == 3) snprintf(buf, sizeof(buf), "PROT:[%-10s]", (prof.protocol == PROTOCOL_CRSF) ? "CRSF 420k" : "PWM 333Hz");
       break;
 
-    case 2: // TAB 2: 8-CHANNEL MONITOR (EDGETX)
-      if (line == 0) snprintf(buf, sizeof(buf), "1:%4d 2:%4d ", txPacket.ch1_roll_str, txPacket.ch2_pitch);
-      else if (line == 1) snprintf(buf, sizeof(buf), "3:%4d 4:%4d ", txPacket.ch3_throttle, txPacket.ch4_yaw);
-      else if (line == 2) snprintf(buf, sizeof(buf), "5:%4d 6:%4d ", (txPacket.sw_flags & 1) ? 2000 : 1000, 1500);
-      else if (line == 3) snprintf(buf, sizeof(buf), "CH MONITOR 8-CH ");
+    case 2: // TRANG 3: EXPO & DEADBAND
+      if (line == 0)      snprintf(buf, sizeof(buf), "2.EXPO & DB [B3]");
+      else if (line == 1) snprintf(buf, sizeof(buf), "EXPO STR: [ %2d%%]", prof.expo_pct);
+      else if (line == 2) snprintf(buf, sizeof(buf), "DEADBAND: [ %2du]", prof.deadband_us);
+      else if (line == 3) snprintf(buf, sizeof(buf), "SPEEDLIM: [ %2d%%]", prof.speed_limit);
       break;
 
-    case 3: // TAB 3: PRO RACING (FLYSKY NB4 ABS & GYRO)
-      if (line == 0) snprintf(buf, sizeof(buf), "FLYSKY RACING OS");
-      else if (line == 1) snprintf(buf, sizeof(buf), "ABS BRAKE: %s", prof.abs_enabled ? "BẬT [ON] " : "TẮT [OFF]");
-      else if (line == 2) snprintf(buf, sizeof(buf), "GYRO ASSIST: %d%%", prof.gyro_gain);
-      else if (line == 3) snprintf(buf, sizeof(buf), "[B3: BAT/TAT ABS]");
+    case 3: // TRANG 4: PHANH ABS & DRIFT GYRO (FLYSKY NB4)
+      if (line == 0)      snprintf(buf, sizeof(buf), "3.RACING & ABS  ");
+      else if (line == 1) snprintf(buf, sizeof(buf), "ABS BRAKE:[ %-3s]", prof.abs_enabled ? "ON " : "OFF");
+      else if (line == 2) snprintf(buf, sizeof(buf), "DRIFTGYRO:[ %2d%%]", prof.gyro_gain);
+      else if (line == 3) snprintf(buf, sizeof(buf), "STEERSPD:[ 100%%]");
       break;
 
-    case 4: // TAB 4: GARAGE MODEL SELECT
-      if (line == 0) snprintf(buf, sizeof(buf), "GARAGE [%d/6]   ", currentSlot + 1);
-      else if (line == 1) snprintf(buf, sizeof(buf), "%s", prof.name);
-      else if (line == 2) snprintf(buf, sizeof(buf), "%s | %s", (prof.model_type == MODEL_ID_DRONE) ? "DRONE" : "RC CAR", (prof.pwm_rate == PWM_RATE_333HZ) ? "333Hz" : "50Hz");
-      else if (line == 3) snprintf(buf, sizeof(buf), "[B3: DOI XE GARA]");
+    case 4: // TRANG 5: 8-CHANNEL MONITOR (EDGETX)
+      if (line == 0)      snprintf(buf, sizeof(buf), "1:%4d   2:%4d ", txPacket.ch1_roll_str, txPacket.ch2_pitch);
+      else if (line == 1) snprintf(buf, sizeof(buf), "3:%4d   4:%4d ", txPacket.ch3_throttle, txPacket.ch4_yaw);
+      else if (line == 2) snprintf(buf, sizeof(buf), "5:%4d   6:%4d ", (txPacket.sw_flags & 1) ? 2000 : 1000, 1500);
+      else if (line == 3) snprintf(buf, sizeof(buf), "7:%4d   8:%4d ", prof.abs_enabled ? 2000 : 1000, 1000);
       break;
 
-    case 5: // TAB 5: LAP TIMER (STOPWATCH)
-      if (line == 0) snprintf(buf, sizeof(buf), "RACING LAP TIMER");
+    case 5: // TRANG 6: RACING LAP TIMER
+      if (line == 0) snprintf(buf, sizeof(buf), "5.RACING TIMER  ");
       else if (line == 1) {
         int s = (lapCurrentMs / 1000) % 60;
         int m = (lapCurrentMs / 60000);
-        snprintf(buf, sizeof(buf), "LAP: %02d:%02d.%d   ", m, s, (int)(lapCurrentMs % 1000) / 100);
+        snprintf(buf, sizeof(buf), "TIME: %02d:%02d.%d   ", m, s, (int)(lapCurrentMs % 1000) / 100);
       }
-      else if (line == 2) snprintf(buf, sizeof(buf), "VONG: %2d  [RUN] ", lapCounter);
-      else if (line == 3) snprintf(buf, sizeof(buf), "[B3: BAT/TAT LAP]");
+      else if (line == 2) snprintf(buf, sizeof(buf), "LAP: %2d   [RUN] ", lapCounter);
+      else if (line == 3) snprintf(buf, sizeof(buf), "[B3: BAM LAP/BAT]");
+      break;
+
+    case 6: // TRANG 7: LƯU FLASH EEPROM
+      if (line == 0)      snprintf(buf, sizeof(buf), "6.LUU CAI DAT   ");
+      else if (line == 1) snprintf(buf, sizeof(buf), "NHAN B3 DE LUU  ");
+      else if (line == 2) snprintf(buf, sizeof(buf), "FLASH: SAN SANG ");
+      else if (line == 3) snprintf(buf, sizeof(buf), "B1:THOAT B3:SAVE");
       break;
   }
+  buf[16] = '\0'; // Đảm bảo đúng 16 ký tự
   lcd.print(buf);
 }
