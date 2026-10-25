@@ -27,74 +27,49 @@ Dự án tay điều khiển từ xa RC DIY chuyên nghiệp toàn diện, tích
 
 ---
 
-## 🏎️ 2. Mô Hình 3D Lắp Ráp Toàn Bộ Linh Kiện Xe Đua RC (Full RC Car Assembly)
+## 🏎️ 2. Mô Hình 3D Xe Đua RC Tối Giản Cứng Vững - Cơ Cấu Bẻ Lái Thực Tế (Không Giảm Xóc Rườm Rà)
 
-Toàn bộ linh kiện cơ khí và điện tử của chiếc xe được dựng chi tiết 100% trong không gian 3D chuẩn xe đua mô hình chuyên nghiệp 1/10 (Touring & Drift):
+Để tối ưu hóa cho việc **tự in 3D FDM tại nhà**, xe loại bỏ các cụm phuộc nhún lò xo phức tạp dễ kẹt rít hay gãy vỡ, tập trung hoàn thiện **khung sàn phẳng cứng vững (Pan-Car / Kart Chassis)** kết hợp **hệ thống bẻ lái thực tế ("quặt lái") cực kỳ mượt mà và chính xác**:
 
-![Bản vẽ tổng hợp 4 góc nhìn đầy đủ chi tiết xe đua RC](Images/xe_rc_tong_hop_4_goc_nhin.png)
+![Phối cảnh tổng thể xe đua RC bẻ lái thực tế](Images/xe_rc_day_du_iso.png)
 
-### 📐 4 Phân Khu Trực Quan Trên Bản Vẽ Tổng Hợp:
-1. **Góc Dưới - Bên Trái (Assembled GT Car):** Chiếc xe thể thao hoàn chỉnh với thân vỏ khí động học bo tròn mượt mà, cụm đèn pha LED kép, cản trước bọt biển, 4 bánh xe thể thao và cánh gió đuôi GT Swan-Neck.
-2. **Góc Dưới - Bên Phải (Internal Rolling Chassis):** Khung gầm lăn bóc trần 100% linh kiện cơ điện tử hoạt động: Động cơ A2212 chuông vàng, truyền động 2 tầng dây curoa GT2, hệ thống treo 4 càng A độc lập, 4 phuộc nhún lò xo coilover dầu, thước lái đòn khuỷu kép Ackermann, servo lái MG90S, khay pin 2S 18650 có nẹp carbon & ốc siết tay, ESC tản nhiệt xẻ rãnh xanh, mạch thu Receiver LoRa và ăng-ten thẳng đứng.
-3. **Góc Trên - Bên Trái (Bare Double-Deck Chassis):** Sàn xe composite 2 tầng với thanh giằng trên carbon, 4 trụ nhôm CNC, cản trước bọt biển & nẹp composite, cụm bulkhead trước/sau và 2 tháp phuộc carbon nhiều lỗ chỉnh góc.
-4. **Góc Trên - Bên Phải (Detached GT Body & Spoiler):** Thân vỏ xe thể thao GT khí động học tách rời kèm cánh gió sau kiểu cổ thiên nga (Swan-Neck) tạo lực ép downforce cực đại.
+### 📐 Chi Tiết Các Cụm Cơ Khí Kỹ Thuật Đã Dựng Đầy Đủ 100%:
 
----
+1. **Hệ Thống Bẻ Lái Thực Tế (Cơ Cấu Quặt Góc Mượt Mà):**
+   - **Servo Lái MG90S Bánh Răng Kim Loại:** Được định vị chắc chắn giữa đầu xe bằng 2 bát kẹp nhôm xi xanh bắt cứng vào sàn.
+   - **Tay đòn Servo Horn 2 cánh:** Xoay chủ động theo góc điều khiển vô-lăng từ tay cầm.
+   - **2 Thanh giằng lái thép (Tie-Rods):** Thanh ren inox kết hợp đai ốc lục giác và **4 khớp đầu mắt rotuyn bi (Ball Joints)** xoay đa hướng chống kẹt.
+   - **C-Block & Trục đứng Kingpin:** 2 Khối gối đỡ moay-ơ bắt thẳng trên sàn xe với chốt xoay Kingpin trên/dưới.
+   - **Moay-ơ bẻ lái (Steering Knuckles):** Xoay tự do quanh trục Kingpin, tay đòn moay-ơ nhận lực đẩy/kéo từ rotuyn giúp 2 bánh trước quặt góc chuẩn xác!
 
-### 🧩 Danh Mục Chi Tiết Từng Cụm Cơ Khí Kỹ Thuật Trên Xe:
+![Cận cảnh cụm bẻ lái servo MG90S, thanh giằng rotuyn và góc quặt bánh trước](Images/xe_rc_day_du_steer.png)
 
-1. **Khung Sàn 2 Tầng Carbon & Cản Trước Bọt Biển (Double-Deck Chassis & Foam Bumper):**
-   - **Sàn dưới (Lower Deck):** Thiết kế vát eo thể thao (waisted), vát mép bo cạnh, các rãnh uốn dẻo cân bằng trọng tâm và giải nhiệt đáy pin.
-   - **Cản trước (Front Bumper):** Khối bọt biển dày giảm chấn va đập kết hợp tấm nẹp đè composite carbon có ốc siết M3 cố định.
-   - **Sàn tầng 2 (Upper Deck):** Tấm giằng xương sống carbon mỏng 2.2mm gia cố chống vặn xoắn gầm, liên kết với sàn dưới qua 4 trụ nhôm tròn CNC tiện ren.
+2. **Khung Sàn Xe Tối Ưu Cho In 3D (Rigid Pan-Car Chassis):**
+   - Bản sàn dày 4.0mm kết cấu nguyên khối, mũi xe vát khí động học.
+   - 2 Gờ gia cường dày 7mm chạy dọc 2 mép sườn xe triệt tiêu hoàn toàn độ cong vẹo khi ôm cua tốc độ cao.
+   - Các khe hở rãnh gió đáy gầm giúp làm mát pack pin 18650 hiệu quả.
 
-2. **Hệ Thống Treo Độc Lập 4 Bánh & Càng A Khung Xương (Independent Suspension & Wishbones):**
-   - **4 Càng A dưới (Lower A-Arms):** Kết cấu khung xương tam giác rỗng gia cường chịu tải va chạm cao, xỏ trục bản lề thép inox mạ sáng.
-   - **4 Thanh Camber trên (Upper Camber Turnbuckles):** Thanh ren điều chỉnh góc nghiêng bánh xe (Camber angle) có đai lục giác giữa để vặn cờ-lê và 2 đầu mắt rotuyn bi (Ball Cups).
-   - **Moay-ơ lái & C-Hub trước:** C-Hub nghiêng góc Caster thể thao, moay-ơ xoay êm ái trên trục kingpin; Moay-ơ cầu sau ôm trọn 2 vòng bi bạc đạn chuẩn MR105.
+3. **Cầu Sau, Động Cơ A2212 & Truyền Động 2 Tầng Dây Curoa GT2:**
+   - **Động cơ không chổi than A2212:** Vỏ chuông vàng Gold đặc trưng, cốt thép 3.175mm, giá bắt motor nhôm có 2 rãnh oval trượt tịnh tiến để căn chỉnh độ căng chùng của dây curoa.
+   - **Hộp số giảm tốc 2 tầng dây curoa GT2:**
+     - Tầng 1: Puly 16T cốt motor -> Puly 48T trục trung gian (giảm 1:3).
+     - Tầng 2: Puly 16T trục trung gian -> Puly 40T trên trục bánh sau (giảm 1:2.5).
+     - **Tổng tỉ số giảm 1:7.5:** Đề-pa êm ái, mô-men xoắn mạnh mẽ, không bị giật khựng (Anti-cogging) và êm ru không tiếng rít kim loại.
+   - **Trục cầu sau thép 5mm:** Nối thẳng 2 bánh sau, quay trơn tru trên 2 cụm gối đỡ bạc đạn chuẩn **MR105**.
 
-3. **Bộ 4 Phuộc Nhún Dầu Coilover Lò Xo Đỏ (4 Threaded Coilover Oil Shocks):**
-   - Thân xylanh phuộc bằng nhôm tiện ren màu xanh dương, tích hợp vòng ốc xoay chỉnh độ nén lò xo (Preload collar).
-   - Lò xo thép cuộn xoắn ốc màu đỏ thể thao chịu đàn hồi nhịp nhàng.
-   - Ty phuộc bằng inox mạ crom sáng bóng, mắt rotuyn dưới liên kết vững chắc vào càng A.
-   - Tháp phuộc trước và sau bằng sợi carbon dày dặn, khoan hàng lỗ bán nguyệt cho phép tinh chỉnh độ ngả góc phuộc nhún linh hoạt theo từng mặt sân đua.
+![Chi tiết cầu sau, động cơ A2212, puly 2 tầng và cánh gió thể thao GT](Images/xe_rc_day_du_rear.png)
 
-4. **Cơ Cấu Bẻ Lái Ackermann Kép & Micro Servo MG90S:**
-   - **Thước lái đòn khuỷu kép (Dual Bellcranks):** 2 Đòn khuỷu xoay quanh 2 trụ lái nhôm, liên kết với nhau bằng thanh cầu ngang Ackermann giúp triệt tiêu góc trượt khi ôm cua.
-   - **2 Thanh giằng lái ngang (Tie-Rods):** Nối từ đòn khuỷu ra 2 tay moay-ơ bẻ lái bánh trước bằng thanh ren và đầu rotuyn bi xoay góc mượt mà.
-   - **Servo MG90S:** Vỏ xanh dương trong suốt, dàn bánh răng kim loại bên trong bền bỉ, được kẹp chặt bởi 2 trụ nhôm bắt sàn; tay đòn horn nối trực tiếp sang thước lái qua thanh giằng rotuyn.
+4. **Cánh Gió Đuôi GT Thể Thao Khí Động Học:**
+   - Cặp chân đế cánh gió dạng vát xiên khí động học bắt trực tiếp vào đuôi sàn xe, có lỗ khoét rỗng giảm trọng lượng.
+   - Bản cánh gió chính sải rộng 150mm biên dạng airfoil camber cong nhẹ tạo lực ép xuống mặt đường (Downforce) khi xe bứt tốc.
+   - 2 Tấm vách đứng chặn gió bên (Endplates) hạn chế tối đa nhiễu động khí xoáy.
 
-![Chi tiết khung gầm lăn và cơ cấu treo, lái, truyền động](Images/chi_tiet_khung_gam_chuyen_nghiep.png)
-![Chi tiết hệ thống thước lái kép Ackermann và phuộc trước](Images/chi_tiet_thuoc_lai_ackermann.png)
+5. **Nguồn Pin & Bố Trí Khoang Điện Tử Nội Thất:**
+   - **Pack pin 2S:** Khay chứa 2 viên pin Li-ion 18650 xanh dương, ép chặt bằng thanh nẹp carbon đè ngang và 2 đai ốc siết tay (Knurled Thumb Nuts).
+   - **ESC 30A:** Tản nhiệt xẻ rãnh màu xanh dương chống quá nhiệt kèm cổng giắc cắm XT60.
+   - **Hộp Receiver LoRa 2.4GHz:** Hộp bảo vệ vi mạch kín nước với ống luồn ăng-ten thẳng đứng có nắp chụp cao su.
 
-5. **Động Cơ Không Chổi Than A2212 Chuông Vàng (Brushless Outrunner):**
-   - Vỏ chuông ngoài màu vàng Gold (đường kính 27.8mm) với 4 lỗ tản nhiệt xoay tròn.
-   - Trục cốt thép chịu lực 3.175mm.
-   - Giá đỡ motor nhôm CNC có rãnh oval tịnh tiến tăng/chùng độ căng đai truyền động.
-   - 3 Dây pha silicone mềm chịu nhiệt có đầu cos nối trực tiếp vào mạch ESC.
-
-6. **Cơ Cấu Truyền Động 2 Tầng Dây Curoa Giảm Tốc (Dual-Stage Timing Belt Drivetrain):**
-   - **Tầng 1:** Puly chủ động 16 răng trên cốt motor kéo Puly lớn 48 răng trên trục trung gian (Tỉ số giảm 1:3).
-   - **Tầng 2:** Puly 16 răng trục trung gian kéo Puly 40 răng trên trục cầu sau (Tỉ số giảm 1:2.5).
-   - **Tổng tỉ số giảm tốc:** **1:7.5** – Triệt tiêu hoàn toàn hiện tượng giật cục (Anti-Cogging), giúp động cơ A2212 đề-pa cực kỳ êm ái, bốc và đạt vận tốc tối đa 45 - 55 km/h.
-   - Dây đai cao su răng cưa chuẩn **GT2** thông dụng, vận hành êm ru không phát tiếng rít kim loại.
-
-7. **Cầu Sau, Bạc Đạn MR105 & 4 Bánh Xe Thể Thao:**
-   - Trục láp sau bằng thép 5mm truyền lực trực tiếp ra 2 bánh sau qua 2 cây láp (Dogbones).
-   - 2 Cụm gối đỡ bạc đạn chuẩn **MR105** (đường kính ngoài 10mm) bắt cố định vào sàn xe.
-   - 4 Bánh xe thể thao: Lốp cao su đen vân gai bám đường chống trượt, mâm đúc hợp kim 5 chấu sao và ốc tán lục giác nhôm xi xanh.
-
-8. **Nguồn Pin & Khoang Điện Tử Nội Thất:**
-   - **Pin 2S:** Khay đôi chứa 2 cell pin Li-ion 18650 xanh dương, được ép chặt cố định bằng **Thanh nẹp carbon đè pin** và **2 ốc xoay siết tay nhôm xi xanh (Knurled Thumb Nuts)**, chống văng pin khi xe drift tốc độ cao.
-   - **ESC 30A/40A:** Mạch điều tốc không chổi than tích hợp dàn cánh nhôm tản nhiệt màu xanh dương xẻ rãnh khí động học và đầu cắm pin chuẩn XT60 vàng chống chập.
-   - **Hộp Mạch Thu Receiver Chống Nước:** Hộp bảo vệ nắp rời kèm ống luồn ăng-ten 2.4GHz thẳng đứng có nắp chụp cao su.
-
-9. **Cánh Gió Khí Động Học GT Cổ Thiên Nga (Swan-Neck High-Downforce Rear Wing):**
-   - Cặp chân đỡ nhôm vát cong kiểu cổ thiên nga (Swan-Neck) bắt từ tháp phuộc sau vươn cao ra phía sau, có các lỗ khoét tam giác giảm trọng lượng và lỗ tinh chỉnh góc đón gió.
-   - Bản cánh chính biên dạng airfoil camber uốn cong tạo lực ép khí động học (Downforce) nén chặt 2 bánh sau xuống mặt đường khi chạy tốc độ cao, giữ xe luôn ổn định không bị văng đuôi.
-   - 2 Tấm vách đứng (Endplates) triệt tiêu dòng khí xoáy đầu cánh.
-
-![Chi tiết đuôi xe, cánh gió GT cổ thiên nga và phuộc sau](Images/chi_tiet_phuoc_sau_canh_gio.png)
+![Góc nhìn từ trên xuống bố trí toàn bộ khoang máy và hệ thống lái](Images/xe_rc_day_du_top.png)
 
 ---
 
@@ -167,10 +142,10 @@ Người dùng có thể chuyển đổi nhanh giữa các trang bằng nút b�
 ├── CAD/
 │   ├── tay_cam_rc_gop_1_file.stl            # Mô hình 3D vỏ tay cầm (Xem trực tiếp trên GitHub)
 │   ├── tay_cam_rc_gop_1_file.step           # File CAD STEP chuẩn kỹ thuật vỏ tay cầm
-│   ├── xe_rc_tong_hop_day_du_chi_tiet.stl  # Mô hình 3D tổng hợp 4 góc nhìn xe RC (Xem 3D trực tiếp trên GitHub)
-│   ├── xe_rc_tong_hop_day_du_chi_tiet.step # File CAD STEP solid 4 phân khu xe RC (Mở bằng Shapr3D, SolidWorks)
-│   ├── xe_rc_chassis_a2212_spoiler.stl      # Mô hình 3D xe đua đơn lẻ đầy đủ linh kiện
-│   └── xe_rc_chassis_a2212_spoiler.step     # File CAD STEP kỹ thuật xe đua đơn lẻ
+│   ├── xe_rc_day_du_linh_kien.stl           # Mô hình 3D xe đua cơ cấu quặt lái thực tế, không giảm xóc (Xem 3D trực tiếp trên GitHub)
+│   ├── xe_rc_day_du_linh_kien.step          # File CAD STEP kỹ thuật xe đua cơ cấu quặt lái (Shapr3D, SolidWorks, FreeCAD)
+│   ├── xe_rc_chassis_a2212_spoiler.stl      # Bản sao tương thích STL xe đua đầy đủ linh kiện
+│   └── xe_rc_chassis_a2212_spoiler.step     # Bản sao tương thích STEP xe đua đầy đủ linh kiện
 ├── Firmware/
 │   ├── TayCam_Transmitter_STM32_PRO/
 │   │   └── TayCam_Transmitter_STM32_PRO.ino  # Code STM32 Flagship OS (ABS, Expo Curve, 6 Gara, 200Hz)
@@ -178,10 +153,10 @@ Người dùng có thể chuyển đổi nhanh giữa các trang bằng nút b�
 │       └── BoThu_Receiver_All_In_One_PRO.ino # Code Mạch Thu All-In-One (CRSF 420k + PWM 333Hz)
 ├── Images/
 │   ├── thiet_ke_cad_tay_cam_3d.png           # Ảnh 3D CAD tay cầm 4 góc nhìn nội thất và ngoại thất
-│   ├── xe_rc_tong_hop_4_goc_nhin.png         # Ảnh 3D CAD xe đua tổng hợp 4 góc nhìn như tay cầm
-│   ├── thiet_ke_khung_xe_a2212_spoiler.png   # Ảnh phối cảnh 3D xe đua đầy đủ 100% linh kiện
-│   ├── chi_tiet_canh_gio_gt.png              # Ảnh chi tiết đuôi xe, cánh gió GT và truyền động 2 curoa
-│   ├── xe_rc_full_components_top.png         # Ảnh chi tiết từ trên xuống: Pin 18650, ESC, RX, Servo
+│   ├── xe_rc_day_du_iso.png                  # Ảnh 3D CAD tổng thể xe đua RC bẻ lái thực tế
+│   ├── xe_rc_day_du_steer.png                # Ảnh cận cảnh hệ thống quặt lái: Servo MG90S và thanh giằng rotuyn
+│   ├── xe_rc_day_du_rear.png                 # Ảnh cận cảnh cầu sau, động cơ A2212, puly 2 tầng và cánh gió GT
+│   ├── xe_rc_day_du_top.png                  # Ảnh góc nhìn từ trên xuống bố trí linh kiện điện tử
 │   └── giao_dien_mo_phong_rc_studio.png      # Ảnh chụp giao diện Studio giả lập 3D WebGL
 ├── Simulation/
 │   └── mo_phong_tay_khien_rc_3d.html         # Trình giả lập 3D 60FPS + Giao diện Studio chuyên nghiệp
