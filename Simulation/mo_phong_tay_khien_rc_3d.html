@@ -1295,19 +1295,78 @@
       splitter.position.set(0, 0.2, 1.9);
       car3DGroup.add(splitter);
 
-      // GT Rear Wing Spoiler
-      const wingMat = new THREE.MeshStandardMaterial({ color: 0x020617, metalness: 0.8 });
-      const wingGeo = new THREE.BoxGeometry(1.95, 0.08, 0.45);
+      // 1. ĐỘNG CƠ A2212 CHUÔNG VÀNG (GOLD OUTRUNNER MOTOR)
+      const motorMat = new THREE.MeshStandardMaterial({ color: 0xeab308, metalness: 0.85, roughness: 0.2 });
+      const motorGeo = new THREE.CylinderGeometry(0.24, 0.24, 0.38, 20);
+      motorGeo.rotateZ(Math.PI / 2);
+      const motorBell = new THREE.Mesh(motorGeo, motorMat);
+      motorBell.position.set(0.15, 0.55, -0.9);
+      car3DGroup.add(motorBell);
+
+      // 2. CƠ CẤU 2 TẦNG DÂY CUROA (DUAL BELT PULLEYS)
+      const pulleyMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.8 });
+      const beltMat = new THREE.MeshStandardMaterial({ color: 0x09090b, roughness: 0.95 });
+      const p1Geo = new THREE.CylinderGeometry(0.18, 0.18, 0.12, 16);
+      p1Geo.rotateZ(Math.PI / 2);
+      const pulleyMid = new THREE.Mesh(p1Geo, pulleyMat);
+      pulleyMid.position.set(-0.25, 0.48, -1.05);
+      car3DGroup.add(pulleyMid);
+
+      const beltGeo = new THREE.BoxGeometry(0.08, 0.16, 0.45);
+      const beltMesh = new THREE.Mesh(beltGeo, beltMat);
+      beltMesh.position.set(-0.25, 0.48, -1.1);
+      beltMesh.rotation.x = -0.15;
+      car3DGroup.add(beltMesh);
+
+      // 3. KHAY 2 CELL PIN 18650 XANH DƯƠNG (2S 7.4V BATTERY)
+      const batMat = new THREE.MeshStandardMaterial({ color: 0x2563eb, metalness: 0.3, roughness: 0.4 });
+      for (let bx of [-0.16, 0.16]) {
+        const cellGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.85, 16);
+        cellGeo.rotateX(Math.PI / 2);
+        const cell = new THREE.Mesh(cellGeo, batMat);
+        cell.position.set(bx, 0.42, 0.2);
+        car3DGroup.add(cell);
+      }
+
+      // 4. MẠCH ĐIỀU TỐC ESC TẢN NHIỆT XANH
+      const escMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, metalness: 0.7, roughness: 0.2 });
+      const escGeo = new THREE.BoxGeometry(0.35, 0.15, 0.45);
+      const esc = new THREE.Mesh(escGeo, escMat);
+      esc.position.set(0.45, 0.45, -0.2);
+      car3DGroup.add(esc);
+
+      // 5. SERVO LÁI MICRO MG90S & THANH GIẰNG
+      const servoMat = new THREE.MeshStandardMaterial({ color: 0x1d4ed8, transparent: true, opacity: 0.9 });
+      const servoGeo = new THREE.BoxGeometry(0.28, 0.26, 0.18);
+      const servo = new THREE.Mesh(servoGeo, servoMat);
+      servo.position.set(0, 0.42, 0.85);
+      car3DGroup.add(servo);
+
+      // 6. CÁNH GIÓ THỂ THAO GT SIÊU NGẦU (HIGH-DOWNFORCE GT REAR WING)
+      const wingMat = new THREE.MeshStandardMaterial({ color: 0xef4444, metalness: 0.5, roughness: 0.3 });
+      const wingGeo = new THREE.BoxGeometry(2.1, 0.08, 0.45);
       const wing = new THREE.Mesh(wingGeo, wingMat);
-      wing.position.set(0, 1.1, -1.65);
+      wing.position.set(0, 1.15, -1.65);
       car3DGroup.add(wing);
 
-      // Spoiler struts
-      const strutGeo = new THREE.BoxGeometry(0.08, 0.4, 0.08);
-      const sL = new THREE.Mesh(strutGeo, wingMat);
-      sL.position.set(-0.65, 0.9, -1.65);
-      const sR = new THREE.Mesh(strutGeo, wingMat);
-      sR.position.set(0.65, 0.9, -1.65);
+      // 2 Vách đứng đầu cánh (Endplates)
+      const endplateMat = new THREE.MeshStandardMaterial({ color: 0xb91c1c, metalness: 0.6 });
+      const endGeo = new THREE.BoxGeometry(0.04, 0.32, 0.55);
+      for (let ex of [-1.05, 1.05]) {
+        const ep = new THREE.Mesh(endGeo, endplateMat);
+        ep.position.set(ex, 1.15, -1.65);
+        car3DGroup.add(ep);
+      }
+
+      // 2 Trụ đỡ cánh gió thể thao vát xiên
+      const strutMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.8 });
+      const strutGeo = new THREE.BoxGeometry(0.08, 0.45, 0.12);
+      const sL = new THREE.Mesh(strutGeo, strutMat);
+      sL.position.set(-0.65, 0.92, -1.65);
+      sL.rotation.x = -0.15;
+      const sR = new THREE.Mesh(strutGeo, strutMat);
+      sR.position.set(0.65, 0.92, -1.65);
+      sR.rotation.x = -0.15;
       car3DGroup.add(sL);
       car3DGroup.add(sR);
 
