@@ -29,41 +29,9 @@ Dự án tay điều khiển từ xa RC DIY chuyên nghiệp toàn diện, tích
 
 ## 🏎️ 2. Xe Đua RC 1/10 (Đang Trong Quá Trình Hoàn Thiện & Phát Triển)
 
-> ⚠️ **THÔNG BÁO VỀ HÌNH ẢNH MÔ HÌNH XE ĐUA RC:**  
-> Toàn bộ hình ảnh mô hình 3D xe đua RC (thân vỏ & khung gầm) hiện tại **tạm thời được ẩn đi và đang trong quá trình phát triển hoàn thiện**.  
-> Khi toàn bộ thiết kế được hoàn tất 100% sẽ được cập nhật và tải hình ảnh chính thức lên sau!
-
-### 📐 Thông Số Kỹ Thuật Đang Phát Triển & Triển Khai:
-
-1. **Hệ Thống Bẻ Lái Thực Tế (Cơ Cấu Quặt Góc Mượt Mà):**
-   - **Servo Lái MG90S Bánh Răng Kim Loại:** Được định vị chắc chắn giữa đầu xe bằng 2 bát kẹp nhôm xi xanh bắt cứng vào sàn.
-   - **Tay đòn Servo Horn 2 cánh:** Xoay chủ động theo góc điều khiển vô-lăng từ tay cầm.
-   - **2 Thanh giằng lái thép (Tie-Rods):** Thanh ren inox kết hợp đai ốc lục giác và **4 khớp đầu mắt rotuyn bi (Ball Joints)** xoay đa hướng chống kẹt.
-   - **C-Block & Trục đứng Kingpin:** 2 Khối gối đỡ moay-ơ bắt thẳng trên sàn xe với chốt xoay Kingpin trên/dưới.
-   - **Moay-ơ bẻ lái (Steering Knuckles):** Xoay tự do quanh trục Kingpin, tay đòn moay-ơ nhận lực đẩy/kéo từ rotuyn giúp 2 bánh trước quặt góc chuẩn xác!
-
-2. **Khung Sàn Xe Tối Ưu Cho In 3D (Rigid Pan-Car Chassis):**
-   - Bản sàn dày 4.0mm kết cấu nguyên khối, mũi xe vát khí động học.
-   - 2 Gờ gia cường dày 7mm chạy dọc 2 mép sườn xe triệt tiêu hoàn toàn độ cong vẹo khi ôm cua tốc độ cao.
-   - Các khe hở rãnh gió đáy gầm giúp làm mát pack pin 18650 hiệu quả.
-
-3. **Cầu Sau, Động Cơ A2212 & Truyền Động 2 Tầng Dây Curoa GT2:**
-   - **Động cơ không chổi than A2212:** Vỏ chuông vàng Gold đặc trưng, cốt thép 3.175mm, giá bắt motor nhôm có 2 rãnh oval trượt tịnh tiến để căn chỉnh độ căng chùng của dây curoa.
-   - **Hộp số giảm tốc 2 tầng dây curoa GT2:**
-     - Tầng 1: Puly 16T cốt motor -> Puly 48T trục trung gian (giảm 1:3).
-     - Tầng 2: Puly 16T trục trung gian -> Puly 40T trên trục bánh sau (giảm 1:2.5).
-     - **Tổng tỉ số giảm 1:7.5:** Đề-pa êm ái, mô-men xoắn mạnh mẽ, không bị giật khựng (Anti-cogging) và êm ru không tiếng rít kim loại.
-   - **Trục cầu sau thép 5mm:** Nối thẳng 2 bánh sau, quay trơn tru trên 2 cụm gối đỡ bạc đạn chuẩn **MR105**.
-
-4. **Cánh Gió Đuôi GT Thể Thao Khí Động Học:**
-   - Cặp chân đế cánh gió dạng vát xiên khí động học bắt trực tiếp vào đuôi sàn xe, có lỗ khoét rỗng giảm trọng lượng.
-   - Bản cánh gió chính sải rộng 150mm biên dạng airfoil camber cong nhẹ tạo lực ép xuống mặt đường (Downforce) khi xe bứt tốc.
-   - 2 Tấm vách đứng chặn gió bên (Endplates) hạn chế tối đa nhiễu động khí xoáy.
-
-5. **Nguồn Pin & Bố Trí Khoang Điện Tử Nội Thất:**
-   - **Pack pin 2S:** Khay chứa 2 viên pin Li-ion 18650 xanh dương, ép chặt bằng thanh nẹp carbon đè ngang và 2 đai ốc siết tay (Knurled Thumb Nuts).
-   - **ESC 30A:** Tản nhiệt xẻ rãnh màu xanh dương chống quá nhiệt kèm cổng giắc cắm XT60.
-   - **Hộp Receiver LoRa 2.4GHz:** Hộp bảo vệ vi mạch kín nước với ống luồn ăng-ten thẳng đứng có nắp chụp cao su.
+> ⚠️ **THÔNG BÁO:**  
+> Toàn bộ thông tin mô tả chi tiết, hình ảnh và thông số của xe đua RC 1/10 (bao gồm khung gầm, cơ cấu bẻ lái, hệ truyền động và thân vỏ) hiện tại **tạm thời được ẩn đi và đang trong quá trình phát triển, hoàn thiện**.  
+> Thông tin chi tiết và bản vẽ chính thức sẽ được cập nhật và tải lên đầy đủ sau khi hoàn tất 100%!
 
 ---
 
@@ -136,10 +104,8 @@ Người dùng có thể chuyển đổi nhanh giữa các trang bằng nút b�
 ├── CAD/
 │   ├── tay_cam_rc_gop_1_file.stl            # Mô hình 3D vỏ tay cầm (Xem trực tiếp trên GitHub)
 │   ├── tay_cam_rc_gop_1_file.step           # File CAD STEP chuẩn kỹ thuật vỏ tay cầm
-│   ├── xe_rc_day_du_linh_kien.stl           # Mô hình 3D xe đua cơ cấu quặt lái thực tế, không giảm xóc (Xem 3D trực tiếp trên GitHub)
-│   ├── xe_rc_day_du_linh_kien.step          # File CAD STEP kỹ thuật xe đua cơ cấu quặt lái (Shapr3D, SolidWorks, FreeCAD)
-│   ├── xe_rc_chassis_a2212_spoiler.stl      # Bản sao tương thích STL xe đua đầy đủ linh kiện
-│   └── xe_rc_chassis_a2212_spoiler.step     # Bản sao tương thích STEP xe đua đầy đủ linh kiện
+│   ├── xe_rc_day_du_linh_kien.stl           # File mô hình 3D xe RC (Đang hoàn thiện)
+│   └── xe_rc_day_du_linh_kien.step          # File CAD STEP xe RC (Đang hoàn thiện)
 ├── Firmware/
 │   ├── TayCam_Transmitter_STM32_PRO/
 │   │   └── TayCam_Transmitter_STM32_PRO.ino  # Code STM32 Flagship OS (ABS, Expo Curve, 6 Gara, 200Hz)
