@@ -29,51 +29,72 @@ Dự án tay điều khiển từ xa RC DIY chuyên nghiệp toàn diện, tích
 
 ## 🏎️ 2. Mô Hình 3D Lắp Ráp Toàn Bộ Linh Kiện Xe Đua RC (Full RC Car Assembly)
 
-Toàn bộ linh kiện cơ khí và điện tử của chiếc xe được dựng chi tiết 100% trong không gian 3D, tổng hợp thành bộ bản vẽ 4 góc nhìn chuẩn kỹ thuật tương đương bản vẽ tay cầm:
+Toàn bộ linh kiện cơ khí và điện tử của chiếc xe được dựng chi tiết 100% trong không gian 3D chuẩn xe đua mô hình chuyên nghiệp 1/10 (Touring & Drift):
 
 ![Bản vẽ tổng hợp 4 góc nhìn đầy đủ chi tiết xe đua RC](Images/xe_rc_tong_hop_4_goc_nhin.png)
 
 ### 📐 4 Phân Khu Trực Quan Trên Bản Vẽ Tổng Hợp:
-1. **Góc Dưới - Bên Trái (Assembled GT Car):** Chiếc xe thể thao hoàn chỉnh với thân vỏ khí động học, cụm đèn pha LED kép, 4 bánh xe thể thao và cánh gió đuôi GT Downforce.
-2. **Góc Dưới - Bên Phải (Internal Rolling Chassis):** Khung gầm lăn bóc trần 100% linh kiện cơ điện tử hoạt động: Động cơ A2212 chuông vàng, truyền động 2 tầng dây curoa GT2, servo lái MG90S bánh răng kim loại, khay pin 2S 18650, ESC tản nhiệt xanh, mạch thu Receiver LoRa và ăng-ten 2.4GHz.
-3. **Góc Trên - Bên Trái (Bare Chassis Platform):** Sàn xe chịu lực cơ sở với giá bắt motor điều chỉnh tăng xích đai, hộc gắn pin hạ thấp trọng tâm, cụm gối đỡ bạc đạn MR105 và bệ gắn servo lái.
-4. **Góc Trên - Bên Phải (Detached GT Body & Spoiler):** Thân vỏ xe thể thao GT tách rời kèm cánh gió sau cỡ lớn, sẵn sàng cho công nghệ in 3D FDM hoặc đúc hút chân không định hình.
+1. **Góc Dưới - Bên Trái (Assembled GT Car):** Chiếc xe thể thao hoàn chỉnh với thân vỏ khí động học bo tròn mượt mà, cụm đèn pha LED kép, cản trước bọt biển, 4 bánh xe thể thao và cánh gió đuôi GT Swan-Neck.
+2. **Góc Dưới - Bên Phải (Internal Rolling Chassis):** Khung gầm lăn bóc trần 100% linh kiện cơ điện tử hoạt động: Động cơ A2212 chuông vàng, truyền động 2 tầng dây curoa GT2, hệ thống treo 4 càng A độc lập, 4 phuộc nhún lò xo coilover dầu, thước lái đòn khuỷu kép Ackermann, servo lái MG90S, khay pin 2S 18650 có nẹp carbon & ốc siết tay, ESC tản nhiệt xẻ rãnh xanh, mạch thu Receiver LoRa và ăng-ten thẳng đứng.
+3. **Góc Trên - Bên Trái (Bare Double-Deck Chassis):** Sàn xe composite 2 tầng với thanh giằng trên carbon, 4 trụ nhôm CNC, cản trước bọt biển & nẹp composite, cụm bulkhead trước/sau và 2 tháp phuộc carbon nhiều lỗ chỉnh góc.
+4. **Góc Trên - Bên Phải (Detached GT Body & Spoiler):** Thân vỏ xe thể thao GT khí động học tách rời kèm cánh gió sau kiểu cổ thiên nga (Swan-Neck) tạo lực ép downforce cực đại.
 
-### 🧩 Danh Mục Chi Tiết Từng Cụm Linh Kiện Trên Xe:
+---
 
-1. **Động Cơ Không Chổi Than A2212 Chuông Vàng (Brushless Outrunner):**
+### 🧩 Danh Mục Chi Tiết Từng Cụm Cơ Khí Kỹ Thuật Trên Xe:
+
+1. **Khung Sàn 2 Tầng Carbon & Cản Trước Bọt Biển (Double-Deck Chassis & Foam Bumper):**
+   - **Sàn dưới (Lower Deck):** Thiết kế vát eo thể thao (waisted), vát mép bo cạnh, các rãnh uốn dẻo cân bằng trọng tâm và giải nhiệt đáy pin.
+   - **Cản trước (Front Bumper):** Khối bọt biển dày giảm chấn va đập kết hợp tấm nẹp đè composite carbon có ốc siết M3 cố định.
+   - **Sàn tầng 2 (Upper Deck):** Tấm giằng xương sống carbon mỏng 2.2mm gia cố chống vặn xoắn gầm, liên kết với sàn dưới qua 4 trụ nhôm tròn CNC tiện ren.
+
+2. **Hệ Thống Treo Độc Lập 4 Bánh & Càng A Khung Xương (Independent Suspension & Wishbones):**
+   - **4 Càng A dưới (Lower A-Arms):** Kết cấu khung xương tam giác rỗng gia cường chịu tải va chạm cao, xỏ trục bản lề thép inox mạ sáng.
+   - **4 Thanh Camber trên (Upper Camber Turnbuckles):** Thanh ren điều chỉnh góc nghiêng bánh xe (Camber angle) có đai lục giác giữa để vặn cờ-lê và 2 đầu mắt rotuyn bi (Ball Cups).
+   - **Moay-ơ lái & C-Hub trước:** C-Hub nghiêng góc Caster thể thao, moay-ơ xoay êm ái trên trục kingpin; Moay-ơ cầu sau ôm trọn 2 vòng bi bạc đạn chuẩn MR105.
+
+3. **Bộ 4 Phuộc Nhún Dầu Coilover Lò Xo Đỏ (4 Threaded Coilover Oil Shocks):**
+   - Thân xylanh phuộc bằng nhôm tiện ren màu xanh dương, tích hợp vòng ốc xoay chỉnh độ nén lò xo (Preload collar).
+   - Lò xo thép cuộn xoắn ốc màu đỏ thể thao chịu đàn hồi nhịp nhàng.
+   - Ty phuộc bằng inox mạ crom sáng bóng, mắt rotuyn dưới liên kết vững chắc vào càng A.
+   - Tháp phuộc trước và sau bằng sợi carbon dày dặn, khoan hàng lỗ bán nguyệt cho phép tinh chỉnh độ ngả góc phuộc nhún linh hoạt theo từng mặt sân đua.
+
+4. **Cơ Cấu Bẻ Lái Ackermann Kép & Micro Servo MG90S:**
+   - **Thước lái đòn khuỷu kép (Dual Bellcranks):** 2 Đòn khuỷu xoay quanh 2 trụ lái nhôm, liên kết với nhau bằng thanh cầu ngang Ackermann giúp triệt tiêu góc trượt khi ôm cua.
+   - **2 Thanh giằng lái ngang (Tie-Rods):** Nối từ đòn khuỷu ra 2 tay moay-ơ bẻ lái bánh trước bằng thanh ren và đầu rotuyn bi xoay góc mượt mà.
+   - **Servo MG90S:** Vỏ xanh dương trong suốt, dàn bánh răng kim loại bên trong bền bỉ, được kẹp chặt bởi 2 trụ nhôm bắt sàn; tay đòn horn nối trực tiếp sang thước lái qua thanh giằng rotuyn.
+
+![Chi tiết khung gầm lăn và cơ cấu treo, lái, truyền động](Images/chi_tiet_khung_gam_chuyen_nghiep.png)
+![Chi tiết hệ thống thước lái kép Ackermann và phuộc trước](Images/chi_tiet_thuoc_lai_ackermann.png)
+
+5. **Động Cơ Không Chổi Than A2212 Chuông Vàng (Brushless Outrunner):**
    - Vỏ chuông ngoài màu vàng Gold (đường kính 27.8mm) với 4 lỗ tản nhiệt xoay tròn.
    - Trục cốt thép chịu lực 3.175mm.
-   - Giá đỡ motor nhôm gia cường có rãnh oval tịnh tiến tăng/chùng độ căng đai truyền động.
-   - 3 Dây pha silicone mềm chịu nhiệt đấu trực tiếp vào ESC.
+   - Giá đỡ motor nhôm CNC có rãnh oval tịnh tiến tăng/chùng độ căng đai truyền động.
+   - 3 Dây pha silicone mềm chịu nhiệt có đầu cos nối trực tiếp vào mạch ESC.
 
-2. **Cơ Cấu Truyền Động 2 Tầng Dây Curoa Giảm Tốc (Dual-Stage Timing Belt Drivetrain):**
+6. **Cơ Cấu Truyền Động 2 Tầng Dây Curoa Giảm Tốc (Dual-Stage Timing Belt Drivetrain):**
    - **Tầng 1:** Puly chủ động 16 răng trên cốt motor kéo Puly lớn 48 răng trên trục trung gian (Tỉ số giảm 1:3).
    - **Tầng 2:** Puly 16 răng trục trung gian kéo Puly 40 răng trên trục cầu sau (Tỉ số giảm 1:2.5).
    - **Tổng tỉ số giảm tốc:** **1:7.5** – Triệt tiêu hoàn toàn hiện tượng giật cục (Anti-Cogging), giúp động cơ A2212 đề-pa cực kỳ êm ái, bốc và đạt vận tốc tối đa 45 - 55 km/h.
    - Dây đai cao su răng cưa chuẩn **GT2** thông dụng, vận hành êm ru không phát tiếng rít kim loại.
 
-3. **Cầu Sau, Bạc Đạn & 4 Bánh Xe Thể Thao:**
-   - Trục láp sau bằng thép 5mm truyền lực trực tiếp ra 2 bánh sau.
+7. **Cầu Sau, Bạc Đạn MR105 & 4 Bánh Xe Thể Thao:**
+   - Trục láp sau bằng thép 5mm truyền lực trực tiếp ra 2 bánh sau qua 2 cây láp (Dogbones).
    - 2 Cụm gối đỡ bạc đạn chuẩn **MR105** (đường kính ngoài 10mm) bắt cố định vào sàn xe.
    - 4 Bánh xe thể thao: Lốp cao su đen vân gai bám đường chống trượt, mâm đúc hợp kim 5 chấu sao và ốc tán lục giác nhôm xi xanh.
 
-4. **Hệ Thống Lái Phía Trước & Micro Servo MG90S:**
-   - **Servo MG90S:** Vỏ xanh dương trong suốt, dàn bánh răng kim loại bên trong bền bỉ, tay đòn Servo Horn 2 cánh.
-   - Thanh giằng lái ngang liên kết với 2 củ moay-ơ bẻ lái (C-Hubs) theo góc nghiêng hình học Ackermann giúp xe ôm cua ngọt ngào không bị văng đầu.
+8. **Nguồn Pin & Khoang Điện Tử Nội Thất:**
+   - **Pin 2S:** Khay đôi chứa 2 cell pin Li-ion 18650 xanh dương, được ép chặt cố định bằng **Thanh nẹp carbon đè pin** và **2 ốc xoay siết tay nhôm xi xanh (Knurled Thumb Nuts)**, chống văng pin khi xe drift tốc độ cao.
+   - **ESC 30A/40A:** Mạch điều tốc không chổi than tích hợp dàn cánh nhôm tản nhiệt màu xanh dương xẻ rãnh khí động học và đầu cắm pin chuẩn XT60 vàng chống chập.
+   - **Hộp Mạch Thu Receiver Chống Nước:** Hộp bảo vệ nắp rời kèm ống luồn ăng-ten 2.4GHz thẳng đứng có nắp chụp cao su.
 
-5. **Nguồn Pin & Khoang Điện Tử Nội Thất:**
-   - **Pin 2S:** Khay đôi chứa 2 cell pin Li-ion 18650 xanh dương dung lượng cao đặt hạ thấp trọng tâm sàn xe (Low Center of Gravity).
-   - **ESC 30A/40A:** Mạch điều tốc không chổi than tích hợp dàn cánh nhôm tản nhiệt màu xanh dương và đầu cắm pin chuẩn XT60 vàng chống chập.
-   - **Mạch Thu Receiver All-In-One:** Bo mạch vi điều khiển kèm module sóng SX1280 và ăng-ten râu 2.4GHz thu phát hai chiều Telemetry.
-
-6. **Cánh Gió Thể Thao Khí Động Học GT (High-Downforce Rear Wing):**
-   - Cặp trụ đỡ vát xiên đục lỗ tam giác giảm trọng lượng chuẩn phong cách xe đua GT3 / Le Mans.
-   - Bản cánh gió uốn cong tạo lực ép khí động học (Downforce) nén chặt 2 bánh sau xuống mặt đường khi chạy tốc độ cao, giữ xe luôn ổn định không bị bay đuôi.
+9. **Cánh Gió Khí Động Học GT Cổ Thiên Nga (Swan-Neck High-Downforce Rear Wing):**
+   - Cặp chân đỡ nhôm vát cong kiểu cổ thiên nga (Swan-Neck) bắt từ tháp phuộc sau vươn cao ra phía sau, có các lỗ khoét tam giác giảm trọng lượng và lỗ tinh chỉnh góc đón gió.
+   - Bản cánh chính biên dạng airfoil camber uốn cong tạo lực ép khí động học (Downforce) nén chặt 2 bánh sau xuống mặt đường khi chạy tốc độ cao, giữ xe luôn ổn định không bị văng đuôi.
    - 2 Tấm vách đứng (Endplates) triệt tiêu dòng khí xoáy đầu cánh.
 
-![Chi tiết góc nhìn đuôi xe và cánh gió GT](Images/chi_tiet_canh_gio_gt.png)
-![Chi tiết góc nhìn từ trên xuống toàn bộ bố trí linh kiện](Images/xe_rc_full_components_top.png)
+![Chi tiết đuôi xe, cánh gió GT cổ thiên nga và phuộc sau](Images/chi_tiet_phuoc_sau_canh_gio.png)
 
 ---
 
