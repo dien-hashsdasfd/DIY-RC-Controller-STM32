@@ -29,6 +29,10 @@ Dự án tay điều khiển từ xa RC DIY chuyên nghiệp toàn diện, tích
 
 ## 🏎️ 2. Mô Hình 3D Xe Đua RC Tối Giản Cứng Vững - Cơ Cấu Bẻ Lái Thực Tế (Không Giảm Xóc Rườm Rà)
 
+> ⚠️ **LƯU Ý VỀ PHẦN THÂN VỎ (BODY SHELL):**  
+> Phần thân vỏ xe hiện tại được **tạm thời ẩn đi và đang trong quá trình hoàn thiện** (thiết kế form khí động học, hốc vòm bánh xe và pas cài chốt gầm tháo lắp nhanh). Khi thiết kế hoàn tất sẽ được cập nhật và tải lên sau!  
+> Phiên bản hiện tại tập trung hoàn thiện 100% khung gầm lăn (Rolling Chassis), cơ cấu quặt lái trực tiếp bằng servo MG90S và hệ dẫn động 2 tầng dây curoa GT2.
+
 Để tối ưu hóa cho việc **tự in 3D FDM tại nhà**, xe loại bỏ các cụm phuộc nhún lò xo phức tạp dễ kẹt rít hay gãy vỡ, tập trung hoàn thiện **khung sàn phẳng cứng vững (Pan-Car / Kart Chassis)** kết hợp **hệ thống bẻ lái thực tế ("quặt lái") cực kỳ mượt mà và chính xác**:
 
 ![Phối cảnh tổng thể xe đua RC bẻ lái thực tế](Images/xe_rc_day_du_iso.png)
