@@ -27,17 +27,13 @@ Dự án tay điều khiển từ xa RC DIY chuyên nghiệp toàn diện, tích
 
 ---
 
-## 🏎️ 2. Mô Hình 3D Xe Đua RC Tối Giản Cứng Vững - Cơ Cấu Bẻ Lái Thực Tế (Không Giảm Xóc Rườm Rà)
+## 🏎️ 2. Xe Đua RC 1/10 (Đang Trong Quá Trình Hoàn Thiện & Phát Triển)
 
-> ⚠️ **LƯU Ý VỀ PHẦN THÂN VỎ (BODY SHELL):**  
-> Phần thân vỏ xe hiện tại được **tạm thời ẩn đi và đang trong quá trình phát triển & hoàn thiện** (thiết kế form khí động học, hốc vòm bánh xe và pas cài chốt gầm tháo lắp nhanh). Khi thiết kế hoàn tất sẽ được cập nhật và tải lên sau!  
-> Phiên bản hiện tại tập trung hoàn thiện 100% khung gầm lăn (Rolling Chassis), cơ cấu quặt lái trực tiếp bằng servo MG90S và hệ dẫn động 2 tầng dây curoa GT2.
+> ⚠️ **THÔNG BÁO VỀ HÌNH ẢNH MÔ HÌNH XE ĐUA RC:**  
+> Toàn bộ hình ảnh mô hình 3D xe đua RC (thân vỏ & khung gầm) hiện tại **tạm thời được ẩn đi và đang trong quá trình phát triển hoàn thiện**.  
+> Khi toàn bộ thiết kế được hoàn tất 100% sẽ được cập nhật và tải hình ảnh chính thức lên sau!
 
-Để tối ưu hóa cho việc **tự in 3D FDM tại nhà**, xe loại bỏ các cụm phuộc nhún lò xo phức tạp dễ kẹt rít hay gãy vỡ, tập trung hoàn thiện **khung sàn phẳng cứng vững (Pan-Car / Kart Chassis)** kết hợp **hệ thống bẻ lái thực tế ("quặt lái") cực kỳ mượt mà và chính xác**:
-
-![Phối cảnh tổng thể xe đua RC bẻ lái thực tế](Images/xe_rc_day_du_iso.png)
-
-### 📐 Chi Tiết Các Cụm Cơ Khí Kỹ Thuật Đã Dựng Đầy Đủ 100%:
+### 📐 Thông Số Kỹ Thuật Đang Phát Triển & Triển Khai:
 
 1. **Hệ Thống Bẻ Lái Thực Tế (Cơ Cấu Quặt Góc Mượt Mà):**
    - **Servo Lái MG90S Bánh Răng Kim Loại:** Được định vị chắc chắn giữa đầu xe bằng 2 bát kẹp nhôm xi xanh bắt cứng vào sàn.
@@ -45,8 +41,6 @@ Dự án tay điều khiển từ xa RC DIY chuyên nghiệp toàn diện, tích
    - **2 Thanh giằng lái thép (Tie-Rods):** Thanh ren inox kết hợp đai ốc lục giác và **4 khớp đầu mắt rotuyn bi (Ball Joints)** xoay đa hướng chống kẹt.
    - **C-Block & Trục đứng Kingpin:** 2 Khối gối đỡ moay-ơ bắt thẳng trên sàn xe với chốt xoay Kingpin trên/dưới.
    - **Moay-ơ bẻ lái (Steering Knuckles):** Xoay tự do quanh trục Kingpin, tay đòn moay-ơ nhận lực đẩy/kéo từ rotuyn giúp 2 bánh trước quặt góc chuẩn xác!
-
-![Cận cảnh cụm bẻ lái servo MG90S, thanh giằng rotuyn và góc quặt bánh trước](Images/xe_rc_day_du_steer.png)
 
 2. **Khung Sàn Xe Tối Ưu Cho In 3D (Rigid Pan-Car Chassis):**
    - Bản sàn dày 4.0mm kết cấu nguyên khối, mũi xe vát khí động học.
@@ -61,8 +55,6 @@ Dự án tay điều khiển từ xa RC DIY chuyên nghiệp toàn diện, tích
      - **Tổng tỉ số giảm 1:7.5:** Đề-pa êm ái, mô-men xoắn mạnh mẽ, không bị giật khựng (Anti-cogging) và êm ru không tiếng rít kim loại.
    - **Trục cầu sau thép 5mm:** Nối thẳng 2 bánh sau, quay trơn tru trên 2 cụm gối đỡ bạc đạn chuẩn **MR105**.
 
-![Chi tiết cầu sau, động cơ A2212, puly 2 tầng và cánh gió thể thao GT](Images/xe_rc_day_du_rear.png)
-
 4. **Cánh Gió Đuôi GT Thể Thao Khí Động Học:**
    - Cặp chân đế cánh gió dạng vát xiên khí động học bắt trực tiếp vào đuôi sàn xe, có lỗ khoét rỗng giảm trọng lượng.
    - Bản cánh gió chính sải rộng 150mm biên dạng airfoil camber cong nhẹ tạo lực ép xuống mặt đường (Downforce) khi xe bứt tốc.
@@ -72,8 +64,6 @@ Dự án tay điều khiển từ xa RC DIY chuyên nghiệp toàn diện, tích
    - **Pack pin 2S:** Khay chứa 2 viên pin Li-ion 18650 xanh dương, ép chặt bằng thanh nẹp carbon đè ngang và 2 đai ốc siết tay (Knurled Thumb Nuts).
    - **ESC 30A:** Tản nhiệt xẻ rãnh màu xanh dương chống quá nhiệt kèm cổng giắc cắm XT60.
    - **Hộp Receiver LoRa 2.4GHz:** Hộp bảo vệ vi mạch kín nước với ống luồn ăng-ten thẳng đứng có nắp chụp cao su.
-
-![Góc nhìn từ trên xuống bố trí toàn bộ khoang máy và hệ thống lái](Images/xe_rc_day_du_top.png)
 
 ---
 
@@ -157,10 +147,6 @@ Người dùng có thể chuyển đổi nhanh giữa các trang bằng nút b�
 │       └── BoThu_Receiver_All_In_One_PRO.ino # Code Mạch Thu All-In-One (CRSF 420k + PWM 333Hz)
 ├── Images/
 │   ├── thiet_ke_cad_tay_cam_3d.png           # Ảnh 3D CAD tay cầm 4 góc nhìn nội thất và ngoại thất
-│   ├── xe_rc_day_du_iso.png                  # Ảnh 3D CAD tổng thể xe đua RC bẻ lái thực tế
-│   ├── xe_rc_day_du_steer.png                # Ảnh cận cảnh hệ thống quặt lái: Servo MG90S và thanh giằng rotuyn
-│   ├── xe_rc_day_du_rear.png                 # Ảnh cận cảnh cầu sau, động cơ A2212, puly 2 tầng và cánh gió GT
-│   ├── xe_rc_day_du_top.png                  # Ảnh góc nhìn từ trên xuống bố trí linh kiện điện tử
 │   └── giao_dien_mo_phong_rc_studio.png      # Ảnh chụp giao diện Studio giả lập 3D WebGL
 ├── Simulation/
 │   └── mo_phong_tay_khien_rc_3d.html         # Trình giả lập 3D 60FPS + Giao diện Studio chuyên nghiệp
