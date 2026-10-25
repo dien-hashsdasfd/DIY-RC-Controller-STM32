@@ -5,11 +5,11 @@ Dự án tay điều khiển từ xa RC DIY chuyên nghiệp toàn diện, tích
 
 ---
 
-## 📸 Hình Ảnh Thiết Kế 3D CAD & Bố Trí Linh Kiện (Hardware Assembly)
+## 📸 Hình Ảnh Thiết Kế 3D CAD Tay Cầm (Transmitter Hardware Assembly)
 
 ![Bản vẽ thiết kế 3D CAD vỏ hộp và bố trí linh kiện bên trong](Images/thiet_ke_cad_tay_cam_3d.png)
 
-### 📐 Chi Tiết Thiết Kế Cơ Khí & Bố Trí Nội Thất:
+### 📐 Chi Tiết Thiết Kế Cơ Khí & Bố Trí Nội Thất Tay Cầm:
 1. **Mặt trước hoàn thiện (Assembled Front Facia):**
    - 2 Cần Joystick Hall Sensor PS2 mượt mà, tự hồi tâm lò xo kép.
    - Màn hình LCD 1604A (16x4 ký tự) với chữ nổi thương hiệu **"Toàn Diện"**.
@@ -25,8 +25,28 @@ Dự án tay điều khiển từ xa RC DIY chuyên nghiệp toàn diện, tích
    - **Mạch sạc & bảo vệ pin:** Cổng USB Type-C hỗ trợ sạc nhanh tiện lợi.
    - **Âm thanh cảnh báo:** Còi chip Active Buzzer báo động khi mất sóng (Failsafe) hoặc pin yếu.
 
-3. **Cơ cấu vỏ hộp (Modular Enclosure Mechanics):**
-   - Khung vỏ in 3D tối ưu hóa độ cứng vững với hèm ngàm chống bụi và cọc ốc vít ren đồng M3 chắc chắn.
+---
+
+## 🏎️ Bản Vẽ 3D CAD Khung Xe Đua RC (A2212 Brushless • 2 Tầng Curoa • Servo MG90S • Cánh Gió GT)
+
+![Bản vẽ thiết kế 3D CAD khung xe đua RC có cánh gió GT](Images/thiet_ke_khung_xe_a2212_spoiler.png)
+
+### 🏁 Đặc Điểm Kỹ Thuật Khung Xe In 3D (Chassis Specs):
+1. **Cánh Gió Thể Thao GT Siêu Ngầu (High-Downforce GT Rear Wing):**
+   - Thiết kế dạng khí động học Inverted Airfoil tăng tối đa lực nén bánh sau (Rear Traction) khi vào cua tốc độ cao.
+   - 2 Chân trụ tam giác khoét lỗ giảm trọng lượng chuẩn phong cách xe đua thể thao chuyên nghiệp.
+   - 2 Vách đứng đầu cánh (Endplates) triệt tiêu dòng khí xoáy rối.
+2. **Giá Đỡ Động Cơ A2212 Tùy Biến Căng Dây Curoa:**
+   - 4 Rãnh oval trượt cho ốc M3 tâm 16mm/19mm cho phép tịnh tiến motor để tăng giảm độ căng đai truyền động.
+   - Gân gia cường chân đế dày dặn chống rung giật khi đề-pa tức thì.
+3. **Cơ Cấu Truyền Động 2 Tầng Dây Curoa (Dual-Stage Belt Drive):**
+   - Tích hợp sẵn 2 cụm gối đỡ bạc đạn chuẩn **MR105 (10mm OD)** cho trục trung gian và trục bánh sau.
+   - Cho phép giảm tốc sâu từ 1:6 đến 1:8 giúp motor A2212 đề-pa cực kỳ bốc, không bị khựng (anti-cogging).
+4. **Hộp Đỡ Servo Lái MG90S & Cụm Bẻ Lái C-Hub Phía Trước:**
+   - Hốc ngàm ôm khít thân servo MG90S bánh răng kim loại, kèm lỗ luồn dây gọn gàng.
+   - Cặp C-Hub bánh trước có tay đòn kéo lái góc Ackermann tối ưu cho việc ôm cua hẹp.
+
+![Chi tiết cánh gió GT và cụm gối đỡ bạc đạn](Images/chi_tiet_canh_gio_gt.png)
 
 ---
 
@@ -97,16 +117,19 @@ Người dùng có thể chuyển đổi nhanh giữa các trang bằng nút b�
 
 ```text
 ├── CAD/
-│   ├── tay_cam_rc_gop_1_file.stl   # Mô hình 3D vỏ tay cầm (Xem 3D trực tiếp trên web GitHub)
-│   ├── tay_cam_rc_gop_1_file.step  # File CAD gốc định dạng STEP chuẩn kỹ thuật
-│   └── controller_box.scad         # Mã nguồn thiết kế tham số OpenSCAD
+│   ├── tay_cam_rc_gop_1_file.stl       # Mô hình 3D vỏ tay cầm (Xem trực tiếp trên GitHub)
+│   ├── tay_cam_rc_gop_1_file.step      # File CAD STEP chuẩn kỹ thuật vỏ tay cầm
+│   ├── xe_rc_chassis_a2212_spoiler.stl # Mô hình 3D khung xe đua có Cánh Gió GT
+│   └── xe_rc_chassis_a2212_spoiler.step# File CAD STEP chuẩn kỹ thuật khung xe đua
 ├── Firmware/
 │   ├── TayCam_Transmitter_STM32_PRO/
 │   │   └── TayCam_Transmitter_STM32_PRO.ino  # Code STM32 Flagship OS (ABS, Expo Curve, 6 Gara, 200Hz)
 │   └── BoThu_Receiver_All_In_One_PRO/
 │       └── BoThu_Receiver_All_In_One_PRO.ino # Code Mạch Thu All-In-One (CRSF 420k + PWM 333Hz)
 ├── Images/
-│   ├── thiet_ke_cad_tay_cam_3d.png           # Ảnh 3D CAD tổng quan 4 góc nhìn nội thất và ngoại thất
+│   ├── thiet_ke_cad_tay_cam_3d.png           # Ảnh 3D CAD tay cầm 4 góc nhìn nội thất và ngoại thất
+│   ├── thiet_ke_khung_xe_a2212_spoiler.png   # Ảnh 3D CAD khung xe đua A2212 có cánh gió GT
+│   ├── chi_tiet_canh_gio_gt.png              # Ảnh chi tiết cánh gió GT và cụm gối đỡ bạc đạn
 │   └── giao_dien_mo_phong_rc_studio.png      # Ảnh chụp giao diện Studio giả lập 3D WebGL
 ├── Simulation/
 │   └── mo_phong_tay_khien_rc_3d.html         # Trình giả lập 3D 60FPS + Giao diện Studio chuyên nghiệp

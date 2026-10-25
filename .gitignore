@@ -13,3 +13,7 @@ desktop.ini
 # Python cache
 __pycache__/
 *.py[cod]
+
+# CAD raw source files (keep only export STL & STEP)
+*.scad
+
