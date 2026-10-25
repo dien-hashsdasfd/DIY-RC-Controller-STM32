@@ -29,9 +29,15 @@ Dự án tay điều khiển từ xa RC DIY chuyên nghiệp toàn diện, tích
 
 ## 🏎️ 2. Mô Hình 3D Lắp Ráp Toàn Bộ Linh Kiện Xe Đua RC (Full RC Car Assembly)
 
-Toàn bộ linh kiện cơ khí và điện tử của chiếc xe được dựng chi tiết 100% trong không gian 3D, tối ưu hóa cho in 3D FDM và gia công chính xác:
+Toàn bộ linh kiện cơ khí và điện tử của chiếc xe được dựng chi tiết 100% trong không gian 3D, tổng hợp thành bộ bản vẽ 4 góc nhìn chuẩn kỹ thuật tương đương bản vẽ tay cầm:
 
-![Bản vẽ phối cảnh tổng thể đầy đủ linh kiện xe đua RC](Images/thiet_ke_khung_xe_a2212_spoiler.png)
+![Bản vẽ tổng hợp 4 góc nhìn đầy đủ chi tiết xe đua RC](Images/xe_rc_tong_hop_4_goc_nhin.png)
+
+### 📐 4 Phân Khu Trực Quan Trên Bản Vẽ Tổng Hợp:
+1. **Góc Dưới - Bên Trái (Assembled GT Car):** Chiếc xe thể thao hoàn chỉnh với thân vỏ khí động học, cụm đèn pha LED kép, 4 bánh xe thể thao và cánh gió đuôi GT Downforce.
+2. **Góc Dưới - Bên Phải (Internal Rolling Chassis):** Khung gầm lăn bóc trần 100% linh kiện cơ điện tử hoạt động: Động cơ A2212 chuông vàng, truyền động 2 tầng dây curoa GT2, servo lái MG90S bánh răng kim loại, khay pin 2S 18650, ESC tản nhiệt xanh, mạch thu Receiver LoRa và ăng-ten 2.4GHz.
+3. **Góc Trên - Bên Trái (Bare Chassis Platform):** Sàn xe chịu lực cơ sở với giá bắt motor điều chỉnh tăng xích đai, hộc gắn pin hạ thấp trọng tâm, cụm gối đỡ bạc đạn MR105 và bệ gắn servo lái.
+4. **Góc Trên - Bên Phải (Detached GT Body & Spoiler):** Thân vỏ xe thể thao GT tách rời kèm cánh gió sau cỡ lớn, sẵn sàng cho công nghệ in 3D FDM hoặc đúc hút chân không định hình.
 
 ### 🧩 Danh Mục Chi Tiết Từng Cụm Linh Kiện Trên Xe:
 
@@ -138,10 +144,12 @@ Người dùng có thể chuyển đổi nhanh giữa các trang bằng nút b�
 
 ```text
 ├── CAD/
-│   ├── tay_cam_rc_gop_1_file.stl       # Mô hình 3D vỏ tay cầm (Xem trực tiếp trên GitHub)
-│   ├── tay_cam_rc_gop_1_file.step      # File CAD STEP chuẩn kỹ thuật vỏ tay cầm
-│   ├── xe_rc_chassis_a2212_spoiler.stl # Mô hình 3D xe đua đầy đủ linh kiện (Motor, Curoa, MG90S, Spoiler)
-│   └── xe_rc_chassis_a2212_spoiler.step# File CAD STEP kỹ thuật xe đua đầy đủ linh kiện
+│   ├── tay_cam_rc_gop_1_file.stl            # Mô hình 3D vỏ tay cầm (Xem trực tiếp trên GitHub)
+│   ├── tay_cam_rc_gop_1_file.step           # File CAD STEP chuẩn kỹ thuật vỏ tay cầm
+│   ├── xe_rc_tong_hop_day_du_chi_tiet.stl  # Mô hình 3D tổng hợp 4 góc nhìn xe RC (Xem 3D trực tiếp trên GitHub)
+│   ├── xe_rc_tong_hop_day_du_chi_tiet.step # File CAD STEP solid 4 phân khu xe RC (Mở bằng Shapr3D, SolidWorks)
+│   ├── xe_rc_chassis_a2212_spoiler.stl      # Mô hình 3D xe đua đơn lẻ đầy đủ linh kiện
+│   └── xe_rc_chassis_a2212_spoiler.step     # File CAD STEP kỹ thuật xe đua đơn lẻ
 ├── Firmware/
 │   ├── TayCam_Transmitter_STM32_PRO/
 │   │   └── TayCam_Transmitter_STM32_PRO.ino  # Code STM32 Flagship OS (ABS, Expo Curve, 6 Gara, 200Hz)
@@ -149,6 +157,7 @@ Người dùng có thể chuyển đổi nhanh giữa các trang bằng nút b�
 │       └── BoThu_Receiver_All_In_One_PRO.ino # Code Mạch Thu All-In-One (CRSF 420k + PWM 333Hz)
 ├── Images/
 │   ├── thiet_ke_cad_tay_cam_3d.png           # Ảnh 3D CAD tay cầm 4 góc nhìn nội thất và ngoại thất
+│   ├── xe_rc_tong_hop_4_goc_nhin.png         # Ảnh 3D CAD xe đua tổng hợp 4 góc nhìn như tay cầm
 │   ├── thiet_ke_khung_xe_a2212_spoiler.png   # Ảnh phối cảnh 3D xe đua đầy đủ 100% linh kiện
 │   ├── chi_tiet_canh_gio_gt.png              # Ảnh chi tiết đuôi xe, cánh gió GT và truyền động 2 curoa
 │   ├── xe_rc_full_components_top.png         # Ảnh chi tiết từ trên xuống: Pin 18650, ESC, RX, Servo
