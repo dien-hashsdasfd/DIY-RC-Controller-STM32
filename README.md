@@ -30,8 +30,10 @@ Dự án tay điều khiển từ xa RC DIY chuyên nghiệp toàn diện, tích
 ## 🏎️ 2. Mô Hình 3D Xe Đua RC Tối Giản Cứng Vững - Cơ Cấu Bẻ Lái Thực Tế (Không Giảm Xóc Rườm Rà)
 
 > ⚠️ **LƯU Ý VỀ PHẦN THÂN VỎ (BODY SHELL):**  
-> Phần thân vỏ xe hiện tại được **tạm thời ẩn đi và đang trong quá trình hoàn thiện** (thiết kế form khí động học, hốc vòm bánh xe và pas cài chốt gầm tháo lắp nhanh). Khi thiết kế hoàn tất sẽ được cập nhật và tải lên sau!  
+> Phần thân vỏ xe hiện tại được **tạm thời ẩn đi và đang trong quá trình phát triển & hoàn thiện** (thiết kế form khí động học, hốc vòm bánh xe và pas cài chốt gầm tháo lắp nhanh). Khi thiết kế hoàn tất sẽ được cập nhật và tải lên sau!  
 > Phiên bản hiện tại tập trung hoàn thiện 100% khung gầm lăn (Rolling Chassis), cơ cấu quặt lái trực tiếp bằng servo MG90S và hệ dẫn động 2 tầng dây curoa GT2.
+
+![Thân vỏ xe RC đang trong quá trình phát triển & hoàn thiện](Images/than_vo_dang_phat_trien.png)
 
 Để tối ưu hóa cho việc **tự in 3D FDM tại nhà**, xe loại bỏ các cụm phuộc nhún lò xo phức tạp dễ kẹt rít hay gãy vỡ, tập trung hoàn thiện **khung sàn phẳng cứng vững (Pan-Car / Kart Chassis)** kết hợp **hệ thống bẻ lái thực tế ("quặt lái") cực kỳ mượt mà và chính xác**:
 
@@ -161,6 +163,7 @@ Người dùng có thể chuyển đổi nhanh giữa các trang bằng nút b�
 │   ├── xe_rc_day_du_steer.png                # Ảnh cận cảnh hệ thống quặt lái: Servo MG90S và thanh giằng rotuyn
 │   ├── xe_rc_day_du_rear.png                 # Ảnh cận cảnh cầu sau, động cơ A2212, puly 2 tầng và cánh gió GT
 │   ├── xe_rc_day_du_top.png                  # Ảnh góc nhìn từ trên xuống bố trí linh kiện điện tử
+│   ├── than_vo_dang_phat_trien.png           # Thông báo module thân vỏ khí động học đang phát triển hoàn thiện
 │   └── giao_dien_mo_phong_rc_studio.png      # Ảnh chụp giao diện Studio giả lập 3D WebGL
 ├── Simulation/
 │   └── mo_phong_tay_khien_rc_3d.html         # Trình giả lập 3D 60FPS + Giao diện Studio chuyên nghiệp
